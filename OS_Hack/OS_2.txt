@@ -1,0 +1,350 @@
+OS phase 2
+
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <string.h> 
+#include <ctype.h> 
+ 
+struct PCB { 
+    int job_id; 
+    int TTL;                // total time limit 
+    int TLL;                // total line limit 
+    int TTC;                // total time counter 
+    int TLC;                // total line counter 
+}; 
+ 
+struct PCB proc; 
+ 
+int ptr;                        // page table register 
+int visited[30];                // virtual group of 10 
+char M[300][4];                 // main memory 
+char IR[4];                     // instruction register 
+char R[4];                      // register 
+int IC;                         // instruction counter 
+int C;                          // toggle register 
+int SI;                         // system interrupt 
+int VA;                          
+int RA;                          
+int PI;                         // program interrupt 
+int TI;                         // time interrupt 
+int EM;                         // error message 
+ 
+FILE *inFile; 
+FILE *outFile; 
+ 
+char *errors[] = { 
+    "No Error", 
+    "Out of Data", 
+    "Line Limit Exceeded", 
+    "Time Limit Exceeded", 
+    "Operation Code Error", 
+    "Operand Error", 
+    "Invalid Page Fault" 
+}; 
+ 
+void init() { 
+    for (int i = 0; i < 300; i++) {                  // clearing memory 
+        for (int j = 0; j < 4; j++) { 
+            M[i][j] = ' '; 
+        } 
+    } 
+ 
+    for (int i = 0; i < 30; i++) {                  // clearing visited flags 
+        visited[i] = 0; 
+    } 
+ 
+    for (int i = 0; i < 4; i++) { 
+        IR[i] = '-'; 
+        R[i] = '-'; 
+    } 
+ 
+    IC = 0; 
+    C = 0; 
+    ptr = 0; 
+    VA = 0; 
+    PI = 0; 
+    TI = 0; 
+    EM = 0; 
+} 
+ 
+int ALLOCATE() {                    // return a random value lower than 30 
+    return (rand() % 30); 
+} 
+ 
+int ADDRESSMAP(int va) {            // error 6 
+    int pte = ptr * 10 + va / 10;   // page table entry, register virtual address 
+    char temp[5] = ""; 
+     
+    if (M[pte][0] == '*') { 
+        printf("Page Fault\n");     // page fault 66 
+        return -1; 
+    } else { 
+        for (int i = 0; i < 4; i++) { 
+            if (M[pte][i] != ' ') 
+                strncat(temp, &M[pte][i], 1); 
+        } 
+        return ((atoi(temp) * 10) + (va % 10)); 
+    } 
+} 
+ 
+int terminate(int Code) {            // print in file cause of termination in case of error 
+    printf("\n%s\n", errors[Code]); 
+    fprintf(outFile, "\nProgram Terminated abnormally\n%s\n\n", errors[Code]); 
+    return 0; 
+} 
+ 
+void MOS() {                                         // errors 1, 2 
+    if (SI == 1) { 
+        char line[41]; 
+        if (fgets(line, sizeof(line), inFile) == NULL) { 
+            EM = 1; 
+            terminate(1);                            // error due to end when data is asked 
+            return; 
+        } 
+        if (strncmp(line, "$END", 4) == 0) {         // $end 
+            EM = 1; 
+            terminate(1); 
+            return; 
+        } 
+         
+        int frame = ALLOCATE(); 
+        while (visited[frame] != 0) { 
+            frame = ALLOCATE(); 
+        } 
+        visited[frame] = 1; 
+         
+        int i = ptr * 10; 
+        while (M[i][0] != '*') { 
+            i++; 
+        } 
+         
+        int temp = frame / 10; 
+        M[i][0] = ' '; 
+        M[i][1] = ' '; 
+        M[i][2] = temp + '0'; 
+        M[i][3] = frame % 10 + '0'; 
+         
+        int l = 0; 
+        frame = frame * 10; 
+        for (int j = 0; j < strlen(line) && strlen(line) < 40; j++) { 
+            M[frame][l++] = line[j]; 
+            if (l == 4) { 
+                l = 0; 
+                frame++; 
+            } 
+        } 
+    } else if (SI == 2) { 
+        proc.TLC++;               // increase line counter 
+        if (proc.TLC > proc.TLL) { 
+            EM = 2; 
+            terminate(2);                   // line limit exceeded 
+            return; 
+        } 
+        int add = IR[2] - '0'; 
+        add = add * 10; 
+        int ra = ADDRESSMAP(add); 
+         
+        if (ra != -1) { 
+            char out[41] = ""; 
+            for (int i = 0; i < 10; i++) { 
+                for (int j = 0; j < 4; j++) { 
+                    strncat(out, &M[ra][j], 1); 
+                } 
+                ra++; 
+            } 
+            fprintf(outFile, "%s\n", out); 
+        } else { 
+            EM = 6; 
+            terminate(6);                   // invalid cache found 
+            PI = 3; 
+        } 
+    } else if (SI == 3) { 
+        fprintf(outFile, "\nProgram Terminated successfully\n"); 
+        fprintf(outFile, "IC = %d\tToggle: %d\tTLC: %d\tTTC: %d\tTTL: %d\tTLL: %d\tJobId: %d\n", 
+                IC, C, proc.TLC, proc.TTC, proc.TTL, proc.TLL, proc.job_id); 
+        for (int i = 0; i < 3; i++) { 
+            fprintf(outFile, "\t%c", IR[i]); 
+        } 
+    } 
+} 
+ 
+void EXECUTE() { 
+    while (1) { 
+        if (PI != 0 || TI != 0 || EM != 0) { 
+            fprintf(outFile, "IC = %d\tToggle: %d\tTLC: %d\tTTC: %d\tTTL: %d\tTLL: %d\tJobId: 
+%d\n", 
+                    IC, C, proc.TLC, proc.TTC, proc.TTL, proc.TLL, proc.job_id); 
+            for (int i = 0; i < 3; i++) { 
+                fprintf(outFile, "\t%c", IR[i]); 
+            } 
+            break; 
+        } 
+ 
+        RA = ADDRESSMAP(IC); 
+        if (M[RA][0] != 'H' && (!isdigit(M[RA][2]) || !isdigit(M[RA][3]))) { 
+            EM = 5; 
+            terminate(5);                   // Operand error 
+            fprintf(outFile, "IC = %d\tToggle: %d\tTLC: %d\tTTC: %d\tTTL: %d\tTLL: %d\tJobId: 
+%d\n", 
+                    IC, C, proc.TLC, proc.TTC, proc.TTL, proc.TLL, proc.job_id); 
+            for (int i = 0; i < 3; i++) { 
+                fprintf(outFile, "\t%c", IR[i]); 
+            } 
+        } 
+ 
+        for (int i = 0; i < 4; i++) { 
+            IR[i] = M[RA][i]; 
+        } 
+        IC++; 
+         
+        int add = IR[2] - '0'; 
+        add = add * 10 + (IR[3] - '0'); 
+ 
+        if ((IR[0] == 'G' && IR[1] == 'D') || (IR[0] == 'S' && IR[1] == 'R')) 
+            proc.TTC += 2; 
+        else 
+            proc.TTC += 1; 
+ 
+        if (proc.TTC > proc.TTL) { 
+            EM = 3; 
+            TI = 2; 
+            terminate(3);                    // Time limit exceeded 
+            fprintf(outFile, "IC = %d\tToggle: %d\tTLC: %d\tTTC: %d\tTTL: %d\tTLL: %d\tJobId: 
+%d\n", 
+                    IC, C, proc.TLC, proc.TTC, proc.TTL, proc.TLL, proc.job_id); 
+            for (int i = 0; i < 3; i++) { 
+                fprintf(outFile, "\t%c", IR[i]); 
+            } 
+            break; 
+        } 
+    } 
+} 
+ 
+void LOAD() { 
+    printf("\nReading Data...\n"); 
+    char line[41]; 
+    while (fgets(line, sizeof(line), inFile)) { 
+        if (strncmp(line, "$AMJ", 4) == 0) { 
+            init(); 
+            ptr = ALLOCATE(); 
+            for (int i = ptr * 10; i < ptr * 10 + 10; i++) { 
+                for (int j = 0; j < 4; j++) { 
+                    M[i][j] = '*'; 
+                } 
+            } 
+            visited[ptr] = 1; 
+ 
+            char jobid_str[5] = "", TTL_str[5] = "", TLL_str[5] = ""; 
+            strncat(jobid_str, line + 4, 4); 
+            strncat(TTL_str, line + 8, 4); 
+            strncat(TLL_str, line + 12, 4); 
+             
+            proc.job_id = atoi(jobid_str); 
+            proc.TTL = atoi(TTL_str); 
+            proc.TLL = atoi(TLL_str); 
+             
+            printf("IC = %d\tToggle: %d\tTLC: %d\tTTC: %d\tTTL: %d\tTLL: %d\tJobId: %d\n", 
+                   IC, C, proc.TLC, proc.TTC, proc.TTL, proc.TLL, proc.job_id); 
+        } else if (strncmp(line, "$DTA", 4) == 0) { 
+            EXECUTE(); 
+        } else if (strncmp(line, "$END", 4) == 0) { 
+            printf("Job ID = %d Ended\n", proc.job_id); 
+        } else { 
+            int frame = ALLOCATE(); 
+            while (visited[frame] != 0) { 
+                frame = ALLOCATE(); 
+            } 
+            visited[frame] = 1; 
+ 
+            int i = ptr * 10; 
+            while (M[i][0] != '*') { 
+                i++; 
+            } 
+ 
+            int temp = frame / 10; 
+            M[i][0] = ' '; 
+            M[i][1] = ' '; 
+            M[i][2] = temp + '0'; 
+            M[i][3] = frame % 10 + '0'; 
+             
+            int l = 0; 
+            frame = frame * 10; 
+            for (int j = 0; j < strlen(line) && j < 40; j++) { 
+                M[frame][l++] = line[j]; 
+                if (l == 4) { 
+                    l = 0; 
+                    frame++; 
+                } 
+            } 
+        } 
+    } 
+} 
+ 
+int main() { 
+    inFile = fopen("input2.txt", "r"); 
+    if (inFile == NULL) { 
+        perror("Error opening input file"); 
+        return 1; 
+    } 
+     
+    outFile = fopen("output2.txt", "w"); 
+    if (outFile == NULL) { 
+        perror("Error opening output file"); 
+        fclose(inFile); 
+        return 1; 
+    } 
+ 
+    LOAD(); 
+ 
+    fclose(inFile); 
+    fclose(outFile); 
+    return 0; 
+}
+
+Input.txt
+
+$AMJ000100050002 
+GD10PD10H 
+$DTA 
+HELLO-WORLD 
+$END0001 
+$AMJ000200060001 
+GD10LR30SR20PD20H 
+$DTA 
+VIT 
+$END0002 
+$AMJ000300140003 
+GD10GD20GD30GD40LR10CO20BT08PD30PD40H 
+$DTA 
+2 
+3 
+4 - 
+$END0003 
+$AMJ000400040001 
+GD10GD20GD30GD40LR10CR20BT09PD30HPD40H 
+$DTA 
+VIT 
+VIIT 
+VIT VIIT NOT SAME 
+VIT VIIT SAME 
+$END0004 
+$AMJ000500190001 
+GD50PD50H 
+$DTA 
+4 8 12 16 20 24 28 32 36 40 
+$END0005 
+$AMJ000600050001 
+GD10PD10PD10H 
+$DTA 
+HELLO-WORLD 
+$END0006 
+$AMJ000700060001 
+GD10GD20PD10H 
+$DTA 
+$END0007 
+$AMJ000900170007 
+GD2xPD20LR20SR21PD20SR22PD20SR23PD20SR24 
+PD20H 
+$DTA 
+* 
+$END0009

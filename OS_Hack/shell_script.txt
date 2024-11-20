@@ -1,0 +1,429 @@
+1.  Write a shell script to check number entered by the user is greater than 10.
+
+echo "Enter a number:"
+read number
+
+if [ "$number" -gt 10 ]; then
+    echo "The number $number is greater than 10."
+else
+    echo "The number $number is not greater than 10."
+fi
+
+
+2.  Write a shell script to check if a file exists. If not, then create it.
+echo "Enter the file name (with path if necessary):"
+read file_name
+
+if [ -e "$file_name" ]; then
+    echo "The file '$file_name' already exists."
+else
+    touch "$file_name"
+    echo "File is not Exist. Created a new file"
+    echo "The file '$file_name' has been created."
+Fi
+
+
+3.  Write a shell script that takes two command line arguments. Check whether the name passed as first argument is of a directory or not. If not, create directory using name passed as second argument.
+
+
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <directory_to_check> <directory_to_create>"
+    exit 1
+fi
+
+dir_to_check=$1
+dir_to_create=$2
+
+if [ -d "$dir_to_check" ]; then
+    echo "'$dir_to_check' is already a directory."
+else
+    echo "'$dir_to_check' is not a directory."
+    echo "Creating directory '$dir_to_create'..."
+    mkdir "$dir_to_create"
+    echo "Directory '$dir_to_create' has been created."
+Fi
+
+4.  Write a shell script which checks the total arguments passed. If the argument count is greater than 5, then display message “Too many arguments”
+
+#!/bin/bash
+
+if [ $# -gt 5 ]; then
+    echo "Too many arguments"
+else
+    echo "Argument count is acceptable: $# arguments provided."
+Fi
+
+
+
+5.	Write a shell script to check arguments passed at command line is whether of a file or directory.
+
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <file_or_directory1> <file_or_directory2> ..."
+    exit 1
+fi
+
+# Iterate through all the arguments
+for item in "$@"; do
+    if [ -d "$item" ]; then
+        echo "'$item' is a directory."
+    elif [ -f "$item" ]; then
+        echo "'$item' is a file."
+    else
+        echo "'$item' is neither a file nor a directory."
+    fi
+done
+
+
+
+6.	Write a shell script to read a month name from the user. Check if the name entered is either August or October.
+
+echo "Enter a month name:"
+read month
+
+# Convert the input to lowercase for case-insensitive comparison
+month=$(echo "$month" | tr '[:upper:]' '[:lower:]')
+
+if [ "$month" = "august" ]; then
+    echo "The month entered is August."
+elif [ "$month" = "october" ]; then
+    echo "The month entered is October."
+else
+    echo "The month entered is neither August nor October."
+fi
+
+
+7.	Write a shell script to check whether file or directory exists.
+
+echo "Enter the file or directory name:"
+read name
+
+# Check if it exists
+if [ -e "$name" ]; then
+    if [ -f "$name" ]; then
+        echo "'$name' exists and is a file."
+    elif [ -d "$name" ]; then
+        echo "'$name' exists and is a directory."
+    else
+        echo "'$name' exists but is neither a regular file nor a directory."
+    fi
+else
+    echo "'$name' does not exist."
+Fi
+
+8.	Write a shell script to check whether file is exists and file is readable.
+
+echo "Enter the file name:"
+read file_name
+
+if [ -e "$file_name" ]; then
+    # Check if it's a file
+    if [ -f "$file_name" ]; then
+        echo "'$file_name' exists and is a file."
+
+        if [ -r "$file_name" ]; then
+            echo "'$file_name' is readable."
+        else
+            echo "'$file_name' is not readable."
+        fi
+
+    elif [ -d "$file_name" ]; then
+        echo "'$file_name' exists but it is a directory, not a file."
+    else
+        echo "'$file_name' exists but is neither a regular file nor a directory."
+    fi
+else
+    echo "'$file_name' does not exist."
+fi
+
+9.	Write a shell script to check if the present month is August   or not. Use date command to get present month.
+
+
+current_month=$(date +%B)
+# Check if the current month is August
+if [ "$current_month" = "August" ]; then
+    echo "The current month is August."
+else
+    echo "The current month is not August. It is $current_month."
+fi
+
+10.	Write a shell script to check if the current user is root or regular user.
+
+
+current_user=$(whoami)
+
+# Check if the current user is root
+if [ "$current_user" = "root" ]; then
+    echo "The current user is root."
+else
+    echo "The current user is a regular user: $current_user."
+Fi
+
+11.	Write a shell script to check the total arguments passed at command line. If the arguments are more than 3 then list the argument else print “type more next time”.
+
+if [ $# -gt 3 ]; then
+    echo "The arguments passed are:"
+    # List all arguments
+    for arg in "$@"; do
+        echo "$arg"
+    done
+else
+    echo "type more next time"
+fi
+
+
+1.	Write shell script to execute command ls, date, pwd repetitively.
+
+#!/bin/bash
+repetitions=5
+delay=2
+for (( i=1; i<=repetitions; i++ ))
+do
+    echo "Iteration $i:"
+    echo "Listing files:"
+    ls
+    echo "Current date and time:"
+    date
+    echo "Current working directory:"
+    pwd
+    echo "----------------------------"
+    sleep $delay
+done
+echo "Script completed."
+
+2.	Write a shell script to assign value to the variable? Display value with and without $.
+#!/bin/bash
+my_variable="Hello, World!"
+echo "Displaying value using \$:"
+echo $my_variable
+echo "Displaying value without \$:"
+echo my_variable
+
+OUTPUT:
+
+3.	Variables are untyped in Shell Script. Write a shell script to show variables are untyped.
+
+#!/bin/bash
+my_var="Hello, World!"
+echo "Initially, my_var holds a string value: $my_var"
+my_var=12345
+echo "Now, my_var holds an integer value: $my_var"
+my_var=3.14159
+echo "Now, my_var holds a floating-point value: $my_var"
+my_var=$(date)
+echo "Now, my_var holds the output of a command: $my_var"
+my_var=true
+echo "Now, my_var holds a boolean-like value: $my_var"
+
+OUTPUT:
+
+
+
+4.	Write a shell script to accept numbers from user. (Keyboard)
+
+#!/bin/bash
+echo "Enter a number:"
+read num
+if [[ "$num" =~ ^-?[0-9]+$ ]]; then
+    echo "You entered an integer: $num"
+elif [[ "$num" =~ ^-?[0-9]*\.[0-9]+$ ]]; then
+    echo "You entered a floating-point number: $num"
+else
+    echo "The input is not a valid number."
+fi
+if [[ "$num" =~ ^-?[0-9]+$ || "$num" =~ ^-?[0-9]*\.[0-9]+$ ]]; then
+    double=$(echo "$num * 2" | bc)
+    echo "Double of the number is: $double"
+fi
+
+OUTPUT:
+
+
+
+
+5.	Write a shell script to accept numbers from command line arguments.
+
+#!/bin/bash
+if [ $# -eq 0 ]; then
+    echo "Usage: $0 <number1> <number2> ... <numberN>"
+    exit 1
+fi
+for num in "$@"; do
+    if [[ "$num" =~ ^-?[0-9]+$ ]]; then
+        echo "$num is an integer."
+    elif [[ "$num" =~ ^-?[0-9]*\.[0-9]+$ ]]; then
+        echo "$num is a floating-point number."
+    else
+        echo "$num is not a valid number."
+        continue
+    fi
+    double=$(echo "$num * 2" | bc)
+    echo "Double of $num is: $double"
+done
+
+
+6.	Write a shell script to show the contents of environmental variables SHELL, PATH, HOME.
+#!/bin/bash
+echo "SHELL: $SHELL"
+echo "PATH: $PATH"
+echo "HOME: $HOME"
+
+
+7.	Write a shell script to create two files. Accept file names from user.
+
+#!/bin/bash
+
+# Prompt the user to enter the name for the first file
+echo "Enter the name for the first file:"
+read file1
+
+# Prompt the user to enter the name for the second file
+echo "Enter the name for the second file:"
+read file2
+
+# Create the files
+touch "$file1"
+touch "$file2"
+
+# Check if files were created successfully
+if [[ -f "$file1" && -f "$file2" ]]; then
+    echo "Both files '$file1' and '$file2' have been created successfully."
+else
+    echo "There was an error creating the files."
+fi
+
+
+
+8.	Write a shell script to create two directories. Accept directories name from Command line.
+
+#!/bin/bash
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <directory1> <directory2>"
+    exit 1
+fi
+dir1=$1
+dir2=$2
+
+mkdir "$dir1"
+mkdir "$dir2"
+if [ -d "$dir1" ] && [ -d "$dir2" ]; then
+    echo "Both directories '$dir1' and '$dir2' have been created successfully."
+else
+    echo "There was an error creating the directories."
+fi
+
+
+
+9.	Write a shell script to copy file content of one file to another file. Accept files names from command line argument.
+#!/bin/bash
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <source_file> <destination_file>"
+    exit 1
+fi
+source_file=$1
+destination_file=$2
+if [ ! -f "$source_file" ]; then
+    echo "Source file '$source_file' does not exist."
+    exit 1
+fi
+cp "$source_file" "$destination_file"
+if [ $? -eq 0 ]; then
+    echo "Content from '$source_file' has been copied to '$destination_file'."
+else
+    echo "There was an error copying the file content."
+Fi
+OUTPUT:
+
+
+
+
+
+
+10.	Write a shell script to rename the file name. Accept old filename and new filename from command line argument.
+
+#!/bin/bash
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <old_filename> <new_filename>"
+    exit 1
+fi
+old_filename=$1
+new_filename=$2
+if [ ! -f "$old_filename" ]; then
+    echo "Error: '$old_filename' does not exist."
+    exit 1
+fi
+
+mv "$old_filename" "$new_filename"
+if [ $? -eq 0 ]; then
+    echo "File '$old_filename' has been renamed to '$new_filename'."
+else
+    echo "Error: There was an issue renaming the file."
+fi
+
+
+
+
+11.	Write a shell script to perform arithmetic operation of integer data.
+
+
+#!/bin/bash
+if [ $# -ne 3 ]; then
+    echo "Usage: $0 <num1> <operator> <num2>"
+    echo "Operators: +, -, *, /"
+    exit 1
+fi
+num1=$1
+operator=$2
+num2=$3
+if ! [[ "$num1" =~ ^-?[0-9]+$ ]] || ! [[ "$num2" =~ ^-?[0-9]+$ ]]; then
+    echo "Error: Both arguments must be valid integers."
+    exit 1
+fi
+case $operator in
+    +)
+        result=$((num1 + num2))
+        ;;
+    -)
+        result=$((num1 - num2))
+        ;;
+    \*)
+        result=$((num1 * num2))
+        ;;
+    /)
+        # Check for division by zero
+        if [ "$num2" -eq 0 ]; then
+            echo "Error: Division by zero is not allowed."
+            exit 1
+        fi
+        result=$((num1 / num2))
+        ;;
+    *)
+        echo "Error: Invalid operator. Use one of +, -, *, /."
+        exit 1
+        ;;
+esac
+echo "Result: $num1 $operator $num2 = $result"
+
+
+
+
+12.Write a shell script to perform arithmetic operation of float data.
+
+if [ $# -ne 3 ]; then
+    echo "Usage: $0 <num1> <operator> <num2>"
+    echo "Operators: +, -, *, /"
+    exit 1
+fi
+num1=$1
+operator=$2
+num2=$3
+if ! [[ "$num1" =~ ^-?[0-9]+(\.[0-9]+)?$ ]] || ! [[ "$num2" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+    echo "Error: Both arguments must be valid floating-point numbers."
+    exit 1
+fi
+
+if [ "$operator" == "/" ] && [ "$num2" == "0" ]; then
+    echo "Error: Division by zero is not allowed."
+    exit 1
+fi
+result=$(awk "BEGIN {print $num1 $operator $num2}")
+echo "Result: $num1 $operator $num2 = $result"

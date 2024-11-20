@@ -1,0 +1,103 @@
+•	Write a C program to implement the Bankers Algorithm for Deadlock Avoidance.
+
+#include <stdio.h> 
+ 
+#define MAX_PROCESSES 5 
+#define MAX_RESOURCES 3 
+ 
+int available[MAX_RESOURCES]; 
+int maximum[MAX_PROCESSES][MAX_RESOURCES]; 
+int allocation[MAX_PROCESSES][MAX_RESOURCES]; 
+int need[MAX_PROCESSES][MAX_RESOURCES]; 
+int safeSequence[MAX_PROCESSES]; 
+int processCount, resourceCount; 
+ 
+int isSafe() { 
+    int work[MAX_RESOURCES]; 
+    int finish[MAX_PROCESSES] = {0}; 
+    int index = 0; 
+ 
+    for (int i = 0; i < resourceCount; i++) 
+        work[i] = available[i]; 
+ 
+    printf("Process execution sequence:\n"); 
+ 
+    int count = 0; 
+    while (count < processCount) { 
+        int found = 0; 
+        for (int p = 0; p < processCount; p++) { 
+            if (!finish[p]) { 
+                int canFinish = 1; 
+                for (int j = 0; j < resourceCount; j++) { 
+                    if (need[p][j] > work[j]) { 
+                        canFinish = 0; 
+                        break; 
+                    } 
+                } 
+ 
+                if (canFinish) { 
+                    for (int k = 0; k < resourceCount; k++) 
+                        work[k] += allocation[p][k]; 
+ 
+                    safeSequence[index++] = p; 
+                    finish[p] = 1; 
+                    found = 1; 
+                    printf("P%d -> ", p); 
+                    count++; 
+                    break; 
+                } 
+            } 
+        } 
+        if (!found) { 
+            return 0; 
+        } 
+    } 
+    printf("End\n"); 
+    return 1; 
+} 
+ 
+void calculateNeed() { 
+    for (int i = 0; i < processCount; i++) 
+        for (int j = 0; j < resourceCount; j++) 
+            need[i][j] = maximum[i][j] - allocation[i][j]; 
+} 
+ 
+int main() { 
+    printf("Enter the number of processes: "); 
+    scanf("%d", &processCount); 
+ 
+    printf("Enter the number of resources: "); 
+    scanf("%d", &resourceCount); 
+ 
+    printf("Enter the available resources for each type: "); 
+    for (int i = 0; i < resourceCount; i++) 
+        scanf("%d", &available[i]); 
+ 
+    printf("Enter the maximum resources for each process:\n"); 
+    for (int i = 0; i < processCount; i++) { 
+        printf("Process %d: ", i); 
+        for (int j = 0; j < resourceCount; j++) 
+            scanf("%d", &maximum[i][j]); 
+    } 
+ 
+    printf("Enter the allocation for each process:\n"); 
+    for (int i = 0; i < processCount; i++) { 
+        printf("Process %d: ", i); 
+        for (int j = 0; j < resourceCount; j++) 
+            scanf("%d", &allocation[i][j]); 
+    } 
+ 
+    calculateNeed(); 
+ 
+    if (isSafe()) { 
+        printf("System is in a safe state.\nSafe sequence: "); 
+        for (int i = 0; i < processCount; i++) 
+            printf("P%d ", safeSequence[i]); 
+        printf("\n"); 
+    } else { 
+        printf("System is not in a safe state.\n"); 
+    } 
+ 
+    return 0; 
+}
+
