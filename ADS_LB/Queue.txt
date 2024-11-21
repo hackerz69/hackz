@@ -1,0 +1,2103 @@
+                                                                       QUEUE
+
+/*
+Problem Statement:
+We Fly Anywhere Airlines (WFAA) Ticket Counter Simulation
+- Two separate waiting lines: Regular customers and Frequent flyers
+- Single ticket agent serving all passengers
+- Need to calculate average waiting time for both types of passengers
+- Implement different serving strategies
+- Use queue data structure to simulate waiting lines
+
+Key Components:
+1. Two queues for different passenger types
+2. Service time simulation
+3. Waiting time calculation
+4. Different serving strategies (e.g. alternate, priority to frequent flyers)
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX 100
+
+// Structure to represent a passenger
+struct Passenger {
+    int id;
+    int arrivalTime;
+    int serviceTime;
+    int waitingTime;
+};
+
+// Structure for Queue
+struct Queue {
+    struct Passenger passengers[MAX];
+    int front, rear;
+};
+
+// Initialize Queue
+void initQueue(struct Queue *q) {
+    q->front = q->rear = -1;
+}
+
+// Check if Queue is empty
+int isEmpty(struct Queue *q) {
+    return (q->front == -1);
+}
+
+// Check if Queue is full
+int isFull(struct Queue *q) {
+    return (q->rear == MAX-1);
+}
+
+// Add passenger to queue
+void enqueue(struct Queue *q, struct Passenger p) {
+    if(isFull(q)) {
+        printf("Queue is full!\n");
+        return;
+    }
+    if(isEmpty(q)) {
+        q->front = 0;
+    }
+    q->rear++;
+    q->passengers[q->rear] = p;
+}
+
+// Remove passenger from queue
+struct Passenger dequeue(struct Queue *q) {
+    struct Passenger p = {-1, 0, 0, 0};
+    if(isEmpty(q)) {
+        return p;
+    }
+    p = q->passengers[q->front];
+    if(q->front == q->rear) {
+        q->front = q->rear = -1;
+    } else {
+        q->front++;
+    }
+    return p;
+}
+
+// Simulate service with alternating strategy
+void simulateService(struct Queue *regular, struct Queue *frequent) {
+    int currentTime = 0;
+    int totalRegularWait = 0, totalFrequentWait = 0;
+    int regularCount = 0, frequentCount = 0;
+    int strategy;
+    
+    printf("\nSelect serving strategy:\n");
+    printf("1. Alternate between queues\n");
+    printf("2. Priority to Frequent Flyers\n");
+    printf("Enter choice (1 or 2): ");
+    scanf("%d", &strategy);
+    
+    while(!isEmpty(regular) || !isEmpty(frequent)) {
+        struct Passenger current;
+        
+        if(strategy == 1) {
+            // Alternating strategy
+            if(currentTime % 2 == 0 && !isEmpty(regular)) {
+                current = dequeue(regular);
+                regularCount++;
+            } else if(!isEmpty(frequent)) {
+                current = dequeue(frequent);
+                frequentCount++;
+            } else if(!isEmpty(regular)) {
+                current = dequeue(regular);
+                regularCount++;
+            }
+        } else {
+            // Priority to Frequent Flyers strategy
+            if(!isEmpty(frequent)) {
+                current = dequeue(frequent);
+                frequentCount++;
+            } else if(!isEmpty(regular)) {
+                current = dequeue(regular);
+                regularCount++;
+            }
+        }
+        
+        if(current.id != -1) {
+            current.waitingTime = currentTime - current.arrivalTime;
+            if(current.id < 1000) { // Regular passenger
+                totalRegularWait += current.waitingTime;
+            } else { // Frequent flyer
+                totalFrequentWait += current.waitingTime;
+            }
+            currentTime += current.serviceTime;
+        }
+    }
+    
+    // Calculate and display average waiting times
+    printf("\nSimulation Results:\n");
+    printf("Regular Passengers - Average Wait Time: %.2f minutes\n", 
+           regularCount > 0 ? (float)totalRegularWait/regularCount : 0);
+    printf("Frequent Flyers - Average Wait Time: %.2f minutes\n", 
+           frequentCount > 0 ? (float)totalFrequentWait/frequentCount : 0);
+}
+
+int main() {
+    struct Queue regularQueue, frequentQueue;
+    initQueue(&regularQueue);
+    initQueue(&frequentQueue);
+    
+    srand(time(NULL));
+    
+    // Generate sample passengers
+    int numRegular, numFrequent;
+    
+    printf("Enter number of regular passengers: ");
+    scanf("%d", &numRegular);
+    printf("Enter number of frequent flyers: ");
+    scanf("%d", &numFrequent);
+    
+    // Generate regular passengers
+    for(int i = 0; i < numRegular; i++) {
+        struct Passenger p;
+        p.id = i + 1;
+        p.arrivalTime = rand() % 60; // Random arrival time within first hour
+        p.serviceTime = 5 + rand() % 16; // Service time between 5-20 minutes
+        p.waitingTime = 0;
+        enqueue(&regularQueue, p);
+    }
+    
+    // Generate frequent flyers
+    for(int i = 0; i < numFrequent; i++) {
+        struct Passenger p;
+        p.id = 1000 + i + 1; // IDs 1000+ for frequent flyers
+        p.arrivalTime = rand() % 60;
+        p.serviceTime = 5 + rand() % 16;
+        p.waitingTime = 0;
+        enqueue(&frequentQueue, p);
+    }
+    
+    simulateService(&regularQueue, &frequentQueue);
+    
+    return 0;
+}
+
+/*An operating system assigns job to print queues based on the number ofpages to be printed (1 to 50 pages). You may assume that the system printers are able to print 10 page per minute. Smaller print jobs are printed before larger print jobs and print jobs are processed from a single print queue implemented as a priority queue). The system administrators would like to compare the time required to process a set of print jobs using 1, 2, or 3 system printers. Write a program which simulates processing 100 print jobs of varying lengths using either 1, 2, or 3 printers. Assume that a print request is made every minute and that the number of pages to print varies from 1 to 50 pages. To be fair, you will need to process the same set of print jobs each time you add a printer.The output from your program should indicate the order in which the jobs were received, the order in which they were printed, and the time required to process the set of print jobs. If more than one printer is being used, indicate which printer each job was printed on.*/
+/*
+
+The C program you are referring to is designed to simulate the processing of print jobs using a priority queue mechanism. The simulation is conducted for 1, 2, or 3 printers to compare the efficiency of processing times with varying numbers of printers. Here's a breakdown of the logic and components of the program:
+
+### Components of the Program:
+
+1. **Data Structures**:
+   - **PrintJob**: A structure (`struct`) that represents a print job with two properties: `jobNumber` and `numPages`. `jobNumber` is a unique identifier for each job, and `numPages` indicates how many pages the job contains.
+   - **PriorityQueue**: A structure that represents a priority queue. It contains an array of `PrintJob` structures and an integer `size` to keep track of the number of elements in the queue.
+
+2. **Priority Queue Operations**:
+   - **initQueue**: Initializes the priority queue by setting its size to zero.
+   - **enqueue**: Adds a new job to the priority queue. The jobs are inserted based on the number of pages, with fewer pages having higher priority (min-heap property).
+   - **dequeue**: Removes and returns the job with the least number of pages from the priority queue. This operation ensures that jobs with fewer pages are processed first.
+
+3. **Simulation Function (`simulatePrinters`)**:
+   - Initializes the priority queue and an array to track the time each printer is busy.
+   - Randomly generates print jobs with a random number of pages and enqueues them into the priority queue.
+   - Processes each job by determining the next available printer (the one that will be free the soonest) and assigns the job to that printer.
+   - Calculates the time taken to print based on the number of pages and updates the printer's busy time.
+   - After all jobs are processed, it calculates the total time taken by the busiest printer as this represents the total time required to process all jobs.
+
+4. **Main Function**:
+   - Sets up the random number generator.
+   - Calls the `simulatePrinters` function for 1, 2, and 3 printers to simulate and compare the processing times.
+
+### Key Logic:
+
+- **Priority Queue Management**: The priority queue is managed as a min-heap where the root element is always the job with the fewest pages. This allows the program to efficiently access and remove the smallest element when determining which job to process next.
+- **Printer Time Management**: Each printer's busy time is tracked individually. When a job is processed, the program checks all printers and assigns the job to the printer that will be free the soonest.
+- **Efficiency Comparison**: By simulating the job processing with different numbers of printers, the program can demonstrate how adding more printers can reduce the total processing time, thereby improving efficiency.
+
+This simulation helps in understanding the impact of parallel processing in a print job scenario and can be used to optimize resources in environments where print jobs are frequent and varied in size.
+        
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define N 100     // Number of jobs
+#define P 50      // Max pages
+#define PPM 10    // Pages per minute
+
+typedef struct {
+    int job, pages;
+} Job;
+
+typedef struct {
+    Job jobs[N];
+    int size;
+} Queue;
+
+void init(Queue *q) { 
+    q->size = 0; 
+}
+
+void add(Queue *q, Job j) {
+    int i = q->size++;
+    while(i && q->jobs[(i-1)/2].pages > j.pages) {
+        q->jobs[i] = q->jobs[(i-1)/2];
+        i = (i-1)/2;
+    }
+    q->jobs[i] = j;
+}
+
+Job get(Queue *q) {
+    Job min = q->jobs[0];
+    Job last = q->jobs[--q->size];
+    int i = 0, c;
+    
+    while((c = 2*i + 1) < q->size) {
+        if(c+1 < q->size && q->jobs[c+1].pages < q->jobs[c].pages) c++;
+        if(q->jobs[c].pages >= last.pages) break;
+        q->jobs[i] = q->jobs[c];
+        i = c;
+    }
+    q->jobs[i] = last;
+    return min;
+}
+
+void run(int n) {
+    Queue q;
+    init(&q);
+    int time = 0, pTime[n], i;
+    
+    // Initialize printers and add jobs
+    for(i = 0; i < n; i++) pTime[i] = 0;
+    for(i = 0; i < N; i++) 
+        add(&q, (Job){i, rand() % P + 1});
+    
+    printf("\n%d printer(s):\n", n);
+    
+    // Process jobs
+    for(i = 0; i < N; i++) {
+        Job j = get(&q);
+        int best = 0;
+        
+        // Find available printer
+        for(int k = 1; k < n; k++)
+            if(pTime[k] < pTime[best]) best = k;
+            
+        pTime[best] += (j.pages + PPM - 1) / PPM;  // Ceiling division
+        printf("Job %d (%d pages) -> P%d\n", j.job, j.pages, best+1);
+        
+        if(pTime[best] > time) time = pTime[best];
+    }
+    printf("Total time: %d min\n", time);
+}
+
+int main() {
+    srand(time(0));
+    for(int i = 1; i <= 3; i++) run(i);
+    return 0;
+}
+
+/*Array is given of size 'n'. We need to divide this array in 'm' numbers. After division each subarray is treated as a queue. If a one queue becomes full we should utilize the space of its next adjecent queue. Write a program to simulate above situation.*/
+
+
+/*
+I'll explain the print job simulation code step by step based on the workflow context:
+
+### Core Components and Logic
+
+1. **Data Structures**
+```c
+typedef struct {
+    int jobNumber;
+    int numPages;
+} PrintJob;
+
+typedef struct {
+    PrintJob jobs[NUM_JOBS];
+    int size;
+} PriorityQueue;
+```
+- `PrintJob`: Stores information about each print job (job number and number of pages)
+- `PriorityQueue`: Implements a [min-heap](https://en.wikipedia.org/wiki/Min-heap) where jobs with fewer pages get higher priority
+
+2. **Priority Queue Operations**
+
+- `initQueue()`: Initializes an empty priority queue
+- `enqueue()`: Adds a new print job while maintaining heap property (smaller jobs bubble up)
+- `dequeue()`: Removes and returns the job with smallest number of pages (highest priority)
+
+3. **Simulation Process**
+```c
+void simulatePrinters(int numPrinters) {
+    // Initialize queue and printer times
+    // Generate random print jobs
+    // Process jobs by assigning to available printers
+    // Track and report completion times
+}
+```
+
+### How It Works
+
+1. **Job Generation**
+- Creates 100 print jobs (NUM_JOBS)
+- Each job has 1-50 pages (MAX_PAGES)
+- Printers can print 10 pages per minute (PAGES_PER_MINUTE)
+
+2. **Job Assignment**
+- Jobs are stored in a priority queue (min-heap)
+- Smaller jobs get processed first
+- When multiple printers are available, the job goes to the printer with least current workload
+
+3. **Time Calculation**
+- Processing time = (pages ÷ 10) rounded up
+- Total time is the maximum time among all printers
+
+### Example Flow
+
+1. System receives various print jobs:
+```
+Job 1: 30 pages
+Job 2: 5 pages
+Job 3: 15 pages
+```
+
+2. Priority Queue orders them:
+```
+Job 2 (5 pages)  -> Processed first
+Job 3 (15 pages) -> Processed second
+Job 1 (30 pages) -> Processed last
+```
+
+3. With multiple printers:
+- Jobs are distributed to minimize total processing time
+- Each printer works independently
+- System tracks individual printer workloads
+
+The program runs this simulation three times:
+- Once with 1 printer
+- Once with 2 printers
+- Once with 3 printers
+
+This allows system administrators to compare processing times and efficiency with different printer configurations.
+        
+*/
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+    int *elements;
+    int front;
+    int rear;
+    int capacity;
+} Queue;
+
+void initQueue(Queue *q, int *base, int capacity) {
+    q->elements = base;
+    q->front = 0;
+    q->rear = -1;
+    q->capacity = capacity;
+}
+
+int enqueue(Queue *q, int element) {
+    if (q->rear == q->capacity - 1) {
+        return -1; // Queue is full
+    }
+    q->elements[++q->rear] = element;
+    return 0;
+}
+
+void processQueues(Queue *queues, int m, int element) {
+    for (int i = 0; i < m; i++) {
+        if (enqueue(&queues[i], element) == 0) {
+            printf("Inserted %d in Queue %d\n", element, i + 1);
+            return;
+        }
+    }
+    printf("All queues are full. Could not insert %d\n", element);
+}
+
+int main() {
+    int n, m;
+    printf("Enter the size of the array (n): ");
+    scanf("%d", &n);
+    printf("Enter the number of subarrays (m): ");
+    scanf("%d", &m);
+
+    int *array = (int *)malloc(n * sizeof(int));
+    printf("Enter %d elements for the array:\n", n);
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &array[i]);
+    }
+
+    Queue queues[m];
+    int baseSize = n / m;10
+
+    int extra = n % m;
+
+    // Initialize queues
+    for (int i = 0, start = 0; i < m; i++) {
+        int capacity = baseSize + (i < extra ? 1 : 0);
+        initQueue(&queues[i], array + start, capacity);
+        start += capacity;
+    }
+
+    // Simulate insertion of elements
+    for (int i = 0; i < n; i++) {
+        processQueues(queues, m, array[i]);
+    }
+
+    free(array);
+    return 0;
+}
+
+/*Write a menudriven program that maintains a queue of passengers waiting to see a ticket agent. The program user should be able to insert a new passenger at the rear of the queue, display the passenger at the front of the queue, or remove the passenger at the front of the queue. The program will display the number of passengers left in the queue just before it terminates.*/
+
+
+/*
+Workflow:Job Creation:Creates 100 random print jobs (1-50 pages each)Jobs are added to priority queue based on page countJob Processing:Smaller jobs (fewer pages) are processed firstJobs are assigned to the printer that will finish earliestEach printer can print 10 pages per minuteTime Calculation:Processing time = ⌈pages ÷ 10⌉ minutesTotal time is determined by the printer that takes longestComparison:Runs simulation for 1, 2, and 3 printersShows how adding printers affects total processing timeThis simulation helps system administrators understand how multiple printers can improve job processing efficiency by comparing completion times with different printer configurations.
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_PASSENGERS 100
+#define MAX_NAME_LENGTH 50
+
+// PrintJob stores information about each print job (job number and number of pages)
+// PriorityQueue implements a min-heap where jobs with fewer pages get higher priority
+typedef struct {
+    char name[MAX_NAME_LENGTH];
+    int ticketNumber;
+} Passenger;
+
+typedef struct {
+    Passenger passengers[MAX_PASSENGERS];
+    int front;
+    int rear;
+    int count;
+} Queue;
+
+// Initialize the queue
+void initQueue(Queue *q) {
+    q->front = 0;
+    q->rear = -1;
+    q->count = 0;
+}
+
+// Check if queue is full
+int isFull(Queue *q) {
+    return q->count == MAX_PASSENGERS;
+}
+
+// Check if queue is empty
+int isEmpty(Queue *q) {
+    return q->count == 0;
+}
+
+// Add passenger to rear of queue
+void enqueue(Queue *q, Passenger p) {
+    if (isFull(q)) {
+        printf("\nQueue is full! Cannot add more passengers.\n");
+        return;
+    }
+    q->rear = (q->rear + 1) % MAX_PASSENGERS;
+    q->passengers[q->rear] = p;
+    q->count++;
+    printf("\nPassenger added successfully!\n");
+}
+
+// Remove passenger from front of queue
+void dequeue(Queue *q) {
+    if (isEmpty(q)) {
+        printf("\nQueue is empty! No passengers to remove.\n");
+        return;
+    }
+    printf("\nPassenger %s (Ticket #%d) has been removed from queue.\n", 
+           q->passengers[q->front].name, 
+           q->passengers[q->front].ticketNumber);
+    q->front = (q->front + 1) % MAX_PASSENGERS;
+    q->count--;
+}
+
+// Display passenger at front of queue
+void displayFront(Queue *q) {
+    if (isEmpty(q)) {
+        printf("\nQueue is empty! No passengers in line.\n");
+        return;
+    }
+    printf("\nNext passenger: %s (Ticket #%d)\n", 
+           q->passengers[q->front].name, 
+           q->passengers[q->front].ticketNumber);
+}
+
+int main() {
+    Queue queue;
+    initQueue(&queue);
+    int choice;
+    int ticketCounter = 1001;  // Starting ticket number
+    
+    while (1) {
+        printf("\n=== Ticket Agent Queue System ===\n");
+        printf("1. Add passenger to queue\n");
+        printf("2. Remove passenger from queue\n");
+        printf("3. Display next passenger\n");
+        printf("4. Exit\n");
+        printf("Enter your choice (1-4): ");
+        scanf("%d", &choice);
+        
+        switch (choice) {
+            case 1: {
+                if (isFull(&queue)) {
+                    printf("\nQueue is full!\n");
+                    break;
+                }
+                Passenger newPassenger;
+                printf("Enter passenger name: ");
+                getchar();  // Clear input buffer
+                fgets(newPassenger.name, MAX_NAME_LENGTH, stdin);
+                newPassenger.name[strcspn(newPassenger.name, "\n")] = 0;  // Remove newline
+                newPassenger.ticketNumber = ticketCounter++;
+                enqueue(&queue, newPassenger);
+                break;
+            }
+            case 2:
+                dequeue(&queue);
+                break;
+            case 3:
+                displayFront(&queue);
+                break;
+            case 4:
+                printf("\nNumber of passengers remaining in queue: %d\n", queue.count);
+                printf("Thank you for using Ticket Agent Queue System!\n");
+                return 0;
+            default:
+                printf("\nInvalid choice! Please try again.\n");
+        }
+    }
+    
+    return 0;
+}
+
+/*Write a program which simulates the operation of a busy airport which has only two runways to handle all takeoffs and landings. You may assume that each takeoff or landing takes 15 minutes to complete. One runway request is made during each five minute time interval and likelihood of landing request is the same as for takeoff. Priority is given to planes requesting a landing. If a request cannot be honored it is added to a takeoff or landing queue. Your program should simulate 120 minutes of activity at the airport. Each request for runway clearance should be timestamped and added to the appropriate queue. The output from your program should include the final queue contents, the number of take offs completed, the number of landings completed, and the average number of minutes spent in each queue.*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_QUEUE_SIZE 100
+#define RUNWAY_TIME 15
+#define TIME_INTERVAL 5
+
+typedef struct {
+    int timestamp;
+    int request_type; // 0 for takeoff, 1 for landing
+} Request;
+
+int main() {
+    srand(time(NULL));
+
+    int takeoff_queue[MAX_QUEUE_SIZE], landing_queue[MAX_QUEUE_SIZE];
+    int takeoff_queue_size = 0, landing_queue_size = 0;
+    int runway1_status = 0, runway2_status = 0; // 0: idle, 1: in use
+    int total_time = 0, total_takeoffs = 0, total_landings = 0;
+    int total_takeoff_wait = 0, total_landing_wait = 0;
+
+    for (int time = 0; time < 120; time += TIME_INTERVAL) {
+        // Generate a new request
+        int request_type = rand() % 2; // 0 or 1
+        Request new_request = {time, request_type};
+
+        // Prioritize landing requests
+        if (request_type == 1) {
+            if (landing_queue_size < MAX_QUEUE_SIZE) {
+                landing_queue[landing_queue_size++] = new_request.timestamp;
+            }
+        } else {
+            if (takeoff_queue_size < MAX_QUEUE_SIZE) {
+                takeoff_queue[takeoff_queue_size++] = new_request.timestamp;
+            }
+        }
+
+        // Process runways
+        if (runway1_status == 0) {
+            if (landing_queue_size > 0) {
+                total_landing_wait += time - landing_queue[0];
+                landing_queue_size--;
+                runway1_status = RUNWAY_TIME;
+                total_landings++;
+            } else if (takeoff_queue_size > 0) {
+                total_takeoff_wait += time - takeoff_queue[0];
+                takeoff_queue_size--;
+                runway1_status = RUNWAY_TIME;
+                total_takeoffs++;
+            }
+        } else {
+            runway1_status--;
+        }
+
+        if (runway2_status == 0) {
+            if (landing_queue_size > 0) {
+                total_landing_wait += time - landing_queue[0];
+                landing_queue_size--;
+                runway2_status = RUNWAY_TIME;
+                total_landings++;
+            } else if (takeoff_queue_size > 0) {
+                total_takeoff_wait += time - takeoff_queue[0];
+                takeoff_queue_size--;
+                runway2_status = RUNWAY_TIME;
+                total_takeoffs++;
+            }
+        } else {
+            runway2_status--;
+        }
+    }
+
+    // Print final queue contents, statistics
+    printf("Final Landing Queue: ");
+    for (int i = 0; i < landing_queue_size; i++) {
+        printf("%d ", landing_queue[i]);
+    }
+    printf("\nFinal Takeoff Queue: ");
+    for (int i = 0; i < takeoff_queue_size; i++) {
+        printf("%d ", takeoff_queue[i]);
+    }
+    printf("\nTotal Takeoffs: %d\nTotal Landings: %d\n", total_takeoffs, total_landings);
+    printf("Average Takeoff Wait Time: %.2f minutes\n", (float)total_takeoff_wait / total_takeoffs);
+    printf("Average Landing Wait Time: %.2f minutes\n", (float)total_landing_wait / total_landings);
+
+    return 0;
+}
+/*
+Explanation:
+
+Request Generation: A random request is generated for takeoff or landing every 5 minutes.
+Queue Management: Landing requests are prioritized and added to the landing queue. Takeoff requests are added to the takeoff queue.
+Runway Processing:
+If a runway is idle, it processes the highest priority request (landing).
+If the landing queue is empty, it processes a takeoff request.
+The runway is occupied for 15 minutes.
+Statistics:
+Total takeoffs and landings are counted.
+Total wait time for each queue is calculated.
+Average wait times are calculated.
+Note:
+
+This is a basic simulation and can be extended to include more complex scenarios like weather conditions, emergency landings, etc.
+The queue size is limited to MAX_QUEUE_SIZE.
+The random number generator is seeded with the current time for more realistic simulations.*/
+
+
+/*Write a Program to implement double ended queue where user can add and remove the elements from both front and rear of the queue*/
+
+
+/*
+A deque is a data structure that allows insertion and deletion of elements from both ends. This implementation uses a circular array to efficiently manage the deque's operations.
+
+Key Concepts:
+
+Circular Array:
+
+The array is treated as circular, meaning the end is connected to the beginning. This allows us to efficiently utilize the array space.
+Two pointers, front and rear, keep track of the front and rear positions in the circular array.
+Enqueue Operations:
+
+enqueueFront:
+If the deque is empty, both front and rear are initialized to 0.
+Otherwise, front is decremented circularly using the modulo operation.
+The new element is inserted at the new front position.
+enqueueRear:
+If the deque is empty, both front and rear are initialized to 0.
+Otherwise, rear is incremented circularly using the modulo operation.
+The new element is inserted at the new rear position.
+Dequeue Operations:
+
+dequeueFront:
+If the deque is empty, an error is returned.
+The element at the front position is removed.
+If the deque becomes empty after removal, both front and rear are set to -1.
+Otherwise, front is incremented circularly.
+dequeueRear:
+If the deque is empty, an error is returned.
+The element at the rear position is removed.
+If the deque becomes empty after removal, both front and rear are set to -1.
+Otherwise, rear is decremented circularly.
+Key Points:
+
+The circular array implementation ensures efficient use of space, especially when the deque size is large.
+The modulo operation (% MAX_SIZE) is used to handle circular array indexing.
+The front and rear pointers are crucial for keeping track of the deque's state.
+The isEmpty and isFull functions check for empty and full conditions to avoid errors.
+By understanding these concepts and the implementation details, you can effectively use the deque data structure in various applications.
+*/
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_SIZE 100
+
+struct Dequeue {
+    int arr[MAX_SIZE];
+    int front;
+    int rear;
+};
+
+void initialize(struct Dequeue *dq) {
+    dq->front = -1;
+    dq->rear = -1;
+}
+
+int isEmpty(struct Dequeue *dq) {
+    return dq->front == -1;
+}
+
+int isFull(struct Dequeue *dq) {
+    return (dq->rear + 1) % MAX_SIZE == dq->front;
+}
+
+void enqueueFront(struct Dequeue *dq, int value) {
+    if (isFull(dq)) {
+        printf("Dequeue is Full\n");
+        return;
+    }
+
+    if (isEmpty(dq)) {
+        dq->front = dq->rear = 0;
+    } else {
+        dq->front = (dq->front - 1 + MAX_SIZE) % MAX_SIZE;
+    }
+
+    dq->arr[dq->front] = value;
+}
+
+void enqueueRear(struct Dequeue *dq, int value) {
+    if (isFull(dq)) {
+        printf("Dequeue is Full\n");
+        return;
+    }
+
+    if (isEmpty(dq)) {
+        dq->front = dq->rear = 0;
+    } else {
+        dq->rear = (dq->rear + 1) % MAX_SIZE;
+    }
+
+    dq->arr[dq->rear] = value;
+}
+
+int dequeueFront(struct Dequeue *dq) {
+    if (isEmpty(dq)) {
+        printf("Dequeue is Empty\n");
+        return -1;
+    }
+
+    int value = dq->arr[dq->front];
+
+    if (dq->front == dq->rear) {
+        dq->front = dq->rear = -1;
+    } else {
+        dq->front = (dq->front + 1) % MAX_SIZE;
+    }
+
+    return value;
+}
+
+int dequeueRear(struct Dequeue *dq) {
+    if (isEmpty(dq)) {
+        printf("Dequeue is Empty\n");
+        return -1;
+    }
+
+    int value = dq->arr[dq->rear];
+
+    if (dq->front == dq->rear) {
+        dq->front = dq->rear = -1;
+    } else {
+        dq->rear = (dq->rear - 1 + MAX_SIZE) % MAX_SIZE;
+    }
+
+    return value;
+}
+
+void printDequeue(struct Dequeue *dq) {
+    if (isEmpty(dq)) {
+        printf("Dequeue is Empty\n");
+        return;
+    }
+
+    int i = dq->front;
+    while (i != dq->rear) {
+        printf("%d ", dq->arr[i]);
+        i = (i + 1) % MAX_SIZE;
+    }
+    printf("%d\n", dq->arr[i]);
+}
+
+int main() {
+    struct Dequeue dq;
+    initialize(&dq);
+
+    enqueueFront(&dq, 10);
+    enqueueRear(&dq, 20);
+    enqueueFront(&dq, 30);
+    enqueueRear(&dq, 40);
+
+    printDequeue(&dq);
+
+    printf("Dequeued element from front: %d\n", dequeueFront(&dq));
+    printf("Dequeued element from rear: %d\n", dequeueRear(&dq));
+
+    printDequeue(&dq);
+
+    return 0;
+}
+
+/*Write a Program to implement circular double ended queue where user can add and remove the elements from both front and rear of the queue /*
+
+
+
+
+/*
+Logic Explanation:
+
+Circular Array Implementation:
+
+The CircularDeque structure uses a fixed-size array to store elements.
+The front and rear pointers keep track of the positions of the front and rear elements, respectively.
+The circular nature is achieved by using modulo operations to wrap around the array boundaries.
+Enqueue Operations:
+
+enqueueFront:
+Checks if the deque is full.
+If empty, initializes both front and rear to 0.
+Otherwise, decrements front circularly and inserts the element.
+enqueueRear:
+Checks if the deque is full.
+If empty, initializes both front and rear to 0.
+Otherwise, increments rear circularly and inserts the element.
+Dequeue Operations:
+
+dequeueFront:
+Checks if the deque is empty.
+Removes the element at the front position.
+If the deque becomes empty, resets front and rear.
+Otherwise, increments front circularly.
+dequeueRear:
+Checks if the deque is empty.
+Removes the element at the rear position.
+If the deque becomes empty, resets front and rear.
+Otherwise, decrements rear circularly.
+Print Circular Deque:
+
+Iterates through the array from front to rear, printing each element.
+Handles the circular nature by using modulo operations.
+This implementation provides a flexible and efficient way to manage a double-ended queue in a circular manner, allowing for efficient insertion and deletion from both ends.
+*/
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_SIZE 100
+
+struct CircularDeque {
+    int arr[MAX_SIZE];
+    int front;
+    int rear;
+};
+
+void initialize(struct CircularDeque *dq) {
+    dq->front = -1;
+    dq->rear = -1;
+}
+
+int isEmpty(struct CircularDeque *dq) {
+    return dq->front == -1;
+}
+
+int isFull(struct CircularDeque *dq) {
+    return (dq->rear + 1) % MAX_SIZE == dq->front;
+}
+
+void enqueueFront(struct CircularDeque *dq, int value) {
+    if (isFull(dq)) {
+        printf("Circular Dequeue is Full\n");
+        return;
+    }
+
+    if (isEmpty(dq)) {
+        dq->front = dq->rear = 0;
+    } else {
+        dq->front = (dq->front - 1 + MAX_SIZE) % MAX_SIZE;
+    }
+
+    dq->arr[dq->front] = value;
+}
+
+void enqueueRear(struct CircularDeque *dq, int value) {
+    if (isFull(dq)) {
+        printf("Circular Dequeue is Full\n");
+        return;
+    }
+
+    if (isEmpty(dq)) {
+        dq->front = dq->rear = 0;
+    } else {
+        dq->rear = (dq->rear + 1) % MAX_SIZE;
+    }
+
+    dq->arr[dq->rear] = value;
+}
+
+int dequeueFront(struct CircularDeque *dq) {
+    if (isEmpty(dq)) {
+        printf("Circular Dequeue is Empty\n");
+        return -1;
+    }
+
+    int value = dq->arr[dq->front];
+
+    if (dq->front == dq->rear) {
+        dq->front = dq->rear = -1;
+    } else {
+        dq->front = (dq->front + 1) % MAX_SIZE;
+    }
+
+    return value;
+}
+
+int dequeueRear(struct CircularDeque *dq) {
+    if (isEmpty(dq)) {
+        printf("Circular Dequeue is Empty\n");
+        return -1;
+    }
+
+    int value = dq->arr[dq->rear];
+
+    if (dq->front == dq->rear) {
+        dq->front = dq->rear = -1;
+    } else {
+        dq->rear = (dq->rear - 1 + MAX_SIZE) % MAX_SIZE;
+    }
+
+    return value;
+}
+
+void printCircularDeque(struct CircularDeque *dq) {
+    if (isEmpty(dq)) {
+        printf("Circular Dequeue is Empty\n");
+        return;
+    }
+
+    int i = dq->front;
+    do {
+        printf("%d ", dq->arr[i]);
+        i = (i + 1) % MAX_SIZE;
+    } while (i != dq->rear);
+    printf("%d\n", dq->arr[i]);
+}
+
+int main() {
+    struct CircularDeque dq;
+    initialize(&dq);
+
+    enqueueFront(&dq, 10);
+    enqueueRear(&dq, 20);
+    enqueueFront(&dq, 30);
+    enqueueRear(&dq, 40);
+
+    printCircularDeque(&dq);
+
+    printf("Dequeued element from front: %d\n", dequeueFront(&dq));
+    printf("Dequeued element from rear: %d\n", dequeueRear(&dq));
+
+    printCircularDeque(&dq);
+
+    return 0;
+}
+
+/*
+Write a Program to keep track of patients as they check into a medical clinic, assigning patients to doctors on a firstcome, first served basis.  */
+
+
+/*
+Explanation:
+
+Data Structures:
+
+Patient structure: Stores patient's name and arrival time.
+Doctor structure: Stores doctor's name and available time.
+Input:
+
+Reads the number of patients and doctors.
+Reads the details of each patient (name and arrival time).
+Reads the details of each doctor (name and available time).
+Patient Assignment:
+
+Iterates through the doctors.
+For each doctor, iterates through the patients, assigning them to the doctor based on their arrival time and the doctor's availability.
+The assignment follows a first-come, first-served basis.
+Note:
+
+This code assumes that patients arrive in order of increasing arrival time.
+For more complex scenarios, you might consider using a priority queue to handle patients with different priorities.
+You can also add features like waiting time calculation, patient status tracking, and doctor scheduling optimization.
+To handle real-time scenarios, you might need to use threads or asynchronous programming techniques.
+This code provides a basic framework for patient assignment in a medical clinic. You can customize it further to fit specific requirements and add more advanced features.
+
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_PATIENTS 100
+#define MAX_DOCTORS 5
+
+struct Patient {
+    char name[50];
+    int arrival_time;
+};
+
+struct Doctor {
+    char name[50];
+    int available_time;
+};
+
+int main() {
+    struct Patient patients[MAX_PATIENTS];
+    struct Doctor doctors[MAX_DOCTORS];
+    int num_patients = 0, num_doctors = 0;
+
+    // Input patient and doctor details
+    printf("Enter the number of patients: ");
+    scanf("%d", &num_patients);
+
+    printf("Enter patient details (name, arrival time):\n");
+    for (int i = 0; i < num_patients; i++) {
+        scanf("%s %d", patients[i].name, &patients[i].arrival_time);
+    }
+
+    printf("Enter the number of doctors: ");
+    scanf("%d", &num_doctors);
+
+    printf("Enter doctor details (name, available time):\n");
+    for (int i = 0; i < num_doctors; i++) {
+        scanf("%s %d", doctors[i].name, &doctors[i].available_time);
+    }
+
+    // Assign patients to doctors
+    int patient_index = 0;
+    for (int i = 0; i < num_doctors; i++) {
+        printf("Doctor %s is assigned to:\n", doctors[i].name);
+        while (patient_index < num_patients && patients[patient_index].arrival_time <= doctors[i].available_time) {
+            printf("- %s\n", patients[patient_index].name);
+            patient_index++;
+        }
+    }
+
+    return 0;
+}
+
+
+/*There is a lift in our college. Students, staff and guest are utilizing it. Students are using the lift when no staff is there. Whenever staff is in the lift students are moving out of the lift. Whenever HOD's / Dean's / Director want to use lift then staff are moving out of the lift. It means every entity which is using the lift is having some priority. High priority entity will be served first. Simulate this situation by using appropriate queue.*/
+
+/*
+## Logic Explanation
+
+**1. Data Structures:**
+   - **Person:** Represents a person with two attributes:
+     - `priority`: An integer indicating the person's priority (0 for student, 1 for staff, 2 for HOD/Dean/Director).
+     - `arrival_time`: The time at which the person arrived.
+   - **Queue:** A data structure to store people in a first-in-first-out (FIFO) manner.
+
+**2. Queue Operations:**
+   - **initializeQueue:** Initializes the queue by setting `front` and `rear` to -1.
+   - **isEmpty:** Checks if the queue is empty.
+   - **isFull:** Checks if the queue is full.
+   - **enqueue:** Adds a person to the rear of the queue.
+   - **dequeue:** Removes and returns the person at the front of the queue.
+
+**3. Simulation Loop:**
+   - **Time Simulation:** The code simulates the passage of time in units of 1.
+   - **Person Arrival:** A person arrives randomly, with a certain probability.
+   - **Priority-Based Enqueue:** The newly arrived person is enqueued based on their priority.
+   - **Lift Service:** If the lift is not empty, the person with the highest priority is dequeued and served.
+   - **Output:** The code prints messages to indicate the arrival and service of people, providing a clear understanding of the simulation process.
+
+**Key Points:**
+
+- **Priority-Based Service:** The queue ensures that higher-priority people are served first, even if they arrive later.
+- **Random Arrival:** The simulation introduces randomness to mimic real-world scenarios where people arrive at different times.
+- **Clear Output:** The output provides a detailed log of arrivals and services, making it easy to follow the simulation.
+
+By following these steps, the code effectively simulates the lift scenario, considering the priority-based service and the random arrival of people.
+
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_QUEUE_SIZE 100
+
+struct Person {
+    int priority; // 0: Student, 1: Staff, 2: HOD/Dean/Director
+    int arrival_time;
+};
+
+struct Queue {
+    struct Person queue[MAX_QUEUE_SIZE];
+    int front, rear;
+};
+
+void initializeQueue(struct Queue *q) {
+    q->front = -1;
+    q->rear = -1;
+}
+
+int isEmpty(struct Queue *q) {
+    return q->front == -1;
+}
+
+int isFull(struct Queue *q) {
+    return (q->rear + 1) % MAX_QUEUE_SIZE == q->front;
+}
+
+void enqueue(struct Queue *q, struct Person person) {
+    if (isFull(q)) {
+        printf("Queue is full\n");
+        return;
+    }
+
+    if (isEmpty(q)) {
+        q->front = q->rear = 0;
+    } else {
+        q->rear = (q->rear + 1) % MAX_QUEUE_SIZE;
+    }
+
+    q->queue[q->rear] = person;
+}
+
+struct Person dequeue(struct Queue *q) {
+    if (isEmpty(q)) {
+        printf("Queue is empty\n");
+        struct Person dummy;
+        dummy.priority = -1;
+        return dummy;
+    }
+
+    struct Person person = q->queue[q->front];
+
+    if (q->front == q->rear) {
+        q->front = q->rear = -1;
+    } else {
+        q->front = (q->front + 1) % MAX_QUEUE_SIZE;
+    }
+
+    return person;
+}
+
+int main() {
+    struct Queue liftQueue;
+    initializeQueue(&liftQueue);
+
+    srand(time(NULL)); // Seed the random number generator
+
+    // Simulate 100 time units
+    for (int time = 0; time < 100; time++) {
+        // Simulate arrival of a person
+        if (rand() % 5 == 0) { // Adjust probability as needed
+            struct Person person;
+            person.priority = rand() % 3;
+            person.arrival_time = time;
+            enqueue(&liftQueue, person);
+
+            if (person.priority == 0) {
+                printf("Student arrived at time %d\n", time);
+            } else if (person.priority == 1) {
+                printf("Staff arrived at time %d\n", time);
+            } else {
+                printf("HOD/Dean/Director arrived at time %d\n", time);
+            }
+        }
+
+        // Simulate lift service
+        if (!isEmpty(&liftQueue)) {
+            struct Person servedPerson = dequeue(&liftQueue);
+            if (servedPerson.priority == 0) {
+                printf("Student served at time %d\n", time);
+            } else if (servedPerson.priority == 1) {
+                printf("Staff served at time %d\n", time);
+            } else {
+                printf("HOD/Dean/Director served at time %d\n", time);
+            }
+        }
+    }
+
+    return 0;
+}
+
+/*Assume that there are three jobs to be done (J1, J2, J3) by using queue. Each is requiring different time for processing i.e. (t1, t2, t3), which is greater than fixed time quantum 'n'. After 'n' time the current job is forcefully preempted/ stopped and remaining task of the current job is added at last of the queue. then next job is taken for processing.*/
+
+
+/*
+## Logic Explanation
+
+**1. Data Structures:**
+
+* **Job:** Represents a job with two attributes:
+  - `job_id`: Unique identifier for the job.
+  - `burst_time`: Remaining time required to complete the job.
+* **Queue:** A data structure to store jobs in a first-in-first-out (FIFO) manner.
+
+**2. Queue Operations:**
+
+* **initializeQueue:** Initializes the queue by setting `front` and `rear` to -1.
+* **isEmpty:** Checks if the queue is empty.
+* **isFull:** Checks if the queue is full.
+* **enqueue:** Adds a job to the rear of the queue.
+* **dequeue:** Removes and returns the job at the front of the queue.
+
+**3. Round Robin Scheduling Algorithm:**
+
+1. **Job Enqueuing:**
+   - All jobs are initially enqueued into the ready queue.
+2. **Time Quantum:**
+   - A fixed time quantum is defined, representing the maximum time a job can execute in a single time slice.
+3. **Job Execution:**
+   - The job at the front of the queue is dequeued.
+   - The job is executed for the time quantum or until it completes, whichever comes first.
+   - The remaining burst time of the job is updated.
+4. **Re-enqueuing:**
+   - If the job is not completed after the time quantum, it is re-enqueued for later execution.
+5. **Loop:**
+   - The process of dequeuing, executing, and re-enqueuing continues until the ready queue is empty.
+
+**Key Points:**
+
+- **Fairness:** Round Robin ensures that each job gets a fair share of CPU time.
+- **Context Switching:** The scheduler switches between jobs after each time quantum, incurring some overhead.
+- **Time Quantum:** The choice of time quantum affects the performance of the scheduler. A smaller time quantum can lead to more context switches, while a larger time quantum may result in longer waiting times for low-priority jobs.
+- **Job Prioritization:** In more advanced scheduling algorithms, jobs can be prioritized based on factors like importance or deadline.
+
+By following these steps and considering the factors mentioned above, the code effectively simulates the Round Robin scheduling algorithm.
+
+*/
+
+#include <stdio.h>
+
+#define MAX_QUEUE_SIZE 10
+
+struct Job {
+    int job_id;
+    int burst_time; // Remaining time
+};
+
+struct Queue {
+    struct Job jobs[MAX_QUEUE_SIZE];
+    int front, rear;
+};
+
+void initializeQueue(struct Queue *q) {
+    q->front = -1;
+    q->rear = -1;
+}
+
+int isEmpty(struct Queue *q) {
+    return q->front == -1;
+}
+
+int isFull(struct Queue *q) {
+    return (q->rear + 1) % MAX_QUEUE_SIZE == q->front;
+}
+
+void enqueue(struct Queue *q, struct Job job) {
+    if (isFull(q)) {
+        printf("Queue is full\n");
+        return;
+    }
+
+    if (isEmpty(q)) {
+        q->front = q->rear = 0;
+    } else {
+        q->rear = (q->rear + 1) % MAX_QUEUE_SIZE;
+    }
+
+    q->jobs[q->rear] = job;
+}
+
+struct Job dequeue(struct Queue *q) {
+    if (isEmpty(q)) {
+        printf("Queue is empty\n");
+        struct Job dummy;
+        dummy.job_id = -1;
+        dummy.burst_time = -1;
+        return dummy;
+    }
+
+    struct Job job = q->jobs[q->front];
+
+    if (q->front == q->rear) {
+        q->front = q->rear = -1;
+    } else {
+        q->front = (q->front + 1) % MAX_QUEUE_SIZE;
+    }
+
+    return job;
+}
+
+int main() {
+    int num_jobs, time_quantum;
+
+    printf("Enter the number of jobs: ");
+    scanf("%d", &num_jobs);
+
+    struct Job jobs[num_jobs];
+
+    printf("Enter the burst time for each job:\n");
+    for (int i = 0; i < num_jobs; i++) {
+        jobs[i].job_id = i + 1;
+        printf("Job %d: ", i + 1);
+        scanf("%d", &jobs[i].burst_time);
+    }
+
+    printf("Enter the time quantum: ");
+    scanf("%d", &time_quantum);
+
+    struct Queue readyQueue;
+    initializeQueue(&readyQueue);
+
+    // Enqueue all jobs
+    for (int i = 0; i < num_jobs; i++) {
+        enqueue(&readyQueue, jobs[i]);
+    }
+
+    printf("\nJob\tBurst Time\n");
+    for (int i = 0; i < num_jobs; i++) {
+        printf("%d\t%d\n", jobs[i].job_id, jobs[i].burst_time);
+    }
+
+    printf("\nRound Robin Scheduling:\n");
+
+    int time = 0;
+    while (!isEmpty(&readyQueue)) {
+        struct Job currentJob = dequeue(&readyQueue);
+
+        int executed_time = currentJob.burst_time > time_quantum ? time_quantum : currentJob.burst_time;
+        currentJob.burst_time -= executed_time;
+        time += executed_time;
+
+        printf("Job %d executed for %d time units. Remaining time: %d\n", 
+               currentJob.job_id, executed_time, currentJob.burst_time);
+
+        if (currentJob.burst_time > 0) {
+            enqueue(&readyQueue, currentJob);
+        }
+    }
+
+    printf("\nTotal time taken: %d\n", time);
+
+    return 0;
+}
+
+/*Write a Program to simulate the following situation. Computer is a multitasking device. We need to download some document as well as listen music and play game simultaneously. There is a system queue which decides which task to be done first. Assume that for download application priority is highest and game playing is having lowest priority. After completion of one type of tasks like all download operations then the second queue will be processed.*/
+
+/*
+## Logic Explanation
+
+**1. Data Structures:**
+
+- **Task:** Represents a task with two attributes:
+  - `priority`: An integer indicating the task's priority (0 for download, 1 for music, 2 for game).
+  - `burst_time`: The remaining time required to complete the task.
+- **Queue:** A data structure to store tasks in a first-in-first-out (FIFO) manner.
+
+**2. Queue Operations:**
+- **initializeQueue:** Initializes the queue by setting `front` and `rear` to -1.
+- **isEmpty:** Checks if the queue is empty.
+- **isFull:** Checks if the queue is full.
+- **enqueue:** Adds a task to the rear of the queue.
+- **dequeue:** Removes and returns the task at the front of the queue.
+
+**3. Task Scheduling:**
+1. **Task Generation:**
+   - Random tasks are generated with random priorities (download, music, or game) and random burst times.
+2. **Task Enqueuing:**
+   - Generated tasks are enqueued into their respective priority queues (download, music, or game).
+3. **Task Processing:**
+   - The system iteratively processes tasks from the highest priority queue (download) to the lowest (game).
+   - For each task in the current priority queue:
+     - The task is dequeued.
+     - Its burst time is decremented.
+     - If the burst time becomes zero, the task is considered completed.
+     - If the burst time is still positive, the task is re-enqueued for later processing.
+
+**Key Points:**
+
+- **Priority-Based Scheduling:** Tasks are processed based on their priority level.
+- **Time-Slicing:** Each task is executed for a fixed time quantum (implicitly one unit in this code).
+- **Context Switching:** The system switches between tasks when a task's time quantum expires or it finishes.
+- **Queue Management:** The `Queue` data structure is used to manage tasks within each priority level.
+
+This simulation provides a simplified model of a multitasking system, demonstrating how tasks with different priorities can be scheduled and executed. It's a basic implementation and can be extended to include more complex scenarios, such as time-sharing, resource allocation, and task preemption.
+
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+#define MAX_QUEUE_SIZE 100
+
+struct Task {
+    int priority; // 0: Download, 1: Music, 2: Game
+    int burst_time;
+};
+
+struct Queue {
+    struct Task tasks[MAX_QUEUE_SIZE];
+    int front, rear;
+};
+
+void initializeQueue(struct Queue *q) {
+    q->front = -1;
+    q->rear = -1;
+}
+
+int isEmpty(struct Queue *q) {
+    return q->front == -1;
+}
+
+int isFull(struct Queue *q) {
+    return (q->rear + 1) % MAX_QUEUE_SIZE == q->front;
+}
+
+void enqueue(struct Queue *q, struct Task task) {
+    if (isFull(q)) {
+        printf("Queue is full\n");
+        return;
+    }
+
+    if (isEmpty(q)) {
+        q->front = q->rear = 0;
+    } else {
+        q->rear = (q->rear + 1) % MAX_QUEUE_SIZE;
+    }
+
+    q->tasks[q->rear] = task;
+}
+
+struct Task dequeue(struct Queue *q) {
+    if (isEmpty(q)) {
+        printf("Queue is empty\n");
+        struct Task dummy;
+        dummy.priority = -1;
+        dummy.burst_time = -1;
+        return dummy;
+    }
+
+    struct Task task = q->tasks[q->front];
+
+    if (q->front == q->rear) {
+        q->front = q->rear = -1;
+    } else {
+        q->front = (q->front + 1) % MAX_QUEUE_SIZE;
+    }
+
+    return task;
+}
+
+int main() {
+    struct Queue downloadQueue, musicQueue, gameQueue;
+    initializeQueue(&downloadQueue);
+    initializeQueue(&musicQueue);
+    initializeQueue(&gameQueue);
+
+    srand(time(NULL));
+
+    // Generate random tasks and enqueue them
+    printf("Initial Task Queue:\n");
+    for (int i = 0; i < 10; i++) {
+        struct Task task;
+        task.priority = rand() % 3;
+        task.burst_time = rand() % 10 + 1;
+
+        switch (task.priority) {
+            case 0:
+                enqueue(&downloadQueue, task);
+                printf("Download Task %d: Burst Time = %d\n", i + 1, task.burst_time);
+                break;
+            case 1:
+                enqueue(&musicQueue, task);
+                printf("Music Task %d: Burst Time = %d\n", i + 1, task.burst_time);
+                break;
+            case 2:
+                enqueue(&gameQueue, task);
+                printf("Game Task %d: Burst Time = %d\n", i + 1, task.burst_time);
+                break;
+        }
+    }
+
+    printf("\nTask Execution:\n");
+
+    // Simulate task processing
+    while (!isEmpty(&downloadQueue) || !isEmpty(&musicQueue) || !isEmpty(&gameQueue)) {
+        // Process download tasks first
+        while (!isEmpty(&downloadQueue)) {
+            struct Task task = dequeue(&downloadQueue);
+            task.burst_time--;
+            // printf("Processing Download Task: Remaining Time = %d\n", task.burst_time);
+            if (task.burst_time > 0) {
+                enqueue(&downloadQueue, task);
+            } else {
+                printf("Download Task Completed\n");
+            }
+        }
+
+        // Process music tasks
+        while (!isEmpty(&musicQueue)) {
+            // Similar to download tasks
+            struct Task task = dequeue(&musicQueue);
+            task.burst_time--;
+            // printf("Processing Music Task: Remaining Time = %d\n", task.burst_time);
+            if (task.burst_time > 0) {
+                enqueue(&musicQueue, task);
+            } else {
+                printf("Music Task Completed\n");
+            }
+        }
+
+        // Process game tasks
+        while (!isEmpty(&gameQueue)) {
+            // Similar to download tasks
+            struct Task task = dequeue(&gameQueue);
+            task.burst_time--;
+            // printf("Processing Game Task: Remaining Time = %d\n", task.burst_time);
+            if (task.burst_time > 0) {
+                enqueue(&gameQueue, task);
+            } else {
+                printf("Game Task Completed\n");
+            }
+        }
+    }
+
+    return 0;
+}
+
+/*Write a Program for A bank simulation of its teller operation to see how waiting times would be affected by adding another teller.*/
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Queue structure to manage customer waiting times
+struct Queue {
+    int *data;
+    int front;
+    int rear;
+    int capacity;
+};
+
+// Function to create a queue
+struct Queue* createQueue(int capacity) {
+    struct Queue* queue = (struct Queue*)malloc(sizeof(struct Queue));
+    queue->capacity = capacity;
+    queue->front = queue->rear = -1;
+    queue->data = (int*)malloc(capacity * sizeof(int));
+    return queue;
+}
+
+// Function to check if the queue is empty
+int isEmpty(struct Queue* queue) {
+    return queue->front == -1;
+}
+
+// Function to check if the queue is full
+int isFull(struct Queue* queue) {
+    return queue->rear == queue->capacity - 1;
+}
+
+// Function to add a customer to the queue
+void enqueue(struct Queue* queue, int customerId) {
+    if (isFull(queue)) {
+        printf("Queue is full. Cannot add more customers.\n");
+        return;
+    }
+    if (queue->front == -1) {
+        queue->front = 0;
+    }
+    queue->rear++;
+    queue->data[queue->rear] = customerId;
+}
+
+// Function to remove a customer from the queue (serve them)
+int dequeue(struct Queue* queue) {
+    if (isEmpty(queue)) {
+        printf("Queue is empty.\n");
+        return -1;
+    }
+    int customerId = queue->data[queue->front];
+    queue->front++;
+    if (queue->front > queue->rear) {
+        queue->front = queue->rear = -1;
+    }
+    return customerId;
+}
+
+// Function to simulate the bank with a single teller
+void singleTeller(struct Queue* queue) {
+    int time = 0;
+    while (!isEmpty(queue)) {
+        int customerId = dequeue(queue);
+        printf("Customer %d is being served by Teller 1 at time %d.\n", customerId, time);
+        time += 5;  // Each customer is served for 5 units of time
+    }
+}
+
+// Function to simulate the bank with two tellers
+void twoTellers(struct Queue* queue) {
+    int time1 = 0, time2 = 0;
+    while (!isEmpty(queue)) {
+        if (time1 <= time2) {
+            int customerId = dequeue(queue);
+            printf("Customer %d is being served by Teller 1 at time %d.\n", customerId, time1);
+            time1 += 5;  // Each customer is served for 5 units of time
+        } else {
+            int customerId = dequeue(queue);
+            printf("Customer %d is being served by Teller 2 at time %d.\n", customerId, time2);
+            time2 += 5;  // Each customer is served for 5 units of time
+        }
+    }
+}
+
+int main() {
+    int capacity, numCustomers, customerId;
+
+    // Prompt the user for the queue capacity
+    printf("Enter the maximum capacity of the queue: ");
+    scanf("%d", &capacity);
+
+    // Edge case: if the capacity is non-positive
+    if (capacity <= 0) {
+        printf("Invalid queue capacity. Exiting...\n");
+        return 1;
+    }
+
+    // Create a queue with the given capacity
+    struct Queue* queue = createQueue(capacity);
+
+    // Prompt the user for the number of customers
+    printf("Enter the number of customers: ");
+    scanf("%d", &numCustomers);
+
+    // Edge case: if the number of customers is non-positive or exceeds the queue capacity
+    if (numCustomers <= 0 || numCustomers > capacity) {
+        printf("Invalid number of customers. Exiting...\n");
+        free(queue->data);
+        free(queue);
+        return 1;
+    }
+
+    // Prompt the user to enter the customer IDs
+    printf("Enter the customer IDs:\n");
+    for (int i = 0; i < numCustomers; i++) {
+        scanf("%d", &customerId);
+        enqueue(queue, customerId);
+    }
+
+    // Simulate the bank with a single teller
+    printf("\nSimulation with a single teller:\n");
+    singleTeller(queue);
+
+     printf("Enter the customer IDs:\n");
+    // Reinitialize the queue for the next simulation
+    queue->front = queue->rear = -1;
+    for (int i = 0; i < numCustomers; i++) {
+        scanf("%d", &customerId);  // Re-enter customer IDs for the second simulation
+        enqueue(queue, customerId);
+    }
+
+    // Simulate the bank with two tellers
+    printf("\nSimulation with two tellers:\n");
+    twoTellers(queue);
+
+    // Free allocated memory
+    free(queue->data);
+    free(queue);
+
+    return 0;
+}
+
+/*Write a Program to implement multiple queue i.e. two queues using array and perform following operations on it. A. Addq, B. Delq, C. Display Queue.*/
+
+
+#include <stdio.h>
+
+#define MAX 100 // Maximum size of the array
+
+typedef struct {
+    int arr[MAX]; // Shared array for two queues
+    int front1, rear1; // Front and rear pointers for Queue 1
+    int front2, rear2; // Front and rear pointers for Queue 2
+} TwoQueues;
+
+// Function to initialize the queues
+void initializeQueues(TwoQueues *queues) {
+    queues->front1 = -1;
+    queues->rear1 = -1;
+    queues->front2 = MAX;
+    queues->rear2 = MAX;
+}
+
+// Function to add an element to Queue 1
+void addq1(TwoQueues *queues, int element) {
+    if (queues->rear1 + 1 == queues->rear2) {
+        printf("Queue 1 Overflow.\n");
+        return;
+    }
+    if (queues->front1 == -1) {
+        queues->front1 = 0;
+    }
+    queues->arr[++queues->rear1] = element;
+}
+
+// Function to add an element to Queue 2
+void addq2(TwoQueues *queues, int element) {
+    if (queues->rear1 + 1 == queues->rear2) {
+        printf("Queue 2 Overflow.\n");
+        return;
+    }
+    if (queues->front2 == MAX) {
+        queues->front2 = MAX - 1;
+    }
+    queues->arr[--queues->rear2] = element;
+}
+
+// Function to delete an element from Queue 1
+int delq1(TwoQueues *queues) {
+    if (queues->front1 == -1 || queues->front1 > queues->rear1) {
+        printf("Queue 1 Underflow.\n");
+        return -1;
+    }
+    return queues->arr[queues->front1++];
+}
+
+// Function to delete an element from Queue 2
+int delq2(TwoQueues *queues) {
+    if (queues->front2 == MAX || queues->front2 < queues->rear2) {
+        printf("Queue 2 Underflow.\n");
+        return -1;
+    }
+    return queues->arr[queues->front2--];
+}
+
+// Function to display Queue 1
+void displayQueue1(TwoQueues *queues) {
+    if (queues->front1 == -1 || queues->front1 > queues->rear1) {
+        printf("Queue 1 is empty.\n");
+        return;
+    }
+    printf("Queue 1: ");
+    for (int i = queues->front1; i <= queues->rear1; i++) {
+        printf("%d ", queues->arr[i]);
+    }
+    printf("\n");
+}
+
+// Function to display Queue 2
+void displayQueue2(TwoQueues *queues) {
+    if (queues->front2 == MAX || queues->front2 < queues->rear2) {
+        printf("Queue 2 is empty.\n");
+        return;
+    }
+    printf("Queue 2: ");
+    for (int i = queues->front2; i >= queues->rear2; i--) {
+        printf("%d ", queues->arr[i]);
+    }
+    printf("\n");
+}
+
+// Main function
+int main() {
+    TwoQueues queues;
+    initializeQueues(&queues);
+
+    int choice, queueNumber, element;
+
+    while (1) {
+        printf("\n1. Add to Queue\n2. Delete from Queue\n3. Display Queue\n4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter queue number (1 or 2): ");
+                scanf("%d", &queueNumber);
+                printf("Enter element to add: ");
+                scanf("%d", &element);
+                if (queueNumber == 1) {
+                    addq1(&queues, element);
+                } else if (queueNumber == 2) {
+                    addq2(&queues, element);
+                } else {
+                    printf("Invalid queue number.\n");
+                }
+                break;
+
+            case 2:
+                printf("Enter queue number (1 or 2): ");
+                scanf("%d", &queueNumber);
+                if (queueNumber == 1) {
+                    element = delq1(&queues);
+                    if (element != -1) {
+                        printf("Deleted from Queue 1: %d\n", element);
+                    }
+                } else if (queueNumber == 2) {
+                    element = delq2(&queues);
+                    if (element != -1) {
+                        printf("Deleted from Queue 2: %d\n", element);
+                    }
+                } else {
+                    printf("Invalid queue number.\n");
+                }
+                break;
+
+            case 3:
+                printf("Enter queue number (1 or 2): ");
+                scanf("%d", &queueNumber);
+                if (queueNumber == 1) {
+                    displayQueue1(&queues);
+                } else if (queueNumber == 2) {
+                    displayQueue2(&queues);
+                } else {
+                    printf("Invalid queue number.\n");
+                }
+                break;
+
+            case 4:
+                return 0;
+
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+
+    return 0;
+}
+
+/*Array is given of size 'n'. We need to divide this array in 'm' numbers. After division each subarray is treated as a queue. If a one queue becomes full we should utilize the space of its next adjacent queue. Write a program to simulate above situation.*/
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX 5 // Maximum size of any queue
+
+// Structure to represent a queue
+typedef struct Queue {
+    int data[MAX]; // Array to store elements
+    int front, rear; // Indices for the front and rear of the queue
+} Queue;
+
+// Initialize the queue
+void initQueue(Queue *q) {
+    q->front = -1;
+    q->rear = -1;
+}
+
+// Check if the queue is full
+int isFull(Queue *q) {
+    return (q->rear == MAX - 1);
+}
+
+// Check if the queue is empty
+int isEmpty(Queue *q) {
+    return (q->front == -1);
+}
+
+// Enqueue function
+void enqueue(Queue *q, int value) {
+    if (isFull(q)) {
+        printf("Queue is full! Cannot enqueue %d\n", value);
+        return;
+    }
+    if (isEmpty(q)) {
+        q->front = 0;
+    }
+    q->rear++;
+    q->data[q->rear] = value;
+}
+
+// Dequeue function
+int dequeue(Queue *q) {
+    if (isEmpty(q)) {
+        printf("Queue is empty! Cannot dequeue\n");
+        return -1;
+    }
+    int value = q->data[q->front];
+    q->front++;
+    if (q->front > q->rear) { // Reset queue if empty
+        q->front = q->rear = -1;
+    }
+    return value;
+}
+
+// Function to divide the array into 'm' queues and manage overflow
+void divideAndQueue(int arr[], int n, int m) {
+    // Create 'm' queues
+    Queue *queues = (Queue *)malloc(m * sizeof(Queue));
+    for (int i = 0; i < m; i++) {
+        initQueue(&queues[i]);
+    }
+
+    // Distribute elements of the array into queues
+    int currentQueue = 0;  // Start with the first queue
+    for (int i = 0; i < n; i++) {
+        if (isFull(&queues[currentQueue])) {
+            // If current queue is full, move to the next one
+            currentQueue++;
+            if (currentQueue >= m) {
+                printf("All queues are full, remaining elements cannot be added.\n");
+                break;
+            }
+        }
+        enqueue(&queues[currentQueue], arr[i]);
+    }
+
+    // Display the content of all the queues
+    for (int i = 0; i < m; i++) {
+        printf("Queue %d: ", i + 1);
+        while (!isEmpty(&queues[i])) {
+            printf("%d ", dequeue(&queues[i]));
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    int n, m;
+
+    // Take the size of the array and number of queues from user
+    printf("Enter the number of elements in the array: ");
+    scanf("%d", &n);
+
+     int *arr = (int *)malloc(n * sizeof(int));
+
+    printf("Enter the elements of the array:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &arr[i]);
+    }
+
+    printf("Enter the number of queues (m): ");
+    scanf("%d", &m);
+
+    // Call the divide and queue function
+    divideAndQueue(arr, n, m);
+
+    return 0;
+}
+
+/*Write an algorithm Replace that takes a queue and two item. If the first item is in the queue, replace it with the second item, leaving the rest of the queue unchanged.*/
+
+#include <stdio.h>
+
+#define MAX 10 // Maximum size of the queue
+
+// Function to enqueue an element into the queue
+void enqueue(int queue[], int *rear, int element) {
+    if (*rear == MAX - 1) {
+        printf("Queue is full. Cannot insert %d.\n", element);
+        return;
+    }
+    (*rear)++;
+    queue[*rear] = element;
+}
+
+// Function to dequeue an element from the queue
+int dequeue(int queue[], int *front, int *rear) {
+    if (*front > *rear) {
+        printf("Queue is empty.\n");
+        return -1; // Return -1 to indicate the queue is empty
+    }
+    int element = queue[*front];
+    (*front)++;
+    return element;
+}
+
+// Function to replace the first occurrence of item1 with item2
+void Replace(int queue[], int front, int rear, int item1, int item2) {
+    for (int i = front; i <= rear; i++) {
+        if (queue[i] == item1) { // Find the first occurrence of item1
+            queue[i] = item2;    // Replace it with item2
+            break;               // Stop after the first replacement
+        }
+    }
+}
+
+int main() {
+    int queue[MAX];
+    int front = 0, rear = -1; // Initialize front and rear
+    int size, element, item1, item2;
+
+    // Input the size of the queue
+    printf("Enter the number of elements in the queue (max %d): ", MAX);
+    scanf("%d", &size);
+
+    if (size > MAX || size <= 0) {
+        printf("Invalid size. Please enter a size between 1 and %d.\n", MAX);
+        return 1;
+    }
+
+    // Input the elements of the queue
+    printf("Enter the elements of the queue:\n");
+    for (int i = 0; i < size; i++) {
+        scanf("%d", &element);
+        enqueue(queue, &rear, element);
+    }
+
+    // Input the items to replace
+    printf("Enter the item to replace (item1): ");
+    scanf("%d", &item1);
+    printf("Enter the item to replace it with (item2): ");
+    scanf("%d", &item2);
+
+    // Perform the replacement
+    Replace(queue, front, rear, item1, item2);
+
+    // Display the modified queue
+    printf("Modified queue: ");
+    for (int i = front; i <= rear; i++) {
+        printf("%d ", queue[i]);
+    }
+    printf("\n");
+
+    return 0;
+}
+
+/*There are 'n' number of soldiers surrounded by enemy. They are having only one horse. They decided that one of them will go out and seek the help from outside while others will hold on the post. To decide who will go out to seek help they played a game. they stood in circular way and select some random number 'm' which is smaller than 'n'. then they selected a random person 'x' from which they start counting 'm'. after 'm' number the person who is at that place will be out of the game i.e. he has to wait at post only. Again they started the count 'm' from the next person. this process will go on till one person remains. the last person is the one who will go out with horse and seek the help from outside. Wirte a program to simulate this situation.*/
+
+#include <stdio.h>
+
+// Function to find the last person remaining
+int josephus(int n, int m) {
+    int result = 0; // Base case: only one person (0-indexed)
+    for (int i = 2; i <= n; i++) {
+        result = (result + m) % i; // Calculate new position
+    }
+    return result + 1; // Convert to 1-indexed
+}
+
+int main() {
+    int n, m, x;
+
+    // Input number of soldiers
+    printf("Enter the number of soldiers (n): ");
+    scanf("%d", &n);
+
+    // Input step count
+    printf("Enter the count number (m): ");
+    scanf("%d", &m);
+
+    // Input starting position
+    printf("Enter the starting person (x): ");
+    scanf("%d", &x);
+
+    // Calculate the last person remaining
+    int survivor = (josephus(n, m) + x - 2) % n + 1;
+
+    // Output the result
+    printf("The person at position %d will go out to seek help.\n", survivor);
+
+    return 0;
+}

@@ -1,0 +1,4083 @@
+Searching And Sorting technique
+
+/*WAP to implement Bubble sort and Quick Sort on 1D array of Student
+structure (contains student_name, student_roll_no, total_marks), with
+ key as student_roll_no. And count the number of swap performed*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the Student structure
+typedef struct {
+    char student_name[50];
+    int student_roll_no;
+    float total_marks;
+} Student;
+
+// Function to display the students
+void displayStudents(Student *students, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("Name: %s, Roll No: %d, Marks: %.2f\n",
+               students[i].student_name,
+               students[i].student_roll_no,
+               students[i].total_marks);
+    }
+}
+
+// Bubble Sort implementation
+int bubbleSort(Student *students, int n) {
+    int swap_count = 0;
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (students[j].student_roll_no > students[j + 1].student_roll_no) {
+                // Swap
+                Student temp = students[j];
+                students[j] = students[j + 1];
+                students[j + 1] = temp;
+                swap_count++;
+            }
+        }
+    }
+    return swap_count;
+}
+
+// Partition function for Quick Sort
+int partition(Student *students, int low, int high, int *swap_count) {
+    int pivot = students[high].student_roll_no;
+    int i = low - 1;
+
+    for (int j = low; j < high; j++) {
+        if (students[j].student_roll_no < pivot) {
+            i++;
+            // Swap
+            Student temp = students[i];
+            students[i] = students[j];
+            students[j] = temp;
+            (*swap_count)++;
+        }
+    }
+
+    // Swap pivot element
+    Student temp = students[i + 1];
+    students[i + 1] = students[high];
+    students[high] = temp;
+    (*swap_count)++;
+
+    return i + 1;
+}
+
+// Quick Sort implementation
+void quickSort(Student *students, int low, int high, int *swap_count) {
+    if (low < high) {
+        int pi = partition(students, low, high, swap_count);
+        quickSort(students, low, pi - 1, swap_count);
+        quickSort(students, pi + 1, high, swap_count);
+    }
+}
+
+// Main function
+int main() {
+    int n;
+
+    // Input number of students
+    printf("Enter the number of students: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for students
+    Student *students = (Student *)malloc(n * sizeof(Student));
+    if (students == NULL) {
+        printf("Memory allocation failed!\n");
+        return 1;
+    }
+
+    // Input student details
+    for (int i = 0; i < n; i++) {
+        printf("Enter name, roll no, and total marks for student %d: ", i + 1);
+        scanf("%s %d %f", students[i].student_name, &students[i].student_roll_no, &students[i].total_marks);
+    }
+
+    printf("\nOriginal Array of Students:\n");
+    displayStudents(students, n);
+
+    // Bubble Sort
+    Student *bubble_sorted_students = (Student *)malloc(n * sizeof(Student));
+    if (bubble_sorted_students == NULL) {
+        printf("Memory allocation failed!\n");
+        free(students);
+        return 1;
+    }
+    memcpy(bubble_sorted_students, students, n * sizeof(Student));
+    int bubble_swaps = bubbleSort(bubble_sorted_students, n);
+    printf("\nBubble Sorted Array:\n");
+    displayStudents(bubble_sorted_students, n);
+    printf("Total swaps in Bubble Sort: %d\n", bubble_swaps);
+
+    // Quick Sort
+    Student *quick_sorted_students = (Student *)malloc(n * sizeof(Student));
+    if (quick_sorted_students == NULL) {
+        printf("Memory allocation failed!\n");
+        free(students);
+        free(bubble_sorted_students);
+        return 1;
+    }
+    memcpy(quick_sorted_students, students, n * sizeof(Student));
+    int quick_swaps = 0;
+    quickSort(quick_sorted_students, 0, n - 1, &quick_swaps);
+    printf("\nQuick Sorted Array:\n");
+    displayStudents(quick_sorted_students, n);
+    printf("Total swaps in Quick Sort: %d\n", quick_swaps);
+
+    // Free dynamically allocated memory
+    free(students);
+    free(bubble_sorted_students);
+    free(quick_sorted_students);
+
+    return 0;
+}
+
+
+// input
+/* Enter the number of students: 5
+Enter name, roll no, and total marks for student 1: Tanvi 21 50
+Enter name, roll no, and total marks for student 2: Sam 20 21
+Enter name, roll no, and total marks for student 3: adii 50 45
+Enter name, roll no, and total marks for student 4: akash 22 42
+Enter name, roll no, and total marks for student 5: ram 23 52 */
+
+/*WAP to implement Insertion sort and Merge Sort on 1D array of
+ Student structure (contains student_name, student_roll_no, total_marks),
+ with key as student_roll_no. And count the number of swap performed
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the Student structure
+typedef struct {
+    char student_name[50];
+    int student_roll_no;
+    float total_marks;
+} Student;
+
+// Function to display the students
+void displayStudents(Student *students, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("Name: %s, Roll No: %d, Marks: %.2f\n",
+               students[i].student_name,
+               students[i].student_roll_no,
+               students[i].total_marks);
+    }
+}
+
+// Insertion Sort implementation
+int insertionSort(Student *students, int n) {
+    int swap_count = 0;
+    for (int i = 1; i < n; i++) {
+        Student key = students[i];
+        int j = i - 1;
+
+        // Move elements of students[0..i-1] that are greater than key
+        while (j >= 0 && students[j].student_roll_no > key.student_roll_no) {
+            students[j + 1] = students[j];
+            j--;
+            swap_count++;
+        }
+
+        students[j + 1] = key;
+    }
+    return swap_count;
+}
+
+// Merge function for Merge Sort
+void merge(Student *students, int left, int mid, int right, int *swap_count) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    // Create temporary arrays
+    Student *L = (Student *)malloc(n1 * sizeof(Student));
+    Student *R = (Student *)malloc(n2 * sizeof(Student));
+
+    for (int i = 0; i < n1; i++)
+        L[i] = students[left + i];
+    for (int j = 0; j < n2; j++)
+        R[j] = students[mid + 1 + j];
+
+    // Merge the temporary arrays back into students[]
+    int i = 0, j = 0, k = left;
+    while (i < n1 && j < n2) {
+        if (L[i].student_roll_no <= R[j].student_roll_no) {
+            students[k] = L[i];
+            i++;
+        } else {
+            students[k] = R[j];
+            j++;
+            (*swap_count)++;
+        }
+        k++;
+    }
+
+    // Copy the remaining elements of L[], if any
+    while (i < n1) {
+        students[k] = L[i];
+        i++;
+        k++;
+    }
+
+    // Copy the remaining elements of R[], if any
+    while (j < n2) {
+        students[k] = R[j];
+        j++;
+        k++;
+    }
+
+    free(L);
+    free(R);
+}
+
+// Merge Sort implementation
+void mergeSort(Student *students, int left, int right, int *swap_count) {
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+
+        mergeSort(students, left, mid, swap_count);
+        mergeSort(students, mid + 1, right, swap_count);
+
+        merge(students, left, mid, right, swap_count);
+    }
+}
+
+// Main function
+int main() {
+    int n;
+
+    // Input number of students
+    printf("Enter the number of students: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for students
+    Student *students = (Student *)malloc(n * sizeof(Student));
+    if (students == NULL) {
+        printf("Memory allocation failed!\n");
+        return 1;
+    }
+
+    // Input student details
+    for (int i = 0; i < n; i++) {
+        printf("Enter name, roll no, and total marks for student %d: ", i + 1);
+        scanf("%s %d %f", students[i].student_name, &students[i].student_roll_no, &students[i].total_marks);
+    }
+
+    printf("\nOriginal Array of Students:\n");
+    displayStudents(students, n);
+
+    // Insertion Sort
+    Student *insertion_sorted_students = (Student *)malloc(n * sizeof(Student));
+    if (insertion_sorted_students == NULL) {
+        printf("Memory allocation failed!\n");
+        free(students);
+        return 1;
+    }
+    memcpy(insertion_sorted_students, students, n * sizeof(Student));
+    int insertion_swaps = insertionSort(insertion_sorted_students, n);
+    printf("\nInsertion Sorted Array:\n");
+    displayStudents(insertion_sorted_students, n);
+    printf("Total swaps in Insertion Sort: %d\n", insertion_swaps);
+
+    // Merge Sort
+    Student *merge_sorted_students = (Student *)malloc(n * sizeof(Student));
+    if (merge_sorted_students == NULL) {
+        printf("Memory allocation failed!\n");
+        free(students);
+        free(insertion_sorted_students);
+        return 1;
+    }
+    memcpy(merge_sorted_students, students, n * sizeof(Student));
+    int merge_swaps = 0;
+    mergeSort(merge_sorted_students, 0, n - 1, &merge_swaps);
+    printf("\nMerge Sorted Array:\n");
+    displayStudents(merge_sorted_students, n);
+    printf("Total swaps in Merge Sort: %d\n", merge_swaps);
+
+    // Free dynamically allocated memory
+    free(students);
+    free(insertion_sorted_students);
+    free(merge_sorted_students);
+
+    return 0;
+}
+
+/*Enter the number of students: 3
+Enter name, roll no, and total marks for student 1: Alice 3 89.5
+Enter name, roll no, and total marks for student 2: Bob 1 92.0
+Enter name, roll no, and total marks for student 3: Charlie 2 75.0
+
+*/
+
+/* WAP to implement Selection sort and Bucket Sort on 1D array of
+ Employee structure (contains employee_name, emp_no, emp_salary),
+ with key as emp_no. And count the number of swap performed.
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the Employee structure
+typedef struct {
+    char employee_name[50];
+    int emp_no;
+    float emp_salary;
+} Employee;
+
+// Function to display the employees
+void displayEmployees(Employee *employees, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("Name: %s, Emp No: %d, Salary: %.2f\n",
+               employees[i].employee_name,
+               employees[i].emp_no,
+               employees[i].emp_salary);
+    }
+}
+
+// Selection Sort implementation
+int selectionSort(Employee *employees, int n) {
+    int swap_count = 0;
+    for (int i = 0; i < n - 1; i++) {
+        int min_idx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (employees[j].emp_no < employees[min_idx].emp_no) {
+                min_idx = j;
+            }
+        }
+        // Swap if min_idx is different from i
+        if (min_idx != i) {
+            Employee temp = employees[i];
+            employees[i] = employees[min_idx];
+            employees[min_idx] = temp;
+            swap_count++;
+        }
+    }
+    return swap_count;
+}
+
+// Bucket Sort helper function to find the maximum employee number
+int findMax(Employee *employees, int n) {
+    int max = employees[0].emp_no;
+    for (int i = 1; i < n; i++) {
+        if (employees[i].emp_no > max) {
+            max = employees[i].emp_no;
+        }
+    }
+    return max;
+}
+
+// Bucket Sort implementation
+int bucketSort(Employee *employees, int n) {
+    int max_emp_no = findMax(employees, n);
+    int bucket_count = max_emp_no + 1;
+
+    // Create buckets
+    Employee **buckets = (Employee **)malloc(bucket_count * sizeof(Employee *));
+    int *bucket_sizes = (int *)calloc(bucket_count, sizeof(int));
+
+    for (int i = 0; i < bucket_count; i++) {
+        buckets[i] = (Employee *)malloc(n * sizeof(Employee));
+    }
+
+    // Add elements to their respective buckets
+    for (int i = 0; i < n; i++) {
+        int index = employees[i].emp_no;
+        buckets[index][bucket_sizes[index]++] = employees[i];
+    }
+
+    // Gather elements from buckets and sort them
+    int swap_count = 0;
+    int k = 0;
+    for (int i = 0; i < bucket_count; i++) {
+        if (bucket_sizes[i] > 0) {
+            for (int j = 0; j < bucket_sizes[i]; j++) {
+                employees[k++] = buckets[i][j];
+            }
+        }
+    }
+
+    // Free memory for buckets
+    for (int i = 0; i < bucket_count; i++) {
+        free(buckets[i]);
+    }
+    free(buckets);
+    free(bucket_sizes);
+
+    return swap_count; // Bucket sort typically doesn't involve swaps in a traditional sense
+}
+
+// Main function
+int main() {
+    int n;
+
+    // Input number of employees
+    printf("Enter the number of employees: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for employees
+    Employee *employees = (Employee *)malloc(n * sizeof(Employee));
+    if (employees == NULL) {
+        printf("Memory allocation failed!\n");
+        return 1;
+    }
+
+    // Input employee details
+    for (int i = 0; i < n; i++) {
+        printf("Enter name, emp no, and salary for employee %d: ", i + 1);
+        scanf("%s %d %f", employees[i].employee_name, &employees[i].emp_no, &employees[i].emp_salary);
+    }
+
+    printf("\nOriginal Array of Employees:\n");
+    displayEmployees(employees, n);
+
+    // Selection Sort
+    Employee *selection_sorted_employees = (Employee *)malloc(n * sizeof(Employee));
+    if (selection_sorted_employees == NULL) {
+        printf("Memory allocation failed!\n");
+        free(employees);
+        return 1;
+    }
+    memcpy(selection_sorted_employees, employees, n * sizeof(Employee));
+    int selection_swaps = selectionSort(selection_sorted_employees, n);
+    printf("\nSelection Sorted Array:\n");
+    displayEmployees(selection_sorted_employees, n);
+    printf("Total swaps in Selection Sort: %d\n", selection_swaps);
+
+    // Bucket Sort
+    Employee *bucket_sorted_employees = (Employee *)malloc(n * sizeof(Employee));
+    if (bucket_sorted_employees == NULL) {
+        printf("Memory allocation failed!\n");
+        free(employees);
+        free(selection_sorted_employees);
+        return 1;
+    }
+    memcpy(bucket_sorted_employees, employees, n * sizeof(Employee));
+    int bucket_swaps = bucketSort(bucket_sorted_employees, n);
+    printf("\nBucket Sorted Array:\n");
+    displayEmployees(bucket_sorted_employees, n);
+    printf("Total swaps in Bucket Sort: %d (Bucket Sort doesn't typically count swaps)\n");
+
+    // Free dynamically allocated memory
+    free(employees);
+    free(selection_sorted_employees);
+    free(bucket_sorted_employees);
+
+    return 0;
+}
+
+/*Enter the number of employees: 3
+Enter name, emp no, and salary for employee 1: Alice 3 45000
+Enter name, emp no, and salary for employee 2: Bob 1 55000
+Enter name, emp no, and salary for employee 3: Charlie 2 40000
+*/
+/*WAP to implement Shell sort and Heap Sort on 1D array of Employee
+ structure (contains employee_name, emp_no, emp_salary), with key as
+ emp_no. And count the number of swap performed.
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the Employee structure
+typedef struct {
+    char employee_name[50];
+    int emp_no;
+    float emp_salary;
+} Employee;
+
+// Function to display the array of employees
+void displayEmployees(Employee *employees, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("Name: %s, Emp No: %d, Salary: %.2f\n",
+               employees[i].employee_name,
+               employees[i].emp_no,
+               employees[i].emp_salary);
+    }
+}
+
+// Shell Sort implementation
+int shellSort(Employee *employees, int n) {
+    int swap_count = 0;
+    for (int gap = n / 2; gap > 0; gap /= 2) {
+        for (int i = gap; i < n; i++) {
+            Employee temp = employees[i];
+            int j;
+            for (j = i; j >= gap && employees[j - gap].emp_no > temp.emp_no; j -= gap) {
+                employees[j] = employees[j - gap];
+                swap_count++;
+            }
+            employees[j] = temp;
+        }
+    }
+    return swap_count;
+}
+
+// Heapify function for Heap Sort
+void heapify(Employee *employees, int n, int i, int *swap_count) {
+    int largest = i; // Initialize largest as root
+    int left = 2 * i + 1; // Left child
+    int right = 2 * i + 2; // Right child
+
+    // Check if left child exists and is greater than root
+    if (left < n && employees[left].emp_no > employees[largest].emp_no) {
+        largest = left;
+    }
+
+    // Check if right child exists and is greater than the largest so far
+    if (right < n && employees[right].emp_no > employees[largest].emp_no) {
+        largest = right;
+    }
+
+    // Swap and continue heapifying if root is not the largest
+    if (largest != i) {
+        Employee temp = employees[i];
+        employees[i] = employees[largest];
+        employees[largest] = temp;
+        (*swap_count)++;
+        heapify(employees, n, largest, swap_count);
+    }
+}
+
+// Heap Sort implementation
+int heapSort(Employee *employees, int n) {
+    int swap_count = 0;
+
+    // Build a max heap
+    for (int i = n / 2 - 1; i >= 0; i--) {
+        heapify(employees, n, i, &swap_count);
+    }
+
+    // Extract elements from the heap one by one
+    for (int i = n - 1; i > 0; i--) {
+        // Swap the root (maximum) with the last element
+        Employee temp = employees[0];
+        employees[0] = employees[i];
+        employees[i] = temp;
+        swap_count++;
+
+        // Call heapify on the reduced heap
+        heapify(employees, i, 0, &swap_count);
+    }
+
+    return swap_count;
+}
+
+// Main function
+int main() {
+    int n;
+
+    // Input number of employees
+    printf("Enter the number of employees: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for employees
+    Employee *employees = (Employee *)malloc(n * sizeof(Employee));
+    if (employees == NULL) {
+        printf("Memory allocation failed!\n");
+        return 1;
+    }
+
+    // Input employee details
+    for (int i = 0; i < n; i++) {
+        printf("Enter name, emp no, and salary for employee %d: ", i + 1);
+        scanf("%s %d %f", employees[i].employee_name, &employees[i].emp_no, &employees[i].emp_salary);
+    }
+
+    printf("\nOriginal Array of Employees:\n");
+    displayEmployees(employees, n);
+
+    // Shell Sort
+    Employee *shell_sorted_employees = (Employee *)malloc(n * sizeof(Employee));
+    if (shell_sorted_employees == NULL) {
+        printf("Memory allocation failed!\n");
+        free(employees);
+        return 1;
+    }
+    memcpy(shell_sorted_employees, employees, n * sizeof(Employee));
+    int shell_swaps = shellSort(shell_sorted_employees, n);
+    printf("\nShell Sorted Array:\n");
+    displayEmployees(shell_sorted_employees, n);
+    printf("Total swaps in Shell Sort: %d\n", shell_swaps);
+
+    // Heap Sort
+    Employee *heap_sorted_employees = (Employee *)malloc(n * sizeof(Employee));
+    if (heap_sorted_employees == NULL) {
+        printf("Memory allocation failed!\n");
+        free(employees);
+        free(shell_sorted_employees);
+        return 1;
+    }
+    memcpy(heap_sorted_employees, employees, n * sizeof(Employee));
+    int heap_swaps = heapSort(heap_sorted_employees, n);
+    printf("\nHeap Sorted Array:\n");
+    displayEmployees(heap_sorted_employees, n);
+    printf("Total swaps in Heap Sort: %d\n", heap_swaps);
+
+    // Free dynamically allocated memory
+    free(employees);
+    free(shell_sorted_employees);
+    free(heap_sorted_employees);
+
+    return 0;
+}
+
+/*
+Enter the number of employees: 3
+Enter name, emp no, and salary for employee 1: Alice 3 45000
+Enter name, emp no, and salary for employee 2: Bob 1 55000
+Enter name, emp no, and salary for employee 3: Charlie 2 40000
+*/
+
+/* WAP to implement Insertion sort and Quick Sort on 1D array of Student
+ structure (contains student_name, student_roll_no, total_marks), with
+ key as student_roll_no. And count the number of swap performed.
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the Student structure
+typedef struct {
+    char student_name[50];
+    int student_roll_no;
+    float total_marks;
+} Student;
+
+// Function to display the array of students
+void displayStudents(Student *students, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("Name: %s, Roll No: %d, Total Marks: %.2f\n",
+               students[i].student_name,
+               students[i].student_roll_no,
+               students[i].total_marks);
+    }
+}
+
+// Insertion Sort implementation
+int insertionSort(Student *students, int n) {
+    int swap_count = 0;
+    for (int i = 1; i < n; i++) {
+        Student key = students[i];
+        int j = i - 1;
+
+        // Shift elements that are greater than key
+        while (j >= 0 && students[j].student_roll_no > key.student_roll_no) {
+            students[j + 1] = students[j];
+            j--;
+            swap_count++;
+        }
+        students[j + 1] = key;
+    }
+    return swap_count;
+}
+
+// Function to swap two students
+void swap(Student *a, Student *b, int *swap_count) {
+    Student temp = *a;
+    *a = *b;
+    *b = temp;
+    (*swap_count)++;
+}
+
+// Partition function for Quick Sort
+int partition(Student *students, int low, int high, int *swap_count) {
+    int pivot = students[high].student_roll_no; // Choose the last element as pivot
+    int i = low - 1;
+
+    for (int j = low; j < high; j++) {
+        if (students[j].student_roll_no <= pivot) {
+            i++;
+            swap(&students[i], &students[j], swap_count);
+        }
+    }
+    swap(&students[i + 1], &students[high], swap_count);
+    return i + 1;
+}
+
+// Quick Sort implementation
+void quickSort(Student *students, int low, int high, int *swap_count) {
+    if (low < high) {
+        int pi = partition(students, low, high, swap_count);
+        quickSort(students, low, pi - 1, swap_count);
+        quickSort(students, pi + 1, high, swap_count);
+    }
+}
+
+// Main function
+int main() {
+    int n;
+
+    // Input number of students
+    printf("Enter the number of students: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for students
+    Student *students = (Student *)malloc(n * sizeof(Student));
+    if (students == NULL) {
+        printf("Memory allocation failed!\n");
+        return 1;
+    }
+
+    // Input student details
+    for (int i = 0; i < n; i++) {
+        printf("Enter name, roll number, and total marks for student %d: ", i + 1);
+        scanf("%s %d %f", students[i].student_name, &students[i].student_roll_no, &students[i].total_marks);
+    }
+
+    printf("\nOriginal Array of Students:\n");
+    displayStudents(students, n);
+
+    // Insertion Sort
+    Student *insertion_sorted_students = (Student *)malloc(n * sizeof(Student));
+    if (insertion_sorted_students == NULL) {
+        printf("Memory allocation failed!\n");
+        free(students);
+        return 1;
+    }
+    memcpy(insertion_sorted_students, students, n * sizeof(Student));
+    int insertion_swaps = insertionSort(insertion_sorted_students, n);
+    printf("\nInsertion Sorted Array:\n");
+    displayStudents(insertion_sorted_students, n);
+    printf("Total swaps in Insertion Sort: %d\n", insertion_swaps);
+
+    // Quick Sort
+    Student *quick_sorted_students = (Student *)malloc(n * sizeof(Student));
+    if (quick_sorted_students == NULL) {
+        printf("Memory allocation failed!\n");
+        free(students);
+        free(insertion_sorted_students);
+        return 1;
+    }
+    memcpy(quick_sorted_students, students, n * sizeof(Student));
+    int quick_swaps = 0;
+    quickSort(quick_sorted_students, 0, n - 1, &quick_swaps);
+    printf("\nQuick Sorted Array:\n");
+    displayStudents(quick_sorted_students, n);
+    printf("Total swaps in Quick Sort: %d\n", quick_swaps);
+
+    // Free dynamically allocated memory
+    free(students);
+    free(insertion_sorted_students);
+    free(quick_sorted_students);
+
+    return 0;
+}
+
+/*Enter the number of students: 3
+Enter name, roll number, and total marks for student 1: Alice 3 85
+Enter name, roll number, and total marks for student 2: Bob 1 90
+Enter name, roll number, and total marks for student 3: Charlie 2 78
+*/
+
+/*WAP to implement Selection sort and Merge Sort on 1D array of
+ Student structure (contains student_name, student_roll_no, total_marks),
+ with key as student_roll_no. And count the number of swap performed.
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the Student structure
+typedef struct {
+    char student_name[50];
+    int student_roll_no;
+    float total_marks;
+} Student;
+
+// Function to display the array of students
+void displayStudents(Student *students, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("Name: %s, Roll No: %d, Total Marks: %.2f\n",
+               students[i].student_name,
+               students[i].student_roll_no,
+               students[i].total_marks);
+    }
+}
+
+// Function to swap two students
+void swap(Student *a, Student *b, int *swap_count) {
+    Student temp = *a;
+    *a = *b;
+    *b = temp;
+    (*swap_count)++;
+}
+
+// Selection Sort implementation
+int selectionSort(Student *students, int n) {
+    int swap_count = 0;
+    for (int i = 0; i < n - 1; i++) {
+        int min_index = i;
+        for (int j = i + 1; j < n; j++) {
+            if (students[j].student_roll_no < students[min_index].student_roll_no) {
+                min_index = j;
+            }
+        }
+        if (min_index != i) {
+            swap(&students[i], &students[min_index], &swap_count);
+        }
+    }
+    return swap_count;
+}
+
+// Merge function for Merge Sort
+void merge(Student *students, int left, int mid, int right, int *swap_count) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    Student *L = (Student *)malloc(n1 * sizeof(Student));
+    Student *R = (Student *)malloc(n2 * sizeof(Student));
+
+    for (int i = 0; i < n1; i++) {
+        L[i] = students[left + i];
+    }
+    for (int i = 0; i < n2; i++) {
+        R[i] = students[mid + 1 + i];
+    }
+
+    int i = 0, j = 0, k = left;
+    while (i < n1 && j < n2) {
+        if (L[i].student_roll_no <= R[j].student_roll_no) {
+            students[k] = L[i];
+            i++;
+        } else {
+            students[k] = R[j];
+            j++;
+            *swap_count += (n1 - i); // Count inversions
+        }
+        k++;
+    }
+
+    while (i < n1) {
+        students[k++] = L[i++];
+    }
+    while (j < n2) {
+        students[k++] = R[j++];
+    }
+
+    free(L);
+    free(R);
+}
+
+// Merge Sort implementation
+void mergeSort(Student *students, int left, int right, int *swap_count) {
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+        mergeSort(students, left, mid, swap_count);
+        mergeSort(students, mid + 1, right, swap_count);
+        merge(students, left, mid, right, swap_count);
+    }
+}
+
+// Main function
+int main() {
+    int n;
+
+    // Input number of students
+    printf("Enter the number of students: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for students
+    Student *students = (Student *)malloc(n * sizeof(Student));
+    if (students == NULL) {
+        printf("Memory allocation failed!\n");
+        return 1;
+    }
+
+    // Input student details
+    for (int i = 0; i < n; i++) {
+        printf("Enter name, roll number, and total marks for student %d: ", i + 1);
+        scanf("%s %d %f", students[i].student_name, &students[i].student_roll_no, &students[i].total_marks);
+    }
+
+    printf("\nOriginal Array of Students:\n");
+    displayStudents(students, n);
+
+    // Selection Sort
+    Student *selection_sorted_students = (Student *)malloc(n * sizeof(Student));
+    if (selection_sorted_students == NULL) {
+        printf("Memory allocation failed!\n");
+        free(students);
+        return 1;
+    }
+    memcpy(selection_sorted_students, students, n * sizeof(Student));
+    int selection_swaps = selectionSort(selection_sorted_students, n);
+    printf("\nSelection Sorted Array:\n");
+    displayStudents(selection_sorted_students, n);
+    printf("Total swaps in Selection Sort: %d\n", selection_swaps);
+
+    // Merge Sort
+    Student *merge_sorted_students = (Student *)malloc(n * sizeof(Student));
+    if (merge_sorted_students == NULL) {
+        printf("Memory allocation failed!\n");
+        free(students);
+        free(selection_sorted_students);
+        return 1;
+    }
+    memcpy(merge_sorted_students, students, n * sizeof(Student));
+    int merge_swaps = 0;
+    mergeSort(merge_sorted_students, 0, n - 1, &merge_swaps);
+    printf("\nMerge Sorted Array:\n");
+    displayStudents(merge_sorted_students, n);
+    printf("Total swaps in Merge Sort: %d\n", merge_swaps);
+
+    // Free dynamically allocated memory
+    free(students);
+    free(selection_sorted_students);
+    free(merge_sorted_students);
+
+    return 0;
+}
+
+/*
+Enter the number of students: 3
+Enter name, roll number, and total marks for student 1: Alice 3 85
+Enter name, roll number, and total marks for student 2: Bob 1 90
+Enter name, roll number, and total marks for student 3: Charlie 2 78
+*/
+
+/*WAP to implement Shell sort and Bucket Sort on 1D array of Employee
+ structure (contains employee_name, emp_no, emp_salary), with key as
+ emp_no. And count the number of swap performed.*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the Employee structure
+typedef struct {
+    char employee_name[50];
+    int emp_no;
+    float emp_salary;
+} Employee;
+
+// Function to display the array of employees
+void displayEmployees(Employee *employees, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("Name: %s, Emp No: %d, Salary: %.2f\n",
+               employees[i].employee_name,
+               employees[i].emp_no,
+               employees[i].emp_salary);
+    }
+}
+
+// Function to swap two employees and count the number of swaps
+void swap(Employee *a, Employee *b, int *swap_count) {
+    Employee temp = *a;
+    *a = *b;
+    *b = temp;
+    (*swap_count)++;
+}
+
+// Shell Sort implementation
+int shellSort(Employee *employees, int n) {
+    int swap_count = 0;
+    // Start with a large gap and reduce it
+    for (int gap = n / 2; gap > 0; gap /= 2) {
+        for (int i = gap; i < n; i++) {
+            Employee temp = employees[i];
+            int j;
+            for (j = i; j >= gap && employees[j - gap].emp_no > temp.emp_no; j -= gap) {
+                employees[j] = employees[j - gap];
+                swap_count++;
+            }
+            employees[j] = temp;
+        }
+    }
+    return swap_count;
+}
+
+// Bucket Sort implementation
+void bucketSort(Employee *employees, int n, int *swap_count) {
+    if (n <= 0) return;
+
+    // Find the maximum and minimum employee numbers
+    int max_emp_no = employees[0].emp_no;
+    int min_emp_no = employees[0].emp_no;
+
+    for (int i = 1; i < n; i++) {
+        if (employees[i].emp_no > max_emp_no) {
+            max_emp_no = employees[i].emp_no;
+        }
+        if (employees[i].emp_no < min_emp_no) {
+            min_emp_no = employees[i].emp_no;
+        }
+    }
+
+    int bucket_count = max_emp_no - min_emp_no + 1;
+    Employee **buckets = (Employee **)malloc(bucket_count * sizeof(Employee *));
+    int *bucket_sizes = (int *)calloc(bucket_count, sizeof(int));
+
+    // Initialize the buckets
+    for (int i = 0; i < bucket_count; i++) {
+        buckets[i] = (Employee *)malloc(n * sizeof(Employee));
+    }
+
+    // Distribute employees into buckets based on their emp_no
+    for (int i = 0; i < n; i++) {
+        int index = employees[i].emp_no - min_emp_no;
+        buckets[index][bucket_sizes[index]++] = employees[i];
+    }
+
+    // Sort each bucket using Insertion Sort (because we are dealing with small subarrays)
+    for (int i = 0; i < bucket_count; i++) {
+        for (int j = 1; j < bucket_sizes[i]; j++) {
+            Employee temp = buckets[i][j];
+            int k = j - 1;
+            while (k >= 0 && buckets[i][k].emp_no > temp.emp_no) {
+                buckets[i][k + 1] = buckets[i][k];
+                k--;
+                (*swap_count)++;
+            }
+            buckets[i][k + 1] = temp;
+        }
+    }
+
+    // Collect the employees from the buckets
+    int idx = 0;
+    for (int i = 0; i < bucket_count; i++) {
+        for (int j = 0; j < bucket_sizes[i]; j++) {
+            employees[idx++] = buckets[i][j];
+        }
+    }
+
+    // Free allocated memory for buckets
+    for (int i = 0; i < bucket_count; i++) {
+        free(buckets[i]);
+    }
+    free(buckets);
+    free(bucket_sizes);
+}
+
+// Main function
+int main() {
+    int n;
+
+    // Input number of employees
+    printf("Enter the number of employees: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for employees
+    Employee *employees = (Employee *)malloc(n * sizeof(Employee));
+    if (employees == NULL) {
+        printf("Memory allocation failed!\n");
+        return 1;
+    }
+
+    // Input employee details
+    for (int i = 0; i < n; i++) {
+        printf("Enter name, emp no, and salary for employee %d: ", i + 1);
+        scanf("%s %d %f", employees[i].employee_name, &employees[i].emp_no, &employees[i].emp_salary);
+    }
+
+    printf("\nOriginal Array of Employees:\n");
+    displayEmployees(employees, n);
+
+    // Shell Sort
+    Employee *shell_sorted_employees = (Employee *)malloc(n * sizeof(Employee));
+    if (shell_sorted_employees == NULL) {
+        printf("Memory allocation failed!\n");
+        free(employees);
+        return 1;
+    }
+    memcpy(shell_sorted_employees, employees, n * sizeof(Employee));
+    int shell_swaps = shellSort(shell_sorted_employees, n);
+    printf("\nShell Sorted Array:\n");
+    displayEmployees(shell_sorted_employees, n);
+    printf("Total swaps in Shell Sort: %d\n", shell_swaps);
+
+    // Bucket Sort
+    Employee *bucket_sorted_employees = (Employee *)malloc(n * sizeof(Employee));
+    if (bucket_sorted_employees == NULL) {
+        printf("Memory allocation failed!\n");
+        free(employees);
+        free(shell_sorted_employees);
+        return 1;
+    }
+    memcpy(bucket_sorted_employees, employees, n * sizeof(Employee));
+    int bucket_swaps = 0;
+    bucketSort(bucket_sorted_employees, n, &bucket_swaps);
+    printf("\nBucket Sorted Array:\n");
+    displayEmployees(bucket_sorted_employees, n);
+    printf("Total swaps in Bucket Sort: %d\n", bucket_swaps);
+
+    // Free dynamically allocated memory
+    free(employees);
+    free(shell_sorted_employees);
+    free(bucket_sorted_employees);
+
+    return 0;
+}
+
+/*
+Enter the number of employees: 3
+Enter name, emp no, and salary for employee 1: Alice 3 55000
+Enter name, emp no, and salary for employee 2: Bob 1 60000
+Enter name, emp no, and salary for employee 3: Charlie 2 50000
+*/
+
+/*WAP to implement Bubble sort and Heap Sort on 1D array of Employee
+ structure (contains employee_name, emp_no, emp_salary), with key as
+ emp_no. And count the number of swap performed.*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the Employee structure
+typedef struct {
+    char employee_name[50];
+    int emp_no;
+    float emp_salary;
+} Employee;
+
+// Function to display the array of employees
+void displayEmployees(Employee *employees, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("Name: %s, Emp No: %d, Salary: %.2f\n",
+               employees[i].employee_name,
+               employees[i].emp_no,
+               employees[i].emp_salary);
+    }
+}
+
+// Function to swap two employees and count the number of swaps
+void swap(Employee *a, Employee *b, int *swap_count) {
+    Employee temp = *a;
+    *a = *b;
+    *b = temp;
+    (*swap_count)++;
+}
+
+// Bubble Sort implementation
+int bubbleSort(Employee *employees, int n) {
+    int swap_count = 0;
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - 1 - i; j++) {
+            if (employees[j].emp_no > employees[j + 1].emp_no) {
+                swap(&employees[j], &employees[j + 1], &swap_count);
+            }
+        }
+    }
+    return swap_count;
+}
+
+// Heapify function used in Heap Sort
+void heapify(Employee *employees, int n, int i, int *swap_count) {
+    int largest = i;
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
+
+    if (left < n && employees[left].emp_no > employees[largest].emp_no) {
+        largest = left;
+    }
+
+    if (right < n && employees[right].emp_no > employees[largest].emp_no) {
+        largest = right;
+    }
+
+    if (largest != i) {
+        swap(&employees[i], &employees[largest], swap_count);
+        heapify(employees, n, largest, swap_count);
+    }
+}
+
+// Heap Sort implementation
+int heapSort(Employee *employees, int n) {
+    int swap_count = 0;
+
+    // Build the heap (rearrange the array)
+    for (int i = n / 2 - 1; i >= 0; i--) {
+        heapify(employees, n, i, &swap_count);
+    }
+
+    // One by one extract elements from the heap
+    for (int i = n - 1; i >= 0; i--) {
+        swap(&employees[0], &employees[i], &swap_count);
+        heapify(employees, i, 0, &swap_count);
+    }
+
+    return swap_count;
+}
+
+// Main function
+int main() {
+    int n;
+
+    // Input number of employees
+    printf("Enter the number of employees: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for employees
+    Employee *employees = (Employee *)malloc(n * sizeof(Employee));
+    if (employees == NULL) {
+        printf("Memory allocation failed!\n");
+        return 1;
+    }
+
+    // Input employee details
+    for (int i = 0; i < n; i++) {
+        printf("Enter name, emp no, and salary for employee %d: ", i + 1);
+        scanf("%s %d %f", employees[i].employee_name, &employees[i].emp_no, &employees[i].emp_salary);
+    }
+
+    printf("\nOriginal Array of Employees:\n");
+    displayEmployees(employees, n);
+
+    // Bubble Sort
+    Employee *bubble_sorted_employees = (Employee *)malloc(n * sizeof(Employee));
+    if (bubble_sorted_employees == NULL) {
+        printf("Memory allocation failed!\n");
+        free(employees);
+        return 1;
+    }
+    memcpy(bubble_sorted_employees, employees, n * sizeof(Employee));
+    int bubble_swaps = bubbleSort(bubble_sorted_employees, n);
+    printf("\nBubble Sorted Array:\n");
+    displayEmployees(bubble_sorted_employees, n);
+    printf("Total swaps in Bubble Sort: %d\n", bubble_swaps);
+
+    // Heap Sort
+    Employee *heap_sorted_employees = (Employee *)malloc(n * sizeof(Employee));
+    if (heap_sorted_employees == NULL) {
+        printf("Memory allocation failed!\n");
+        free(employees);
+        free(bubble_sorted_employees);
+        return 1;
+    }
+    memcpy(heap_sorted_employees, employees, n * sizeof(Employee));
+    int heap_swaps = heapSort(heap_sorted_employees, n);
+    printf("\nHeap Sorted Array:\n");
+    displayEmployees(heap_sorted_employees, n);
+    printf("Total swaps in Heap Sort: %d\n", heap_swaps);
+
+    // Free dynamically allocated memory
+    free(employees);
+    free(bubble_sorted_employees);
+    free(heap_sorted_employees);
+
+    return 0;
+}
+
+/*
+Enter the number of employees: 3
+Enter name, emp no, and salary for employee 1: Alice 3 55000
+Enter name, emp no, and salary for employee 2: Bob 1 60000
+Enter name, emp no, and salary for employee 3: Charlie 2 50000
+*/
+
+/* WAP to implement Bucket Sort and Quick sort on 1D array of Faculty
+ structure (contains faculty_name, faculty_ID, subject_codes,
+ class_names), with key as faculty_ID. And count the number of swap
+ performed
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_SUBJECTS 5
+#define MAX_CLASSES 5
+
+// Define the Faculty structure
+typedef struct {
+    char faculty_name[50];
+    int faculty_ID;
+    char subject_codes[MAX_SUBJECTS][10];
+    char class_names[MAX_CLASSES][20];
+} Faculty;
+
+// Function to display the array of faculty
+void displayFaculty(Faculty *faculties, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("Faculty Name: %s, Faculty ID: %d\nSubjects: ", faculties[i].faculty_name, faculties[i].faculty_ID);
+        for (int j = 0; j < MAX_SUBJECTS; j++) {
+            if (strlen(faculties[i].subject_codes[j]) > 0) {
+                printf("%s ", faculties[i].subject_codes[j]);
+            }
+        }
+        printf("\nClasses: ");
+        for (int j = 0; j < MAX_CLASSES; j++) {
+            if (strlen(faculties[i].class_names[j]) > 0) {
+                printf("%s ", faculties[i].class_names[j]);
+            }
+        }
+        printf("\n\n");
+    }
+}
+
+// Function to swap two faculties and count the number of swaps
+void swap(Faculty *a, Faculty *b, int *swap_count) {
+    Faculty temp = *a;
+    *a = *b;
+    *b = temp;
+    (*swap_count)++;
+}
+
+// Quick Sort Partition function
+int partition(Faculty *faculties, int low, int high, int *swap_count) {
+    int pivot = faculties[high].faculty_ID;
+    int i = (low - 1);
+
+    for (int j = low; j < high; j++) {
+        if (faculties[j].faculty_ID <= pivot) {
+            i++;
+            swap(&faculties[i], &faculties[j], swap_count);
+        }
+    }
+    swap(&faculties[i + 1], &faculties[high], swap_count);
+    return (i + 1);
+}
+
+// Quick Sort function
+int quickSort(Faculty *faculties, int low, int high, int *swap_count) {
+    if (low < high) {
+        int pi = partition(faculties, low, high, swap_count);
+        quickSort(faculties, low, pi - 1, swap_count);
+        quickSort(faculties, pi + 1, high, swap_count);
+    }
+    return *swap_count;
+}
+
+// Bucket Sort function
+int bucketSort(Faculty *faculties, int n, int *swap_count) {
+    // Find the maximum faculty ID to determine the bucket range
+    int max = faculties[0].faculty_ID;
+    for (int i = 1; i < n; i++) {
+        if (faculties[i].faculty_ID > max) {
+            max = faculties[i].faculty_ID;
+        }
+    }
+
+    int bucketCount = max + 1;
+    Faculty **buckets = (Faculty **)malloc(bucketCount * sizeof(Faculty *));
+    for (int i = 0; i < bucketCount; i++) {
+        buckets[i] = (Faculty *)malloc(n * sizeof(Faculty));
+    }
+
+    // Distribute the elements into buckets
+    for (int i = 0; i < bucketCount; i++) {
+        for (int j = 0; j < n; j++) {
+            if (faculties[j].faculty_ID == i) {
+                buckets[i][j] = faculties[j];
+            }
+        }
+    }
+
+    // Collect the elements from buckets
+    int index = 0;
+    for (int i = 0; i < bucketCount; i++) {
+        for (int j = 0; j < n; j++) {
+            if (buckets[i][j].faculty_ID != 0) {
+                faculties[index++] = buckets[i][j];
+            }
+        }
+    }
+
+    // Free allocated memory for buckets
+    for (int i = 0; i < bucketCount; i++) {
+        free(buckets[i]);
+    }
+    free(buckets);
+
+    return *swap_count;
+}
+
+// Main function
+int main() {
+    int n;
+
+    // Input number of faculties
+    printf("Enter the number of faculties: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for faculties
+    Faculty *faculties = (Faculty *)malloc(n * sizeof(Faculty));
+    if (faculties == NULL) {
+        printf("Memory allocation failed!\n");
+        return 1;
+    }
+
+    // Input faculty details
+    for (int i = 0; i < n; i++) {
+        printf("Enter faculty name, faculty ID: ");
+        scanf("%s %d", faculties[i].faculty_name, &faculties[i].faculty_ID);
+
+        printf("Enter subjects (max 5): ");
+        for (int j = 0; j < MAX_SUBJECTS; j++) {
+            scanf("%s", faculties[i].subject_codes[j]);
+        }
+
+        printf("Enter class names (max 5): ");
+        for (int j = 0; j < MAX_CLASSES; j++) {
+            scanf("%s", faculties[i].class_names[j]);
+        }
+    }
+
+    printf("\nOriginal Array of Faculties:\n");
+    displayFaculty(faculties, n);
+
+    // Quick Sort
+    Faculty *quick_sorted_faculties = (Faculty *)malloc(n * sizeof(Faculty));
+    if (quick_sorted_faculties == NULL) {
+        printf("Memory allocation failed!\n");
+        free(faculties);
+        return 1;
+    }
+    memcpy(quick_sorted_faculties, faculties, n * sizeof(Faculty));
+    int quick_swaps = 0;
+    quickSort(quick_sorted_faculties, 0, n - 1, &quick_swaps);
+    printf("\nQuick Sorted Array:\n");
+    displayFaculty(quick_sorted_faculties, n);
+    printf("Total swaps in Quick Sort: %d\n", quick_swaps);
+
+    // Bucket Sort
+    Faculty *bucket_sorted_faculties = (Faculty *)malloc(n * sizeof(Faculty));
+    if (bucket_sorted_faculties == NULL) {
+        printf("Memory allocation failed!\n");
+        free(faculties);
+        free(quick_sorted_faculties);
+        return 1;
+    }
+    memcpy(bucket_sorted_faculties, faculties, n * sizeof(Faculty));
+    int bucket_swaps = 0;
+    bucketSort(bucket_sorted_faculties, n, &bucket_swaps);
+    printf("\nBucket Sorted Array:\n");
+    displayFaculty(bucket_sorted_faculties, n);
+    printf("Total swaps in Bucket Sort: %d\n", bucket_swaps);
+
+    // Free dynamically allocated memory
+    free(faculties);
+    free(quick_sorted_faculties);
+    free(bucket_sorted_faculties);
+
+    return 0;
+}
+
+/*
+Enter the number of faculties: 3
+Enter faculty name, faculty ID: Alice 3
+Enter subjects (max 5): Math Science Programming
+Enter class names (max 5): CS101 CS102
+Enter faculty name, faculty ID: Bob 1
+Enter subjects (max 5): Physics Chemistry
+Enter class names (max 5): PH101 CS101
+Enter faculty name, faculty ID: Charlie 2
+Enter subjects (max 5): Biology English
+Enter class names (max 5): BI101 EN101
+*/
+
+/*
+ WAP to implement Merge Sort and Heap Sort on 1D array of Faculty
+ structure (contains faculty_name, faculty_ID, subject_codes,
+ class_names), with key as faculty_ID. And count the number of swap
+ performed*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_SUBJECTS 5
+#define MAX_CLASSES 5
+
+// Define the Faculty structure
+typedef struct {
+    char faculty_name[50];
+    int faculty_ID;
+    char subject_codes[MAX_SUBJECTS][10];
+    char class_names[MAX_CLASSES][20];
+} Faculty;
+
+// Function to display the array of faculty
+void displayFaculty(Faculty *faculties, int n) {
+    for (int i = 0; i < n; i++) {
+        printf("Faculty Name: %s, Faculty ID: %d\nSubjects: ", faculties[i].faculty_name, faculties[i].faculty_ID);
+        for (int j = 0; j < MAX_SUBJECTS; j++) {
+            if (strlen(faculties[i].subject_codes[j]) > 0) {
+                printf("%s ", faculties[i].subject_codes[j]);
+            }
+        }
+        printf("\nClasses: ");
+        for (int j = 0; j < MAX_CLASSES; j++) {
+            if (strlen(faculties[i].class_names[j]) > 0) {
+                printf("%s ", faculties[i].class_names[j]);
+            }
+        }
+        printf("\n\n");
+    }
+}
+
+// Function to swap two faculties and count the number of swaps
+void swap(Faculty *a, Faculty *b, int *swap_count) {
+    Faculty temp = *a;
+    *a = *b;
+    *b = temp;
+    (*swap_count)++;
+}
+
+// Merge Sort helper functions
+void merge(Faculty *faculties, int left, int mid, int right, int *swap_count) {
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    Faculty *L = (Faculty *)malloc(n1 * sizeof(Faculty));
+    Faculty *R = (Faculty *)malloc(n2 * sizeof(Faculty));
+
+    for (int i = 0; i < n1; i++) {
+        L[i] = faculties[left + i];
+    }
+    for (int j = 0; j < n2; j++) {
+        R[j] = faculties[mid + 1 + j];
+    }
+
+    int i = 0, j = 0, k = left;
+    while (i < n1 && j < n2) {
+        if (L[i].faculty_ID <= R[j].faculty_ID) {
+            faculties[k] = L[i];
+            i++;
+        } else {
+            faculties[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+
+    while (i < n1) {
+        faculties[k] = L[i];
+        i++;
+        k++;
+    }
+
+    while (j < n2) {
+        faculties[k] = R[j];
+        j++;
+        k++;
+    }
+
+    free(L);
+    free(R);
+}
+
+void mergeSort(Faculty *faculties, int left, int right, int *swap_count) {
+    if (left < right) {
+        int mid = left + (right - left) / 2;
+
+        mergeSort(faculties, left, mid, swap_count);
+        mergeSort(faculties, mid + 1, right, swap_count);
+
+        merge(faculties, left, mid, right, swap_count);
+    }
+}
+
+// Heap Sort helper functions
+void heapify(Faculty *faculties, int n, int i, int *swap_count) {
+    int largest = i;
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
+
+    if (left < n && faculties[left].faculty_ID > faculties[largest].faculty_ID) {
+        largest = left;
+    }
+
+    if (right < n && faculties[right].faculty_ID > faculties[largest].faculty_ID) {
+        largest = right;
+    }
+
+    if (largest != i) {
+        swap(&faculties[i], &faculties[largest], swap_count);
+        heapify(faculties, n, largest, swap_count);
+    }
+}
+
+void heapSort(Faculty *faculties, int n, int *swap_count) {
+    for (int i = n / 2 - 1; i >= 0; i--) {
+        heapify(faculties, n, i, swap_count);
+    }
+
+    for (int i = n - 1; i > 0; i--) {
+        swap(&faculties[0], &faculties[i], swap_count);
+        heapify(faculties, i, 0, swap_count);
+    }
+}
+
+// Main function
+int main() {
+    int n;
+
+    // Input number of faculties
+    printf("Enter the number of faculties: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for faculties
+    Faculty *faculties = (Faculty *)malloc(n * sizeof(Faculty));
+    if (faculties == NULL) {
+        printf("Memory allocation failed!\n");
+        return 1;
+    }
+
+    // Input faculty details
+    for (int i = 0; i < n; i++) {
+        printf("Enter faculty name, faculty ID: ");
+        scanf("%s %d", faculties[i].faculty_name, &faculties[i].faculty_ID);
+
+        printf("Enter subjects (max 5): ");
+        for (int j = 0; j < MAX_SUBJECTS; j++) {
+            scanf("%s", faculties[i].subject_codes[j]);
+        }
+
+        printf("Enter class names (max 5): ");
+        for (int j = 0; j < MAX_CLASSES; j++) {
+            scanf("%s", faculties[i].class_names[j]);
+        }
+    }
+
+    printf("\nOriginal Array of Faculties:\n");
+    displayFaculty(faculties, n);
+
+    // Merge Sort
+    Faculty *merge_sorted_faculties = (Faculty *)malloc(n * sizeof(Faculty));
+    if (merge_sorted_faculties == NULL) {
+        printf("Memory allocation failed!\n");
+        free(faculties);
+        return 1;
+    }
+    memcpy(merge_sorted_faculties, faculties, n * sizeof(Faculty));
+    int merge_swaps = 0;
+    mergeSort(merge_sorted_faculties, 0, n - 1, &merge_swaps);
+    printf("\nMerge Sorted Array:\n");
+    displayFaculty(merge_sorted_faculties, n);
+    printf("Total swaps in Merge Sort: %d\n", merge_swaps);
+
+    // Heap Sort
+    Faculty *heap_sorted_faculties = (Faculty *)malloc(n * sizeof(Faculty));
+    if (heap_sorted_faculties == NULL) {
+        printf("Memory allocation failed!\n");
+        free(faculties);
+        free(merge_sorted_faculties);
+        return 1;
+    }
+    memcpy(heap_sorted_faculties, faculties, n * sizeof(Faculty));
+    int heap_swaps = 0;
+    heapSort(heap_sorted_faculties, n, &heap_swaps);
+    printf("\nHeap Sorted Array:\n");
+    displayFaculty(heap_sorted_faculties, n);
+    printf("Total swaps in Heap Sort: %d\n", heap_swaps);
+
+    // Free dynamically allocated memory
+    free(faculties);
+    free(merge_sorted_faculties);
+    free(heap_sorted_faculties);
+
+    return 0;
+}
+
+/*
+Enter the number of faculties: 3
+Enter faculty name, faculty ID: Alice 3
+Enter subjects (max 5): Math Science Programming
+Enter class names (max 5): CS101 CS102
+Enter faculty name, faculty ID: Bob 1
+Enter subjects (max 5): Physics Chemistry
+Enter class names (max 5): PH101 CS101
+Enter faculty name, faculty ID: Charlie 2
+Enter subjects (max 5): Biology Chemistry
+Enter class names (max 5): BIO101 CS102
+*/
+
+/*
+You hav e a fleet of N cars waiting for repair, with the estimated repair
+ times rk for the car Ci , 1 ? k ? N. What is the best repairschedule (order
+ of repairs) to minimize the total lost time for being outofservice. How
+ much computation is needed to find the lost servicetimes all schedules?*/
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure to represent a car
+typedef struct {
+    int car_id;      // Car ID
+    int repair_time; // Repair time for the car
+} Car;
+
+// Comparison function to sort cars by their repair times
+int compare(const void *a, const void *b) {
+    return ((Car *)a)->repair_time - ((Car *)b)->repair_time;
+}
+
+// Function to calculate the total lost time
+int calculateTotalLostTime(Car cars[], int n) {
+    int totalLostTime = 0;
+    int waitingTime = 0;
+
+    // Loop through all the cars and calculate waiting times
+    for (int i = 0; i < n; i++) {
+        // Add the current car's waiting time
+        totalLostTime += waitingTime;
+        // Update the waiting time for the next car
+        waitingTime += cars[i].repair_time;
+    }
+
+    return totalLostTime;
+}
+
+int main() {
+    int n;
+
+    // Input the number of cars
+    printf("Enter the number of cars: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for cars array
+    Car *cars = (Car *)malloc(n * sizeof(Car));
+
+    // Input repair times for each car
+    for (int i = 0; i < n; i++) {
+        printf("Enter car ID and repair time for car %d: ", i + 1);
+        scanf("%d %d", &cars[i].car_id, &cars[i].repair_time);
+    }
+
+    // Sort the cars by their repair times (Shortest Job First)
+    qsort(cars, n, sizeof(Car), compare);
+
+    // Calculate total lost time
+    int totalLostTime = calculateTotalLostTime(cars, n);
+
+    // Output the result
+    printf("The total lost time is: %d\n", totalLostTime);
+
+    // Free the dynamically allocated memory
+    free(cars);
+
+    return 0;
+}
+
+/*Enter the number of cars: 4
+Enter car ID and repair time for car 1: 101 3
+Enter car ID and repair time for car 2: 102 1
+Enter car ID and repair time for car 3: 103 4
+Enter car ID and repair time for car 4: 104 2
+*/
+
+/* Write a program to arrange the data of the faculties recruited in the
+ institute. There are three categories of faculties in the every deartment
+ namely professor, Associate professor, and assistant professor.
+ Recruitment is done as mentioned below. 1. Every professor has two
+ associate professors. 2. Every Associate has two assistant professors.
+ Data is given randomly. Suggest suitable sorting method and implement
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structure to represent a faculty
+typedef struct {
+    char name[100];
+    char role[50];  // "Professor", "Associate Professor", "Assistant Professor"
+    char department[100];
+} Faculty;
+
+// Comparator function to sort by role: Professor > Associate Professor > Assistant Professor
+int compare(const void *a, const void *b) {
+    // Cast the void pointers to Faculty pointers
+    Faculty *faculty1 = (Faculty *)a;
+    Faculty *faculty2 = (Faculty *)b;
+
+    // Define a ranking system for roles
+    int role_order[] = {0, 1, 2};  // Mapping: Professor -> 0, Associate Professor -> 1, Assistant Professor -> 2
+
+    // Compare the role ranks
+    int rank1 = (strcmp(faculty1->role, "Professor") == 0) ? 0 :
+                (strcmp(faculty1->role, "Associate Professor") == 0) ? 1 : 2;
+
+    int rank2 = (strcmp(faculty2->role, "Professor") == 0) ? 0 :
+                (strcmp(faculty2->role, "Associate Professor") == 0) ? 1 : 2;
+
+    return rank1 - rank2; // Ascending order: Professor > Associate Professor > Assistant Professor
+}
+
+int main() {
+    int n;
+    printf("Enter the number of faculty members: ");
+    scanf("%d", &n);
+
+    // Dynamic allocation of memory for faculty array
+    Faculty *faculties = (Faculty *)malloc(n * sizeof(Faculty));
+
+    if (faculties == NULL) {
+        printf("Memory allocation failed!\n");
+        return 1;  // Return error if memory allocation fails
+    }
+
+    // Input data for the faculties
+    for (int i = 0; i < n; i++) {
+        printf("\nEnter the name of faculty %d: ", i + 1);
+        scanf(" %[^\n]%*c", faculties[i].name);  // Read full name with spaces
+        printf("Enter the role of faculty %d (Professor/Associate Professor/Assistant Professor): ", i + 1);
+        scanf(" %[^\n]%*c", faculties[i].role);  // Read role
+        printf("Enter the department of faculty %d: ", i + 1);
+        scanf(" %[^\n]%*c", faculties[i].department);  // Read department
+    }
+
+    // Sort the faculties based on role
+    qsort(faculties, n, sizeof(Faculty), compare);
+
+    // Output the sorted list of faculties
+    printf("\nSorted List of Faculties by Role:\n");
+    for (int i = 0; i < n; i++) {
+        printf("\nName: %s\nRole: %s\nDepartment: %s\n", faculties[i].name, faculties[i].role, faculties[i].department);
+    }
+
+    // Free the dynamically allocated memory
+    free(faculties);
+
+    return 0;
+}
+
+
+
+/*
+Enter the number of faculty members: 5
+
+Enter the name of faculty 1: Dr. Smith
+Enter the role of faculty 1 (Professor/Associate Professor/Assistant Professor): Associate Professor
+Enter the department of faculty 1: Computer Science
+
+Enter the name of faculty 2: Dr. Johnson
+Enter the role of faculty 2 (Professor/Associate Professor/Assistant Professor): Professor
+Enter the department of faculty 2: Mathematics
+
+Enter the name of faculty 3: Dr. White
+Enter the role of faculty 3 (Professor/Associate Professor/Assistant Professor): Assistant Professor
+Enter the department of faculty 3: Computer Science
+
+Enter the name of faculty 4: Dr. Brown
+Enter the role of faculty 4 (Professor/Associate Professor/Assistant Professor): Associate Professor
+Enter the department of faculty 4: Physics
+
+Enter the name of faculty 5: Dr. Green
+Enter the role of faculty 5 (Professor/Associate Professor/Assistant Professor): Assistant Professor
+Enter the department of faculty 5: Physics
+*/
+
+
+
+/*
+ Assume that an array A with n elements was sorted in an ascending
+ order, but two of its elements swapped their positions by a mistake while
+ maintaining the array. Write a code to identify the swapped pair of
+ elements and their positions in the asymptotically best possible time.
+ [Assume that all given elements are distinct integers.*/
+
+#include <stdio.h>
+#include <stdlib.h> // Include for dynamic memory allocation
+
+// Function to find the swapped pair of elements
+void find_swapped_elements(int *A, int n) {
+    int first = -1, second = -1;
+
+    // Traverse the array to find the first out-of-order element
+    for (int i = 0; i < n - 1; i++) {
+        if (A[i] > A[i + 1]) {
+            first = i;
+            break;
+        }
+    }
+
+    // Traverse the array backward to find the second out-of-order element
+    for (int i = n - 1; i > 0; i--) {
+        if (A[i] < A[i - 1]) {
+            second = i;
+            break;
+        }
+    }
+
+    // If both indices are found, we print the swapped elements and their positions
+    if (first != -1 && second != -1) {
+        printf("Swapped elements: %d and %d\n", A[first], A[second]);
+        printf("Positions of swapped elements: %d and %d\n", first, second);
+    } else {
+        printf("The array is already sorted.\n");
+    }
+}
+
+int main() {
+    int n;
+    printf("Enter the number of elements in the array: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for the array based on user input
+    int *A = (int *)malloc(n * sizeof(int));
+    if (A == NULL) {
+        printf("Memory allocation failed!\n");
+        return -1; // Exit if memory allocation fails
+    }
+
+    printf("Enter the elements of the array:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &A[i]);
+    }
+
+    find_swapped_elements(A, n);
+
+    // Free the dynamically allocated memory
+    free(A);
+
+    return 0;
+}
+ 
+/*
+Enter the number of elements in the array: 6
+Enter the elements of the array:
+1 2 6 4 5 3
+*/
+
+/*Using Quick sort, assign the roll nos. to the students of your class as per 
+their previous years result. i.e. topper will be roll no. 1.*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the Student structure
+typedef struct {
+    char student_name[100];
+    int roll_no;
+    float result; // Assuming result is a float (marks obtained by student)
+} Student;
+
+// Function to perform the partition step of Quick Sort
+int partition(Student arr[], int low, int high) {
+    float pivot = arr[high].result;  // Pivot is the last element's result
+    int i = (low - 1); // Index of smaller element
+
+    for (int j = low; j < high; j++) {
+        // If current element's result is greater than pivot, swap
+        if (arr[j].result > pivot) {
+            i++;
+            // Swap arr[i] and arr[j]
+            Student temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+    }
+    // Swap the pivot with the element at index i+1
+    Student temp = arr[i + 1];
+    arr[i + 1] = arr[high];
+    arr[high] = temp;
+    
+    return (i + 1);  // Return the pivot index
+}
+
+// Quick Sort function
+void quickSort(Student arr[], int low, int high) {
+    if (low < high) {
+        // Partition the array
+        int pi = partition(arr, low, high);
+
+        // Recursively sort the two halves
+        quickSort(arr, low, pi - 1);
+        quickSort(arr, pi + 1, high);
+    }
+}
+
+// Function to assign roll numbers to the sorted students
+void assignRollNumbers(Student arr[], int n) {
+    // After sorting, assign roll numbers starting from 1
+    for (int i = 0; i < n; i++) {
+        arr[i].roll_no = i + 1;
+    }
+}
+
+// Function to print the details of all students
+void printStudents(Student arr[], int n) {
+    printf("Roll No\tStudent Name\tResult\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%s\t%.2f\n", arr[i].roll_no, arr[i].student_name, arr[i].result);
+    }
+}
+
+int main() {
+    int n;
+    printf("Enter the number of students: ");
+    scanf("%d", &n);
+
+    // Dynamically allocate memory for n students
+    Student* students = (Student*)malloc(n * sizeof(Student));
+
+    // Input student details
+    for (int i = 0; i < n; i++) {
+        printf("Enter name of student %d: ", i + 1);
+        scanf(" %[^\n]s", students[i].student_name);  // Reading string with spaces
+        printf("Enter result of %s: ", students[i].student_name);
+        scanf("%f", &students[i].result);
+    }
+
+    // Perform Quick Sort based on results
+    quickSort(students, 0, n - 1);
+
+    // Assign roll numbers to sorted students
+    assignRollNumbers(students, n);
+
+    // Print the students with their assigned roll numbers
+    printStudents(students, n);
+
+    // Free dynamically allocated memory
+    free(students);
+
+    return 0;
+}
+
+/*Enter the number of students: 4
+Enter name of student 1: Alice
+Enter result of Alice: 85.5
+Enter name of student 2: Bob
+Enter result of Bob: 91.2
+Enter name of student 3: Charlie
+Enter result of Charlie: 78.6
+Enter name of student 4: David
+Enter result of David: 88.9
+*/
+Q. Arrange the list of employees as per the average of their height and
+weight by using appropriate sorting method.
+
+
+#include <stdio.h>
+
+// Define a struct for Employee
+typedef struct {
+    char name[50];
+    float height; // in cm
+    float weight; // in kg
+    float average; // average of height and weight
+} Employee;
+
+// Function to calculate the average of height and weight for each employee
+void calculateAverages(Employee employees[], int n) {
+    for (int i = 0; i < n; i++) {
+        employees[i].average = (employees[i].height + employees[i].weight) / 2.0;
+    }
+}
+
+// Function to sort employees by their average using Bubble Sort
+void sortEmployees(Employee employees[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (employees[j].average > employees[j + 1].average) {
+                // Swap employees[j] and employees[j + 1]
+                Employee temp = employees[j];
+                employees[j] = employees[j + 1];
+                employees[j + 1] = temp;
+            }
+        }
+    }
+}
+
+// Function to display the list of employees
+void displayEmployees(Employee employees[], int n) {
+    printf("\nSorted list of employees (by average of height and weight):\n");
+    printf("-----------------------------------------------------------\n");
+    printf("Name\t\tHeight\t\tWeight\t\tAverage\n");
+    printf("-----------------------------------------------------------\n");
+    for (int i = 0; i < n; i++) {
+        printf("%s\t\t%.2f\t\t%.2f\t\t%.2f\n",
+               employees[i].name, employees[i].height, employees[i].weight, employees[i].average);
+    }
+}
+
+int main() {
+    int n;
+    printf("Enter the number of employees: ");
+    scanf("%d", &n);
+
+    Employee employees[n];
+
+    // Input employee details
+    for (int i = 0; i < n; i++) {
+        printf("\nEnter details for employee %d:\n", i + 1);
+        printf("Name: ");
+        scanf("%s", employees[i].name);
+        printf("Height (in cm): ");
+        scanf("%f", &employees[i].height);
+        printf("Weight (in kg): ");
+        scanf("%f", &employees[i].weight);
+    }
+
+    // Calculate averages
+    calculateAverages(employees, n);
+
+    // Sort employees by average
+    sortEmployees(employees, n);
+
+    // Display the sorted list
+    displayEmployees(employees, n);
+
+    return 0;
+}
+
+Q. Given a set of points Pi , 1 ? i ? N (? 2) on the xaxis,
+ find Pi and Pj such that |Pi ? P j | is minimum. e.g. P1 | P2 | P3 | P4 | P5 | P6 {P4 , P6}
+ is the closest pair.
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+// Function to compare two integers (used for sorting)
+int compare(const void *a, const void *b) {
+    return (*(int *)a - *(int *)b);
+}
+
+// Function to find the closest pair of points
+void findClosestPair(int points[], int n) {
+    // Sort the points
+    qsort(points, n, sizeof(int), compare);
+
+    // Variables to store the minimum difference and the closest pair
+    int minDiff = abs(points[1] - points[0]);
+    int closest1 = points[0];
+    int closest2 = points[1];
+
+    // Find the closest pair by comparing consecutive points
+    for (int i = 1; i < n - 1; i++) {
+        int diff = abs(points[i + 1] - points[i]);
+        if (diff < minDiff) {
+            minDiff = diff;
+            closest1 = points[i];
+            closest2 = points[i + 1];
+        }
+    }
+
+    // Print the closest pair
+    printf("The closest pair is: {%d, %d}\n", closest1, closest2);
+}
+
+int main() {
+    // Input: array of points on the x-axis
+    int points[] = {10, 4, 8, 15, 6, 20};
+    int n = sizeof(points) / sizeof(points[0]);
+
+    // Find and print the closest pair
+    findClosestPair(points, n);
+
+    return 0;
+}
+
+Q. WAP to search a particular students record in 'n' number of students
+pool by using Binary search with and without recursive function.
+Assume suitable data for student record.
+
+#include <stdio.h>
+#include <string.h>
+
+// Structure to represent a student
+typedef struct {
+    int rollNumber;
+    char name[50];
+    float marks;
+} Student;
+
+// Function for binary search (iterative)
+int binarySearchIterative(Student students[], int n, int rollNumber) {
+    int low = 0, high = n - 1;
+    while (low <= high) {
+        int mid = (low + high) / 2;
+        if (students[mid].rollNumber == rollNumber) {
+            return mid;
+        } else if (students[mid].rollNumber < rollNumber) {
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+    return -1; // Not found
+}
+
+// Function for binary search (recursive)
+int binarySearchRecursive(Student students[], int low, int high, int rollNumber) {
+    if (low > high) {
+        return -1; // Not found
+    }
+    int mid = (low + high) / 2;
+    if (students[mid].rollNumber == rollNumber) {
+        return mid;
+    } else if (students[mid].rollNumber < rollNumber) {
+        return binarySearchRecursive(students, mid + 1, high, rollNumber);
+    } else {
+        return binarySearchRecursive(students, low, mid - 1, rollNumber);
+    }
+}
+
+// Main function
+int main() {
+    int n, rollNumber, result;
+    printf("Enter the number of students: ");
+    scanf("%d", &n);
+
+    Student students[n];
+
+    // Input student details
+    printf("Enter student details (rollNumber name marks):\n");
+    for (int i = 0; i < n; i++) {
+        printf("Student %d: ", i + 1);
+        scanf("%d %s %f", &students[i].rollNumber, students[i].name, &students[i].marks);
+    }
+
+    // Ensure records are sorted by roll number
+    // You can use a sorting algorithm here if input is unsorted
+
+    printf("Enter the roll number to search: ");
+    scanf("%d", &rollNumber);
+
+    // Iterative binary search
+    result = binarySearchIterative(students, n, rollNumber);
+    if (result != -1) {
+        printf("\nRecord found (Iterative):\n");
+        printf("Roll Number: %d, Name: %s, Marks: %.2f\n",
+               students[result].rollNumber, students[result].name, students[result].marks);
+    } else {
+        printf("\nRecord not found (Iterative).\n");
+    }
+
+    // Recursive binary search
+    result = binarySearchRecursive(students, 0, n - 1, rollNumber);
+    if (result != -1) {
+        printf("\nRecord found (Recursive):\n");
+        printf("Roll Number: %d, Name: %s, Marks: %.2f\n",
+               students[result].rollNumber, students[result].name, students[result].marks);
+    } else {
+        printf("\nRecord not found (Recursive).\n");
+    }
+
+    return 0;
+}
+
+Q. WAP to search a particular employees record in 'n' number of
+employee's pool by using Fibonacci search with and without recursive
+function. Assume suitable data for employee record.
+
+#include <stdio.h>
+#include <string.h>
+
+// Structure to represent an employee
+typedef struct {
+    int empID;
+    char name[50];
+    float salary;
+} Employee;
+
+// Fibonacci function to generate Fibonacci numbers
+int fib(int n) {
+    if (n <= 1) return n;
+    return fib(n - 1) + fib(n - 2);
+}
+
+// Fibonacci Search (Iterative)
+int fibonacciSearchIterative(Employee employees[], int n, int empID) {
+    int fibMMm2 = 0; // (m-2)th Fibonacci number
+    int fibMMm1 = 1; // (m-1)th Fibonacci number
+    int fibM = fibMMm2 + fibMMm1; // mth Fibonacci number
+
+    // Find the smallest Fibonacci number greater than or equal to n
+    while (fibM < n) {
+        fibMMm2 = fibMMm1;
+        fibMMm1 = fibM;
+        fibM = fibMMm2 + fibMMm1;
+    }
+
+    int offset = -1;
+
+    while (fibM > 1) {
+        int i = (offset + fibMMm2 < n) ? (offset + fibMMm2) : (n - 1);
+
+        if (employees[i].empID < empID) {
+            fibM = fibMMm1;
+            fibMMm1 = fibMMm2;
+            fibMMm2 = fibM - fibMMm1;
+            offset = i;
+        } else if (employees[i].empID > empID) {
+            fibM = fibMMm2;
+            fibMMm1 = fibMMm1 - fibMMm2;
+            fibMMm2 = fibM - fibMMm1;
+        } else {
+            return i; // Found
+        }
+    }
+
+    if (fibMMm1 && employees[offset + 1].empID == empID) {
+        return offset + 1; // Last element
+    }
+
+    return -1; // Not found
+}
+
+// Fibonacci Search (Recursive)
+int fibonacciSearchRecursive(Employee employees[], int n, int empID, int fibMMm2, int fibMMm1, int fibM, int offset) {
+    if (fibM <= 1) {
+        if (fibMMm1 && employees[offset + 1].empID == empID) {
+            return offset + 1; // Found
+        }
+        return -1; // Not found
+    }
+
+    int i = (offset + fibMMm2 < n) ? (offset + fibMMm2) : (n - 1);
+
+    if (employees[i].empID < empID) {
+        return fibonacciSearchRecursive(employees, n, empID, fibMMm1 - fibMMm2, fibMMm2, fibMMm1, i);
+    } else if (employees[i].empID > empID) {
+        return fibonacciSearchRecursive(employees, n, empID, fibMMm2, fibMMm1 - fibMMm2, fibMMm2, offset);
+    } else {
+        return i; // Found
+    }
+}
+
+// Main function
+int main() {
+    int n, empID, result;
+
+    printf("Enter the number of employees: ");
+    scanf("%d", &n);
+
+    Employee employees[n];
+
+    // Input employee details
+    printf("Enter employee details (empID name salary):\n");
+    for (int i = 0; i < n; i++) {
+        printf("Employee %d: ", i + 1);
+        scanf("%d %s %f", &employees[i].empID, employees[i].name, &employees[i].salary);
+    }
+
+    // Ensure records are sorted by employee ID
+    // Sorting logic can be added here if needed
+
+    printf("Enter the employee ID to search: ");
+    scanf("%d", &empID);
+
+    // Iterative Fibonacci Search
+    result = fibonacciSearchIterative(employees, n, empID);
+    if (result != -1) {
+        printf("\nRecord found (Iterative):\n");
+        printf("Employee ID: %d, Name: %s, Salary: %.2f\n",
+               employees[result].empID, employees[result].name, employees[result].salary);
+    } else {
+        printf("\nRecord not found (Iterative).\n");
+    }
+
+    // Recursive Fibonacci Search
+    int fibMMm2 = 0, fibMMm1 = 1, fibM = fibMMm2 + fibMMm1;
+    while (fibM < n) { // Generate Fibonacci sequence
+        fibMMm2 = fibMMm1;
+        fibMMm1 = fibM;
+        fibM = fibMMm2 + fibMMm1;
+    }
+
+    result = fibonacciSearchRecursive(employees, n, empID, fibMMm2, fibMMm1, fibM, -1);
+    if (result != -1) {
+        printf("\nRecord found (Recursive):\n");
+        printf("Employee ID: %d, Name: %s, Salary: %.2f\n",
+               employees[result].empID, employees[result].name, employees[result].salary);
+    } else {
+        printf("\nRecord not found (Recursive).\n");
+    }
+
+    return 0;
+}
+
+Q.WAP to simulate faculty database as a hash table. Search a particular
+faculty by using MOD as a hash function for linear probing method of
+collision handling technique. Assume suitable data for faculty record.
+
+
+#include <stdio.h>
+#include <string.h>
+
+#define TABLE_SIZE 10 // Define the size of the hash table
+
+// Structure to represent a faculty record
+typedef struct {
+    int facultyID;
+    char name[50];
+    char department[50];
+    int isOccupied; // 0 = Empty, 1 = Occupied
+} Faculty;
+
+// Hash function using MOD
+int hashFunction(int key) {
+    return key % TABLE_SIZE;
+}
+
+// Insert a faculty record into the hash table
+void insertFaculty(Faculty table[], int facultyID, char name[], char department[]) {
+    int index = hashFunction(facultyID);
+    int originalIndex = index;
+
+    // Linear probing to handle collisions
+    while (table[index].isOccupied) {
+        index = (index + 1) % TABLE_SIZE;
+        if (index == originalIndex) {
+            printf("Hash table is full, cannot insert record.\n");
+            return;
+        }
+    }
+
+    // Insert the faculty record
+    table[index].facultyID = facultyID;
+    strcpy(table[index].name, name);
+    strcpy(table[index].department, department);
+    table[index].isOccupied = 1;
+
+    printf("Record inserted at index %d\n", index);
+}
+
+// Search for a faculty record in the hash table
+void searchFaculty(Faculty table[], int facultyID) {
+    int index = hashFunction(facultyID);
+    int originalIndex = index;
+
+    // Linear probing to search for the record
+    while (table[index].isOccupied) {
+        if (table[index].facultyID == facultyID) {
+            // Record found
+            printf("Record found at index %d:\n", index);
+            printf("Faculty ID: %d\n", table[index].facultyID);
+            printf("Name: %s\n", table[index].name);
+            printf("Department: %s\n", table[index].department);
+            return;
+        }
+        index = (index + 1) % TABLE_SIZE;
+        if (index == originalIndex) {
+            break; // We've looped back to the start
+        }
+    }
+
+    // Record not found
+    printf("Record not found.\n");
+}
+
+// Display the hash table
+void displayHashTable(Faculty table[]) {
+    printf("\nHash Table:\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        if (table[i].isOccupied) {
+            printf("Index %d: Faculty ID = %d, Name = %s, Department = %s\n",
+                   i, table[i].facultyID, table[i].name, table[i].department);
+        } else {
+            printf("Index %d: Empty\n", i);
+        }
+    }
+}
+
+// Main function
+int main() {
+    Faculty table[TABLE_SIZE];
+
+    // Initialize the hash table
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        table[i].isOccupied = 0; // Mark all slots as empty
+    }
+
+    int choice, facultyID;
+    char name[50], department[50];
+
+    do {
+        printf("\nMenu:\n");
+        printf("1. Insert Faculty Record\n");
+        printf("2. Search Faculty Record\n");
+        printf("3. Display Hash Table\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter Faculty ID: ");
+                scanf("%d", &facultyID);
+                printf("Enter Name: ");
+                scanf("%s", name);
+                printf("Enter Department: ");
+                scanf("%s", department);
+                insertFaculty(table, facultyID, name, department);
+                break;
+
+            case 2:
+                printf("Enter Faculty ID to search: ");
+                scanf("%d", &facultyID);
+                searchFaculty(table, facultyID);
+                break;
+
+            case 3:
+                displayHashTable(table);
+                break;
+
+            case 4:
+                printf("Exiting...\n");
+                break;
+
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}
+Q.WAP to simulate faculty database as a hash table. Search a particular
+faculty by using 'divide' as a hash function for linear probing with
+chaining without replacement method of collision handling technique.
+Assume suitable data for faculty record.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TABLE_SIZE 10 // Define the size of the hash table
+
+// Structure for a faculty record
+typedef struct Faculty {
+    int facultyID;
+    char name[50];
+    char department[50];
+    struct Faculty* next; // Pointer for chaining
+} Faculty;
+
+// Hash function using divide method
+int hashFunction(int key) {
+    return key % TABLE_SIZE;
+}
+
+// Insert a faculty record into the hash table
+void insertFaculty(Faculty* table[], int facultyID, char name[], char department[]) {
+    int index = hashFunction(facultyID);
+
+    // Create a new faculty node
+    Faculty* newFaculty = (Faculty*)malloc(sizeof(Faculty));
+    newFaculty->facultyID = facultyID;
+    strcpy(newFaculty->name, name);
+    strcpy(newFaculty->department, department);
+    newFaculty->next = NULL;
+
+    // Handle collision with chaining without replacement
+    if (table[index] == NULL) {
+        table[index] = newFaculty; // Insert directly if slot is empty
+    } else {
+        Faculty* temp = table[index];
+        while (temp->next != NULL) {
+            temp = temp->next; // Traverse to the end of the chain
+        }
+        temp->next = newFaculty; // Add the new record at the end
+    }
+
+    printf("Record inserted at index %d\n", index);
+}
+
+// Search for a faculty record in the hash table
+void searchFaculty(Faculty* table[], int facultyID) {
+    int index = hashFunction(facultyID);
+    Faculty* temp = table[index];
+
+    // Traverse the linked list at the index to find the record
+    while (temp != NULL) {
+        if (temp->facultyID == facultyID) {
+            printf("Record found at index %d:\n", index);
+            printf("Faculty ID: %d\n", temp->facultyID);
+            printf("Name: %s\n", temp->name);
+            printf("Department: %s\n", temp->department);
+            return;
+        }
+        temp = temp->next;
+    }
+
+    printf("Record not found.\n");
+}
+
+// Display the hash table
+void displayHashTable(Faculty* table[]) {
+    printf("\nHash Table:\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        printf("Index %d: ", i);
+        Faculty* temp = table[i];
+        if (temp == NULL) {
+            printf("Empty\n");
+        } else {
+            while (temp != NULL) {
+                printf("[Faculty ID: %d, Name: %s, Department: %s] -> ",
+                       temp->facultyID, temp->name, temp->department);
+                temp = temp->next;
+            }
+            printf("NULL\n");
+        }
+    }
+}
+
+// Main function
+int main() {
+    Faculty* table[TABLE_SIZE];
+
+    // Initialize the hash table
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        table[i] = NULL;
+    }
+
+    int choice, facultyID;
+    char name[50], department[50];
+
+    do {
+        printf("\nMenu:\n");
+        printf("1. Insert Faculty Record\n");
+        printf("2. Search Faculty Record\n");
+        printf("3. Display Hash Table\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter Faculty ID: ");
+                scanf("%d", &facultyID);
+                printf("Enter Name: ");
+                scanf("%s", name);
+                printf("Enter Department: ");
+                scanf("%s", department);
+                insertFaculty(table, facultyID, name, department);
+                break;
+
+            case 2:
+                printf("Enter Faculty ID to search: ");
+                scanf("%d", &facultyID);
+                searchFaculty(table, facultyID);
+                break;
+
+            case 3:
+                displayHashTable(table);
+                break;
+
+            case 4:
+                printf("Exiting...\n");
+                break;
+
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}
+
+
+Q.WAP to simulate faculty database as a hash table. Search a particular
+faculty by using MOD as a hash function for linear probing with
+chaining with replacement method of collision handling technique.
+Assume suitable data for faculty record.
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TABLE_SIZE 10 // Define the size of the hash table
+
+// Structure for a faculty record
+typedef struct Faculty {
+    int facultyID;
+    char name[50];
+    char department[50];
+    struct Faculty* next; // Pointer for chaining
+} Faculty;
+
+// Hash function using MOD
+int hashFunction(int key) {
+    return key % TABLE_SIZE;
+}
+
+// Create a new faculty record
+Faculty* createFaculty(int facultyID, char name[], char department[]) {
+    Faculty* newFaculty = (Faculty*)malloc(sizeof(Faculty));
+    newFaculty->facultyID = facultyID;
+    strcpy(newFaculty->name, name);
+    strcpy(newFaculty->department, department);
+    newFaculty->next = NULL;
+    return newFaculty;
+}
+
+// Insert a faculty record into the hash table
+void insertFaculty(Faculty* table[], int facultyID, char name[], char department[]) {
+    int index = hashFunction(facultyID);
+
+    // Create a new faculty node
+    Faculty* newFaculty = createFaculty(facultyID, name, department);
+
+    // If the slot is empty, insert directly
+    if (table[index] == NULL) {
+        table[index] = newFaculty;
+        printf("Record inserted at index %d\n", index);
+    } else {
+        // Check if the existing record belongs to this index
+        int existingIndex = hashFunction(table[index]->facultyID);
+        if (existingIndex != index) {
+            // Replace the existing record with the new one
+            Faculty* displaced = table[index];
+            table[index] = newFaculty;
+
+            // Reinsert the displaced record using linear probing
+            int newIndex = (index + 1) % TABLE_SIZE;
+            while (table[newIndex] != NULL) {
+                newIndex = (newIndex + 1) % TABLE_SIZE;
+            }
+            table[newIndex] = displaced;
+            printf("Record replaced and displaced record reinserted at index %d\n", newIndex);
+        } else {
+            // Add the new record to the chain
+            newFaculty->next = table[index];
+            table[index] = newFaculty;
+            printf("Record added to chain at index %d\n", index);
+        }
+    }
+}
+
+// Search for a faculty record in the hash table
+void searchFaculty(Faculty* table[], int facultyID) {
+    int index = hashFunction(facultyID);
+    Faculty* temp = table[index];
+
+    // Traverse the chain to search for the record
+    while (temp != NULL) {
+        if (temp->facultyID == facultyID) {
+            printf("Record found at index %d:\n", index);
+            printf("Faculty ID: %d\n", temp->facultyID);
+            printf("Name: %s\n", temp->name);
+            printf("Department: %s\n", temp->department);
+            return;
+        }
+        temp = temp->next;
+    }
+
+    printf("Record not found.\n");
+}
+
+// Display the hash table
+void displayHashTable(Faculty* table[]) {
+    printf("\nHash Table:\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        printf("Index %d: ", i);
+        Faculty* temp = table[i];
+        if (temp == NULL) {
+            printf("Empty\n");
+        } else {
+            while (temp != NULL) {
+                printf("[Faculty ID: %d, Name: %s, Department: %s] -> ",
+                       temp->facultyID, temp->name, temp->department);
+                temp = temp->next;
+            }
+            printf("NULL\n");
+        }
+    }
+}
+
+// Main function
+int main() {
+    Faculty* table[TABLE_SIZE];
+
+    // Initialize the hash table
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        table[i] = NULL;
+    }
+
+    int choice, facultyID;
+    char name[50], department[50];
+
+    do {
+        printf("\nMenu:\n");
+        printf("1. Insert Faculty Record\n");
+        printf("2. Search Faculty Record\n");
+        printf("3. Display Hash Table\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter Faculty ID: ");
+                scanf("%d", &facultyID);
+                printf("Enter Name: ");
+                scanf("%s", name);
+                printf("Enter Department: ");
+                scanf("%s", department);
+                insertFaculty(table, facultyID, name, department);
+                break;
+
+            case 2:
+                printf("Enter Faculty ID to search: ");
+                scanf("%d", &facultyID);
+                searchFaculty(table, facultyID);
+                break;
+
+            case 3:
+                displayHashTable(table);
+                break;
+            case 4:
+                printf("Exiting...\n");
+                break;
+
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}
+
+Q.WAP to simulate an application of Divide and Conquer methodology to
+ search minimum and maximum number simultaneously from a pool of
+random numbers entered by the user using recursive function.
+
+#include <stdio.h>
+#include <limits.h>
+
+// Structure to store both minimum and maximum
+typedef struct {
+    int min;
+    int max;
+} MinMax;
+
+// Recursive function to find minimum and maximum using Divide and Conquer
+MinMax findMinMax(int arr[], int low, int high) {
+    MinMax result, left, right;
+
+    // Base case: If the array contains only one element
+    if (low == high) {
+        result.min = arr[low];
+        result.max = arr[low];
+        return result;
+    }
+
+    // Base case: If the array contains two elements
+    if (high == low + 1) {
+        if (arr[low] < arr[high]) {
+            result.min = arr[low];
+            result.max = arr[high];
+        } else {
+            result.min = arr[high];
+            result.max = arr[low];
+        }
+        return result;
+    }
+
+    // Divide the array into two halves
+    int mid = (low + high) / 2;
+
+    // Recursively find min and max in both halves
+    left = findMinMax(arr, low, mid);
+    right = findMinMax(arr, mid + 1, high);
+
+    // Combine results: Find overall min and max
+    result.min = (left.min < right.min) ? left.min : right.min;
+    result.max = (left.max > right.max) ? left.max : right.max;
+
+    return result;
+}
+
+int main() {
+    int n;
+
+    // Input the number of elements
+    printf("Enter the number of elements: ");
+    scanf("%d", &n);
+
+    if (n <= 0) {
+        printf("Invalid number of elements.\n");
+        return 1;
+    }
+
+    int arr[n];
+
+    // Input the elements
+    printf("Enter the elements:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &arr[i]);
+    }
+
+    // Call the recursive function
+    MinMax result = findMinMax(arr, 0, n - 1);
+
+    // Output the results
+    printf("Minimum element: %d\n", result.min);
+    printf("Maximum element: %d\n", result.max);
+
+    return 0;
+}
+
+Q.WAP to store k keys into an array of size n at the location computed
+using a hash function, loc = key % n, where k<=n and k takes values
+from [1 to m], m>n. To handle the collisions use the following collision
+resolution techniques, a. Linear probing with chaining b. Rehashing
+technique.
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_KEYS 100
+#define TABLE_SIZE 10
+
+// Structure for a node in the chain
+typedef struct Node {
+    int key;
+    struct Node* next;
+} Node;
+
+// Function to create a new node
+Node* createNode(int key) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->key = key;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Insert a key using Linear Probing with Chaining
+void insertLinearProbingWithChaining(Node* table[], int key) {
+    int loc = key % TABLE_SIZE;
+
+    // Create a new node for the key
+    Node* newNode = createNode(key);
+
+    // Insert the node in the chain
+    if (table[loc] == NULL) {
+        table[loc] = newNode;
+    } else {
+        Node* temp = table[loc];
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newNode;
+    }
+
+    printf("Key %d inserted at location %d (chaining).\n", key, loc);
+}
+
+// Rehashing function to find a new location
+int rehash(int key, int attempt) {
+    return (key + attempt) % TABLE_SIZE; // New hash function
+}
+
+// Insert a key using Rehashing technique
+void insertRehashing(int table[], int key) {
+    int loc = key % TABLE_SIZE;
+    int attempt = 1;
+
+    // Resolve collision using rehashing
+    while (table[loc] != -1) {
+        printf("Collision at location %d. Rehashing...\n", loc);
+        loc = rehash(key, attempt);
+        attempt++;
+    }
+
+    // Insert the key at the rehashed location
+    table[loc] = key;
+    printf("Key %d inserted at location %d (rehashing).\n", key, loc);
+}
+
+// Display the hash table (for chaining)
+void displayChaining(Node* table[]) {
+    printf("\nHash Table (Chaining):\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        printf("Index %d: ", i);
+        Node* temp = table[i];
+        if (temp == NULL) {
+            printf("Empty\n");
+        } else {
+            while (temp != NULL) {
+                printf("%d -> ", temp->key);
+                temp = temp->next;
+            }
+            printf("NULL\n");
+        }
+    }
+}
+
+// Display the hash table (for rehashing)
+void displayRehashing(int table[]) {
+    printf("\nHash Table (Rehashing):\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        if (table[i] == -1) {
+            printf("Index %d: Empty\n", i);
+        } else {
+            printf("Index %d: %d\n", i, table[i]);
+        }
+    }
+}
+
+int main() {
+    Node* chainTable[TABLE_SIZE];  // Hash table for chaining
+    int rehashTable[TABLE_SIZE];  // Hash table for rehashing
+    int k, key;
+
+    // Initialize hash tables
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        chainTable[i] = NULL;
+        rehashTable[i] = -1; // Mark all slots as empty
+    }
+
+    // Input the number of keys
+    printf("Enter the number of keys (k <= %d): ", MAX_KEYS);
+    scanf("%d", &k);
+
+    if (k > TABLE_SIZE) {
+        printf("Error: Number of keys exceeds table size.\n");
+        return 1;
+    }
+
+    printf("Enter %d keys:\n", k);
+
+    // Insert keys into both hash tables
+    for (int i = 0; i < k; i++) {
+        scanf("%d", &key);
+        insertLinearProbingWithChaining(chainTable, key);
+        insertRehashing(rehashTable, key);
+    }
+
+    // Display both hash tables
+    displayChaining(chainTable);
+    displayRehashing(rehashTable);
+
+    return 0;
+}
+
+Q.WAP to simulate employee database as a hash table. Search a particular
+faculty by using Mid square method as a hash function for linear
+probing method of collision handling technique. Assume suitable data
+for faculty record.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TABLE_SIZE 10 // Size of the hash table
+
+// Structure for employee (faculty) record
+typedef struct {
+    int empID;
+    char name[50];
+    char department[50];
+} Employee;
+
+// Function to compute hash index using Mid-Square Method
+int midSquareHash(int key) {
+    int square = key * key; // Square the key
+    int midDigits = (square / 10) % 100; // Extract middle two digits
+    return midDigits % TABLE_SIZE; // Fit index within table size
+}
+
+// Insert an employee record using linear probing
+void insert(Employee table[], int isOccupied[], int empID, char name[], char department[]) {
+    int hashIndex = midSquareHash(empID);
+    int originalIndex = hashIndex;
+    int probeCount = 0;
+
+    // Handle collisions using linear probing
+    while (isOccupied[hashIndex]) {
+        printf("Collision at index %d. Probing...\n", hashIndex);
+        hashIndex = (hashIndex + 1) % TABLE_SIZE; // Linear probing
+        probeCount++;
+
+        // If we've looped through the entire table, exit
+        if (hashIndex == originalIndex) {
+            printf("Hash table is full! Cannot insert record.\n");
+            return;
+        }
+    }
+
+    // Insert the record at the resolved index
+    table[hashIndex].empID = empID;
+    strcpy(table[hashIndex].name, name);
+    strcpy(table[hashIndex].department, department);
+    isOccupied[hashIndex] = 1;
+    printf("Record inserted at index %d (probed %d times).\n", hashIndex, probeCount);
+}
+
+// Search for an employee record by empID
+void search(Employee table[], int isOccupied[], int empID) {
+    int hashIndex = midSquareHash(empID);
+    int originalIndex = hashIndex;
+    int probeCount = 0;
+
+    // Search for the key using linear probing
+    while (isOccupied[hashIndex]) {
+        if (table[hashIndex].empID == empID) {
+            printf("Record found at index %d:\n", hashIndex);
+            printf("Employee ID: %d\n", table[hashIndex].empID);
+            printf("Name: %s\n", table[hashIndex].name);
+            printf("Department: %s\n", table[hashIndex].department);
+            return;
+        }
+        hashIndex = (hashIndex + 1) % TABLE_SIZE; // Linear probing
+        probeCount++;
+
+        // If we've looped through the entire table, exit
+        if (hashIndex == originalIndex) {
+            break;
+        }
+    }
+
+    printf("Record not found after %d probes.\n", probeCount);
+}
+
+// Display the hash table
+void displayHashTable(Employee table[], int isOccupied[]) {
+    printf("\nHash Table:\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        printf("Index %d: ", i);
+        if (isOccupied[i]) {
+            printf("[Employee ID: %d, Name: %s, Department: %s]\n",
+                   table[i].empID, table[i].name, table[i].department);
+        } else {
+            printf("Empty\n");
+        }
+    }
+}
+
+// Main function
+int main() {
+    Employee hashTable[TABLE_SIZE]; // Hash table to store employee records
+    int isOccupied[TABLE_SIZE] = {0}; // Array to track occupied slots
+    int choice, empID;
+    char name[50], department[50];
+
+    do {
+        printf("\nMenu:\n");
+        printf("1. Insert Employee Record\n");
+        printf("2. Search Employee Record\n");
+        printf("3. Display Hash Table\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter Employee ID: ");
+                scanf("%d", &empID);
+                printf("Enter Name: ");
+                scanf("%s", name);
+                printf("Enter Department: ");
+                scanf("%s", department);
+                insert(hashTable, isOccupied, empID, name, department);
+                break;
+
+            case 2:
+                printf("Enter Employee ID to search: ");
+                scanf("%d", &empID);
+                search(hashTable, isOccupied, empID);
+                break;
+
+            case 3:
+                displayHashTable(hashTable, isOccupied);
+                break;
+
+            case 4:
+                printf("Exiting...\n");
+                break;
+
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}
+
+Q.WAP to simulate faculty database as a hash table. Search a particular
+faculty by using 'divide' as a hash function for linear probing with
+chaining without replacement method of collision handling technique.
+Assume suitable data for faculty record.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TABLE_SIZE 10  // Size of the hash table
+
+// Structure for faculty record
+typedef struct Faculty {
+    int empID;
+    char name[50];
+    char department[50];
+    struct Faculty* next;  // Pointer to handle collision by chaining
+} Faculty;
+
+// Hash function using the divide method
+int hash(int key) {
+    return key % TABLE_SIZE;
+}
+
+// Function to create a new faculty record
+Faculty* createFaculty(int empID, char* name, char* department) {
+    Faculty* newFaculty = (Faculty*)malloc(sizeof(Faculty));
+    newFaculty->empID = empID;
+    strcpy(newFaculty->name, name);
+    strcpy(newFaculty->department, department);
+    newFaculty->next = NULL;
+    return newFaculty;
+}
+
+//Insert faculty record into the hash table using linear probing with chaining
+void insert(Faculty* hashTable[], int empID, char* name, char* department) {
+    int index = hash(empID);  // Find the hash index using the divide method
+    Faculty* newFaculty = createFaculty(empID, name, department);
+
+    // If no record exists at this index, insert directly
+    if (hashTable[index] == NULL) {
+        hashTable[index] = newFaculty;
+        printf("Inserted record with Employee ID %d at index %d.\n", empID, index);
+    } else {
+        // Collision handling: Add the new record at the end of the chain
+        Faculty* temp = hashTable[index];
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newFaculty;  // Add new record to the chain
+        printf("Collision detected. Added record with Employee ID %d to the chain at index %d.\n", empID, index);
+    }
+}
+
+// Search for a faculty record by empID
+void search(Faculty* hashTable[], int empID) {
+    int index = hash(empID);  // Find the hash index
+    Faculty* temp = hashTable[index];
+
+    while (temp != NULL) {
+        if (temp->empID == empID) {
+            printf("Record found at index %d:\n", index);
+            printf("Employee ID: %d\n", temp->empID);
+            printf("Name: %s\n", temp->name);
+            printf("Department: %s\n", temp->department);
+            return;
+        }
+        temp = temp->next;
+    }
+
+    printf("Record not found for Employee ID %d.\n", empID);
+}
+
+// Display the hash table and the linked lists (chains)
+void display(Faculty* hashTable[]) {
+    printf("\nFaculty Hash Table (with Chaining):\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        printf("Index %d: ", i);
+        Faculty* temp = hashTable[i];
+        if (temp == NULL) {
+            printf("Empty\n");
+        } else {
+            while (temp != NULL) {
+                printf("[EmpID: %d, Name: %s, Dept: %s] -> ", temp->empID, temp->name, temp->department);
+                temp = temp->next;
+            }
+            printf("NULL\n");
+        }
+    }
+}
+
+// Main function
+int main() {
+    Faculty* hashTable[TABLE_SIZE] = { NULL };  // Initialize the hash table to NULL
+    int choice, empID;
+    char name[50], department[50];
+
+    do {
+        printf("\nMenu:\n");
+        printf("1. Insert Faculty Record\n");
+        printf("2. Search Faculty Record\n");
+        printf("3. Display Faculty Database\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter Employee ID: ");
+                scanf("%d", &empID);
+                printf("Enter Name: ");
+                scanf("%s", name);
+                printf("Enter Department: ");
+                scanf("%s", department);
+                insert(hashTable, empID, name, department);
+                break;
+
+            case 2:
+                printf("Enter Employee ID to search: ");
+                scanf("%d", &empID);
+                search(hashTable, empID);
+                break;
+
+            case 3:
+                display(hashTable);
+                break;
+
+            case 4:
+                printf("Exiting...\n");
+                break;
+
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}
+
+Q.WAP to simulate employee database as a hash table. Search a particular
+faculty by using Mid square Method as a hash function for linear
+probing with chaining with replacement method of collision handling
+technique. Assume suitable data for faculty record
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TABLE_SIZE 10  // Size of the hash table
+
+// Structure for faculty record
+typedef struct Faculty {
+    int empID;
+    char name[50];
+    char department[50];
+    struct Faculty* next;  // Pointer to handle collision by chaining
+} Faculty;
+
+// Hash function using Mid-Square Method
+int midSquareHash(int key) {
+    int square = key * key;  // Square the key
+    int midDigits = (square / 10) % 100;  // Extract middle two digits
+    return midDigits % TABLE_SIZE;  // Fit index within table size
+}
+
+// Function to create a new faculty record
+Faculty* createFaculty(int empID, char* name, char* department) {
+    Faculty* newFaculty = (Faculty*)malloc(sizeof(Faculty));
+    newFaculty->empID = empID;
+    strcpy(newFaculty->name, name);
+    strcpy(newFaculty->department, department);
+    newFaculty->next = NULL;
+    return newFaculty;
+}
+
+// Insert faculty record into the hash table using linear probing with chaining and replacement
+void insert(Faculty* hashTable[], int empID, char* name, char* department) {
+    int index = midSquareHash(empID);  // Find the hash index using the Mid-Square Method
+    Faculty* newFaculty = createFaculty(empID, name, department);
+
+    // If no record exists at this index, insert directly
+    if (hashTable[index] == NULL) {
+        hashTable[index] = newFaculty;
+        printf("Inserted record with Employee ID %d at index %d.\n", empID, index);
+    } else {
+        // Collision handling: Replace the existing record at the index
+        Faculty* temp = hashTable[index];
+        hashTable[index] = newFaculty;  // Replace the existing faculty record
+        newFaculty->next = temp->next;  // Maintain the linked list
+        printf("Collision detected. Replaced record with Employee ID %d at index %d.\n", empID, index);
+    }
+}
+
+// Search for a faculty record by empID
+void search(Faculty* hashTable[], int empID) {
+    int index = midSquareHash(empID);  // Find the hash index
+    Faculty* temp = hashTable[index];
+
+    while (temp != NULL) {
+        if (temp->empID == empID) {
+            printf("Record found at index %d:\n", index);
+            printf("Employee ID: %d\n", temp->empID);
+            printf("Name: %s\n", temp->name);
+            printf("Department: %s\n", temp->department);
+            return;
+        }
+        temp = temp->next;
+    }
+
+    printf("Record not found for Employee ID %d.\n", empID);
+}
+
+// Display the hash table and the linked lists (chains)
+void display(Faculty* hashTable[]) {
+    printf("\nFaculty Hash Table (with Chaining and Replacement):\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        printf("Index %d: ", i);
+        Faculty* temp = hashTable[i];
+        if (temp == NULL) {
+            printf("Empty\n");
+        } else {
+            while (temp != NULL) {
+                printf("[EmpID: %d, Name: %s, Dept: %s] -> ", temp->empID, temp->name, temp->department);
+                temp = temp->next;
+            }
+            printf("NULL\n");
+        }
+    }
+}
+
+// Main function
+int main() {
+    Faculty* hashTable[TABLE_SIZE] = { NULL };  // Initialize the hash table to NULL
+    int choice, empID;
+    char name[50], department[50];
+
+    do {
+        printf("\nMenu:\n");
+        printf("1. Insert Faculty Record\n");
+        printf("2. Search Faculty Record\n");
+        printf("3. Display Faculty Database\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter Employee ID: ");
+                scanf("%d", &empID);
+                printf("Enter Name: ");
+                scanf("%s", name);
+                printf("Enter Department: ");
+                scanf("%s", department);
+                insert(hashTable, empID, name, department);
+                break;
+
+            case 2:
+                printf("Enter Employee ID to search: ");
+                scanf("%d", &empID);
+                search(hashTable, empID);
+                break;
+
+            case 3:
+                display(hashTable);
+                break;
+
+            case 4:
+                printf("Exiting...\n");
+                break;
+
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}
+
+Q. In a lab there were 10 computers which are having numbers as 21 to 30.
+Students registered for a lab are 10 only. Design appropriate hash
+function to assign a computer to every student. Now assume that three
+students are absent of this batch so another batch students want to use
+computers in this lab. Allocate the computers to these new students by
+using linear probing with chaining without replacement.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define TABLE_SIZE 10  // Number of computers in the lab (computers numbered 21 to 30)
+
+// Structure to store student information
+typedef struct Student {
+    int studentID;  // Student's ID (assuming student ID is their registration number)
+    struct Student* next;  // Pointer for chaining in case of collision
+} Student;
+
+// Hash function to assign a computer to a student (map studentID to table index)
+int hash(int studentID) {
+    return studentID % TABLE_SIZE;  // Simple hash function: key % TABLE_SIZE
+}
+
+// Function to create a new student record
+Student* createStudent(int studentID) {
+    Student* newStudent = (Student*)malloc(sizeof(Student));
+    newStudent->studentID = studentID;
+    newStudent->next = NULL;
+    return newStudent;
+}
+
+// Insert a student into the hash table (using linear probing with chaining without replacement)
+void insert(Student* hashTable[], int studentID) {
+    int index = hash(studentID);  // Get the hash index
+
+    // Check if there is already a student assigned at this index
+    if (hashTable[index] == NULL) {
+        // No collision, directly assign the student
+        hashTable[index] = createStudent(studentID);
+        printf("Student with ID %d assigned to computer %d.\n", studentID, index + 21);
+    } else {
+        // Collision handling: Chain the student record at this index
+        Student* temp = hashTable[index];
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = createStudent(studentID);
+        printf("Collision! Student with ID %d added to computer %d.\n", studentID, index + 21);
+    }
+}
+
+// Function to display the hash table (show assigned computers)
+void display(Student* hashTable[]) {
+    printf("\nAssigned Computers in the Lab (Computers 21 to 30):\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        printf("Computer %d: ", i + 21);
+        Student* temp = hashTable[i];
+        if (temp == NULL) {
+            printf("No student assigned\n");
+        } else {
+            while (temp != NULL) {
+                printf("Student ID %d -> ", temp->studentID);
+                temp = temp->next;
+            }
+            printf("NULL\n");
+        }
+    }
+}
+
+// Main function
+int main() {
+    Student* hashTable[TABLE_SIZE] = { NULL };  // Initialize the hash table with NULL
+
+    int registeredStudents[] = { 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 };  // Initially registered students (1st batch)
+    int absentStudents[] = { 22, 24, 26 };  // Students absent in this batch (IDs are from registeredStudents)
+    
+    // First, assign computers to the initially registered students (first batch)
+    for (int i = 0; i < 10; i++) {
+        insert(hashTable, registeredStudents[i]);
+    }
+
+    // Now, remove the absent students (their IDs are in absentStudents) from the hash table
+    for (int i = 0; i < 3; i++) {
+        int absentID = absentStudents[i];
+        int index = hash(absentID);
+
+        // Remove the student (find and free the corresponding node)
+        Student* temp = hashTable[index];
+        Student* prev = NULL;
+        
+        while (temp != NULL && temp->studentID != absentID) {
+            prev = temp;
+            temp = temp->next;
+        }
+        
+        if (temp != NULL) {  // Student found
+            if (prev == NULL) {  // The first student in the chain
+                hashTable[index] = temp->next;  // Remove it from the chain
+            } else {
+                prev->next = temp->next;  // Remove the student from the middle or end of the chain
+            }
+            free(temp);
+            printf("Student with ID %d is absent and their computer has been freed.\n", absentID);
+        }
+    }
+
+    // Now, allocate computers to new students (second batch)
+    int newStudents[] = { 21, 23, 25 };  // New students needing computers (IDs are from registeredStudents)
+
+    // Allocate computers to new students
+    for (int i = 0; i < 3; i++) {
+        insert(hashTable, newStudents[i]);
+    }
+
+    // Display the final allocation of computers
+    display(hashTable);
+
+    return 0;
+}
+
+Q. In Computer Engg. Dept. of VIT there are S.E., T.E., and B.E. students.
+Assume that all these students are on ground for a function. We need to
+identify a student of S.E. div. (X) whose name is "XYZ" and roll no. is
+"17". Apply appreopriate searching method to identify a required
+student.
+
+#include <stdio.h>
+#include <string.h>
+
+#define MAX_STUDENTS 50  // Max number of students
+
+// Structure to store student details
+typedef struct Student {
+    char name[50];
+    int rollNo;
+    char division[10];
+} Student;
+
+// Function to perform linear search
+int searchStudent(Student students[], int n, const char* targetName, int targetRollNo, const char* targetDivision) {
+    for (int i = 0; i < n; i++) {
+        if (strcmp(students[i].name, targetName) == 0 && students[i].rollNo == targetRollNo && strcmp(students[i].division, targetDivision) == 0) {
+            return i;  // Return the index if the student is found
+        }
+    }
+    return -1;  // Return -1 if the student is not found
+}
+
+int main() {
+    Student students[MAX_STUDENTS] = {
+        {"John", 15, "T.E."},
+        {"Alice", 17, "S.E."},
+        {"Bob", 19, "B.E."},
+        {"XYZ", 17, "S.E."},  // The student we are looking for
+        {"Charlie", 20, "T.E."},
+        {"David", 18, "S.E."},
+        {"Eva", 21, "B.E."},
+        {"XYZ", 16, "S.E."}  // Another "XYZ" in S.E. with a different roll number
+    };
+
+    int numStudents = 8;  // Total number of students in the list
+    const char* targetName = "XYZ";
+    int targetRollNo = 17;
+    const char* targetDivision = "S.E.";
+
+    // Searching for the student with name "XYZ" and roll number 17 in the S.E. division
+    int index = searchStudent(students, numStudents, targetName, targetRollNo, targetDivision);
+
+    if (index != -1) {
+        printf("Student found at index %d:\n", index);
+        printf("Name: %s\n", students[index].name);
+        printf("Roll No: %d\n", students[index].rollNo);
+        printf("Division: %s\n", students[index].division);
+    } else {
+        printf("Student with name '%s' and roll number %d in division '%s' not found.\n", targetName, targetRollNo, targetDivision);
+    }
+
+    return 0;
+}
+
+Q.WAP to store k keys into an array of size n at the location computed
+using a hash function, loc = key / n, where k<=n and k takes values from
+ [1 to m], m>n. To handle the collisions use the following collision
+ resolution techniques, a. Linear probing with chaining with replacement
+ b. Quadratic probing technique.
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_KEYS 20  // Maximum number of keys
+
+// Function to handle collisions using Linear Probing with Chaining with Replacement
+void linearProbingWithChainingWithReplacement(int arr[], int n, int keys[], int k) {
+    for (int i = 0; i < k; i++) {
+        int key = keys[i];
+        int loc = key % n;  // Compute the hash value (key % n)
+
+        // Linear probing with chaining with replacement
+        while (arr[loc] != -1) {
+            // If the slot is already occupied, replace the key
+            printf("Collision detected at index %d for key %d. Replacing value.\n", loc, arr[loc]);
+            arr[loc] = key;
+            return;
+        }
+
+        // If the slot is empty, place the key
+        arr[loc] = key;
+        printf("Inserted key %d at index %d.\n", key, loc);
+    }
+}
+
+// Function to handle collisions using Quadratic Probing
+void quadraticProbing(int arr[], int n, int keys[], int k) {
+    for (int i = 0; i < k; i++) {
+        int key = keys[i];
+        int loc = key % n;  // Compute the hash value (key % n)
+
+        // Quadratic probing
+        int j = 0;
+        while (arr[(loc + j * j) % n] != -1) {
+            printf("Collision detected at index %d for key %d. Trying next quadratic index.\n", (loc + j * j) % n, key);
+            j++;
+        }
+
+        // Insert the key at the empty slot found
+        arr[(loc + j * j) % n] = key;
+        printf("Inserted key %d at index %d.\n", key, (loc + j * j) % n);
+    }
+}
+
+// Function to print the array
+void printArray(int arr[], int n) {
+    printf("\nHash Table:\n");
+    for (int i = 0; i < n; i++) {
+        if (arr[i] != -1) {
+            printf("Index %d: Key %d\n", i, arr[i]);
+        } else {
+            printf("Index %d: Empty\n", i);
+        }
+    }
+}
+
+int main() {
+    int n, k;
+    int arr[MAX_KEYS];
+
+    // Initializing the hash table with -1 (indicating empty slots)
+    for (int i = 0; i < MAX_KEYS; i++) {
+        arr[i] = -1;
+    }
+
+    // Input number of slots and keys
+    printf("Enter the size of the hash table (n): ");
+    scanf("%d", &n);
+    printf("Enter the number of keys to insert (k): ");
+    scanf("%d", &k);
+
+    int keys[k];
+    printf("Enter the keys:\n");
+    for (int i = 0; i < k; i++) {
+        scanf("%d", &keys[i]);
+    }
+
+    printf("\n--- Linear Probing with Chaining with Replacement ---\n");
+    linearProbingWithChainingWithReplacement(arr, n, keys, k);
+    printArray(arr, n);
+
+    // Reset the array for the second method
+    for (int i = 0; i < MAX_KEYS; i++) {
+        arr[i] = -1;
+    }
+
+    printf("\n--- Quadratic Probing ---\n");
+    quadraticProbing(arr, n, keys, k);
+    printArray(arr, n);
+
+    return 0;
+}
+
+Q.In a lab there were 15 computers which are having numbers as 35 to 50.
+Students registered for a lab are 14 only. Design appropriate hash
+function to assign a computer to every student. Now assume that two
+students are absent of this batch so another batch's three students want to
+use computers in this lab. Allocate the computers to these new students
+by using linear probing with replacement.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define TABLE_SIZE 15
+#define MIN_COMPUTER 35
+
+typedef struct {
+    int student_id; // Student ID assigned to this computer
+    int is_occupied; // 0 = empty, 1 = occupied
+} HashTable;
+
+void initializeTable(HashTable table[]) {
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        table[i].student_id = 0;
+        table[i].is_occupied = 0;
+    }
+}
+
+int hashFunction(int student_id) {
+    return (student_id % TABLE_SIZE);
+}
+
+void assignStudent(HashTable table[], int student_id) {
+    int index = hashFunction(student_id);
+    while (table[index].is_occupied) {
+        index = (index + 1) % TABLE_SIZE; // Linear probing
+    }
+    table[index].student_id = student_id;
+    table[index].is_occupied = 1;
+}
+
+void printTable(HashTable table[]) {
+    printf("Computer Assignment:\n");
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        printf("Computer %d: ", MIN_COMPUTER + i);
+        if (table[i].is_occupied) {
+            printf("Student ID %d\n", table[i].student_id);
+        } else {
+            printf("Empty\n");
+        }
+    }
+}
+
+int main() {
+    HashTable table[TABLE_SIZE];
+    initializeTable(table);
+
+    // Assign 14 students to computers
+    int student_ids[] = {1001, 1002, 1003, 1004, 1005, 1006, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014};
+    int absentees[] = {1002, 1008}; // Absent student IDs
+    int new_batch[] = {2001, 2002, 2003}; // New batch student IDs
+
+    // Assign students, skipping absentees
+    for (int i = 0; i < 14; i++) {
+        int is_absent = 0;
+        for (int j = 0; j < 2; j++) {
+            if (student_ids[i] == absentees[j]) {
+                is_absent = 1;
+                break;
+            }
+        }
+        if (!is_absent) {
+            assignStudent(table, student_ids[i]);
+        }
+    }
+
+    // Assign new batch using linear probing with replacement
+    for (int i = 0; i < 3; i++) {
+        assignStudent(table, new_batch[i]);
+    }
+
+    // Print final table
+    printTable(table);
+
+    return 0;
+}
+
+/*### **What is Hashing?**
+
+**Hashing** is a process of mapping data (like keys or values) to specific locations (indices) in a data structure, typically a hash table, using a **hash function**. It allows for quick data retrieval, insertion, and deletion.
+
+#### **Key Components of Hashing:**
+1. **Hash Table**:
+   - A fixed-size array where the data is stored.
+   - Each index represents a "bucket" to hold a key-value pair.
+   
+2. **Hash Function**:
+   - A mathematical function that takes a key (e.g., `1001`) and returns an index in the range `[0, N-1]` (where `N` is the size of the table).
+   - Example: \( h(x) = x \% N \)
+
+3. **Collision**:
+   - Occurs when two keys map to the same index. For example:
+     - \( h(1001) = 1 \)
+     - \( h(1016) = 1 \)
+
+To handle collisions, we use techniques like **chaining** or **open addressing**. **Linear probing** is one such method.
+
+---
+
+### **Linear Probing**
+
+**Linear probing** is a collision resolution technique used in hashing. When a collision occurs, instead of creating a linked list (chaining), the algorithm searches the next available index in the hash table.
+
+#### How It Works:
+1. **Collision occurs**: When the desired slot is occupied, move to the next slot.
+2. **Wrap around**: If the table end is reached, wrap around to the beginning.
+3. **Repeat until empty slot**: Continue probing until an empty slot is found.
+
+---
+
+### **Linear Probing with Replacement**
+
+**Linear probing with replacement** is an enhancement to basic linear probing. It replaces the existing value in a slot if the new key is a better fit (closer to its original hash index).
+
+#### Why Use Replacement?
+Without replacement, the hash table may become inefficient due to poor clustering of keys. Linear probing with replacement minimizes this inefficiency.
+
+---
+
+#### **How Linear Probing with Replacement Works**:
+1. **Compute the hash index**:
+   - Use the hash function to determine the desired index for the key.
+
+2. **Check the slot**:
+   - If the slot is empty, insert the key directly.
+   - If the slot is occupied:
+     - Check if the existing key in the slot is further from its original hash index than the new key.
+     - If yes, replace the existing key with the new key.
+     - Use linear probing to reinsert the displaced key into the next available slot.
+
+---
+
+### **Example: Linear Probing with Replacement**
+
+#### Scenario:
+- Table size: 7
+- Hash function: \( h(x) = x \% 7 \)
+- Insert keys: `50, 70, 76`
+
+#### Step-by-Step Insertion:
+1. Insert `50`:
+   - \( h(50) = 1 \)
+   - Slot 1 is empty → Place `50` at index 1.
+
+2. Insert `70`:
+   - \( h(70) = 0 \)
+   - Slot 0 is empty → Place `70` at index 0.
+
+3. Insert `76`:
+   - \( h(76) = 6 \)
+   - Slot 6 is empty → Place `76` at index 6.
+
+4. Insert `85`:
+   - \( h(85) = 1 \) → Collision with `50`.
+   - Check if `85` is closer to index 1 than `50` (it is not, because both were originally mapped to index 1).  
+   - Use normal **linear probing** to place `85` in the next available slot.
+
+---
+
+### **Advantages of Linear Probing with Replacement**:
+1. **Minimizes Clustering**: Reduces the formation of clusters (consecutive filled slots) in the hash table.
+2. **Improves Retrieval**: Ensures that keys are stored closer to their original hash indices, improving search performance.
+
+---
+
+### **Conclusion**
+
+- **Hashing** is a method for efficient data storage and retrieval using a hash table and hash function.
+- **Linear Probing** resolves collisions by searching for the next empty slot.
+- **Linear Probing with Replacement** improves upon linear probing by replacing a less suitable key and reinserting it elsewhere, optimizing key distribution.*/
+
+Q. Consider two sets of integers, S = {s1, s2, ...,sm} and T = {t1, t2, ..., tn}, m<=n. a.Device an algorithm that uses a hash table of size 
+m to test whether S is a subset of T. b.What is the average running time of your algorithm?
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Hash table node structure
+typedef struct HashNode {
+    int key;
+    struct HashNode* next;
+} HashNode;
+
+// Hash table structure
+typedef struct HashTable {
+    int size;
+    HashNode** table;
+} HashTable;
+
+// Create a hash table
+HashTable* createHashTable(int size) {
+    HashTable* hashTable = (HashTable*)malloc(sizeof(HashTable));
+    hashTable->size = size;
+    hashTable->table = (HashNode**)malloc(size * sizeof(HashNode*));
+    for (int i = 0; i < size; i++) {
+        hashTable->table[i] = NULL;
+    }
+    return hashTable;
+}
+
+// Hash function
+int hashFunction(int key, int size) {
+    return abs(key) % size;
+}
+
+// Insert a key into the hash table
+void insert(HashTable* hashTable, int key) {
+    int index = hashFunction(key, hashTable->size);
+    HashNode* newNode = (HashNode*)malloc(sizeof(HashNode));
+    newNode->key = key;
+    newNode->next = hashTable->table[index];
+    hashTable->table[index] = newNode;
+}
+
+// Search for a key in the hash table
+bool search(HashTable* hashTable, int key) {
+    int index = hashFunction(key, hashTable->size);
+    HashNode* current = hashTable->table[index];
+    while (current) {
+        if (current->key == key) {
+            return true;
+        }
+        current = current->next;
+    }
+    return false;
+}
+
+// Free the hash table
+void freeHashTable(HashTable* hashTable) {
+    for (int i = 0; i < hashTable->size; i++) {
+        HashNode* current = hashTable->table[i];
+        while (current) {
+            HashNode* temp = current;
+            current = current->next;
+            free(temp);
+        }
+    }
+    free(hashTable->table);
+    free(hashTable);
+}
+
+// Check if S is a subset of T
+bool isSubset(int S[], int m, int T[], int n) {
+    // Step 1: Create a hash table of size m and insert elements of T
+    HashTable* hashTable = createHashTable(m);
+    for (int i = 0; i < n; i++) {
+        insert(hashTable, T[i]);
+    }
+
+    // Step 2: Check if all elements of S are in T
+    for (int i = 0; i < m; i++) {
+        if (!search(hashTable, S[i])) {
+            freeHashTable(hashTable);
+            return false; // S[i] is not found in T
+        }
+    }
+
+    freeHashTable(hashTable);
+    return true; // All elements of S are found in T
+}
+
+// Test the algorithm
+int main() {
+    int S[] = {1, 2, 3 };
+    int T[] = {3, 4, 1, 2, 5, 6};
+
+    int m = sizeof(S) / sizeof(S[0]);
+    int n = sizeof(T) / sizeof(T[0]);
+
+    if (isSubset(S, m, T, n)) {
+        printf("S is a subset of T\n");
+    } else {
+        printf("S is NOT a subset of T\n");
+    }
+
+    return 0;
+}
+/*
+The time complexity of the **subset-checking algorithm using a hash table with chaining** can be analyzed as follows:
+
+---
+
+### Key Operations:
+1. **Inserting \( T[] \) into the Hash Table:**  
+   - There are \( n \) elements in \( T[] \).  
+   - Each insertion into the hash table takes \( O(1) \) on average (due to chaining).  
+   - **Total time:** \( O(n) \).
+
+2. **Searching \( S[] \) in the Hash Table:**  
+   - There are \( m \) elements in \( S[] \).  
+   - Each search in the hash table takes \( O(1) \) on average (due to chaining).  
+   - **Total time:** \( O(m) \).
+
+---
+
+### Overall Time Complexity:
+- **Average Case:**  
+  - Inserting \( T[] \): \( O(n) \).  
+  - Searching \( S[] \): \( O(m) \).  
+  - **Total Average Complexity:** \( O(n + m) \).  
+
+- **Worst Case (Collision Heavy):**  
+  If all elements hash to the same bucket, the hash table degenerates into a single linked list.  
+  - Inserting \( T[] \): \( O(n^2) \), since inserting \( n \) elements into a single linked list takes \( O(1 + 2 + \dots + n) = O(n^2) \).  
+  - Searching \( S[] \): \( O(m \cdot n) \), since each search may require traversing the full linked list.  
+  - **Total Worst-Case Complexity:** \( O(m \cdot n) \).
+
+---
+
+### Practical Considerations:
+1. **Average Case:**  
+   With a good hash function and a reasonable table size (to minimize collisions), the average complexity is \( O(n + m) \), making it efficient for most real-world applications.
+
+2. **Load Factor:**  
+   The load factor \( \alpha = \frac{\text{number of elements}}{\text{table size}} \) influences performance.  
+   - A lower load factor reduces collisions, improving performance.  
+
+3. **Space Complexity:**  
+   The hash table requires \( O(n) \) space to store \( T[] \) with linked lists.  
+
+---
+
+**Summary:**  
+- **Average Complexity:** \( O(n + m) \).  
+- **Worst-Case Complexity:** \( O(m \cdot n) \).  
+The algorithm is efficient for small or moderately loaded hash tables.
+*/

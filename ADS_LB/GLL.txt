@@ -1,0 +1,1121 @@
+WAP to Create A GLL of type A=(a,b, (c,d),e, (f,g)….). Perform COPY
+operation on it
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the structure for a Generalized Linked List (GLL) node
+struct GLLNode {
+    int isAtom; // 1 for atomic data, 0 for sublist
+    union {
+        char atom; // For atomic data
+        struct GLLNode* sublist; // Pointer to another GLL (sublist)
+    } data;
+    struct GLLNode *next; // Pointer to next node in the list
+};
+
+// Function to create an atomic node
+struct GLLNode* createAtomNode(char atom) {
+    struct GLLNode* newNode = (struct GLLNode*)malloc(sizeof(struct GLLNode));
+    newNode->isAtom = 1; // Mark it as an atom
+    newNode->data.atom = atom;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to create a sublist node
+struct GLLNode* createSublistNode(struct GLLNode* sublist) {
+    struct GLLNode* newNode = (struct GLLNode*)malloc(sizeof(struct GLLNode));
+    newNode->isAtom = 0; // Mark it as a sublist
+    newNode->data.sublist = sublist;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to copy a Generalized Linked List (recursive copy)
+struct GLLNode* copyGLL(struct GLLNode* head) {
+    if (head == NULL) {
+        return NULL;
+    }
+
+    struct GLLNode* newNode = (struct GLLNode*)malloc(sizeof(struct GLLNode));
+    newNode->isAtom = head->isAtom;
+
+    // If it's an atom, copy the atom
+    if (newNode->isAtom) {
+        newNode->data.atom = head->data.atom;
+    }
+    // If it's a sublist, recursively copy the sublist
+    else {
+        newNode->data.sublist = copyGLL(head->data.sublist);
+    }
+
+    newNode->next = copyGLL(head->next); // Recursively copy the next node
+    return newNode;
+}
+
+// Function to print a Generalized Linked List (recursive print)
+void printGLL(struct GLLNode* head) {
+    if (head == NULL) {
+        return;
+    }
+
+    // If it's an atom, print the atom
+    if (head->isAtom) {
+        printf("%c ", head->data.atom);
+    } 
+    // If it's a sublist, print the sublist in parentheses
+    else {
+        printf("(");
+        printGLL(head->data.sublist);
+        printf(")");
+    }
+
+    // Print the next node
+    printGLL(head->next);
+}
+
+int main() {
+    // Create the GLL: A = (a, b, (c, d), e, (f, g))
+    struct GLLNode *A = createSublistNode(createAtomNode('a'));
+    A->next = createAtomNode('b');
+    A->next->next = createSublistNode(createAtomNode('c'));
+    A->next->next->data.sublist->next = createAtomNode('d');
+    A->next->next->next = createAtomNode('e');
+    A->next->next->next->next = createSublistNode(createAtomNode('f'));
+    A->next->next->next->next->data.sublist->next = createAtomNode('g');
+
+    printf("Original GLL: ");
+    printGLL(A);
+    printf("\n");
+
+    // Perform the COPY operation
+    struct GLLNode* copiedGLL = copyGLL(A);
+
+    // Print the copied GLL
+    printf("Copied GLL: ");
+    printGLL(copiedGLL);
+    printf("\n");
+
+    return 0;
+}
+
+
+WAP to Create A GLL of type A=(a,b, (c,d),e, (f,g)….). Perform
+EQUIVALENCE operation on it.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the structure for a Generalized Linked List (GLL) node
+struct GLLNode {
+    int isAtom; // 1 for atomic data, 0 for sublist
+    union {
+        char atom; // For atomic data (atomic value)
+        struct GLLNode* sublist; // Pointer to another GLL (sublist)
+    } data;
+    struct GLLNode *next; // Pointer to next node in the list
+};
+
+// Function to create an atomic node
+struct GLLNode* createAtomNode(char atom) {
+    struct GLLNode* newNode = (struct GLLNode*)malloc(sizeof(struct GLLNode));
+    newNode->isAtom = 1; // Mark it as an atom
+    newNode->data.atom = atom;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to create a sublist node
+struct GLLNode* createSublistNode(struct GLLNode* sublist) {
+    struct GLLNode* newNode = (struct GLLNode*)malloc(sizeof(struct GLLNode));
+    newNode->isAtom = 0; // Mark it as a sublist
+    newNode->data.sublist = sublist;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to compare two Generalized Linked Lists for equivalence
+int areEquivalent(struct GLLNode* head1, struct GLLNode* head2) {
+    // If both lists are NULL, they are equivalent
+    if (head1 == NULL && head2 == NULL) {
+        return 1;
+    }
+
+    // If one list is NULL and the other is not, they are not equivalent
+    if (head1 == NULL || head2 == NULL) {
+        return 0;
+    }
+
+    // If both nodes are atomic, compare their values
+    if (head1->isAtom && head2->isAtom) {
+        if (head1->data.atom != head2->data.atom) {
+            return 0;
+        }
+    }
+    // If both nodes are sublists, recursively compare their sublists
+    else if (!head1->isAtom && !head2->isAtom) {
+        if (!areEquivalent(head1->data.sublist, head2->data.sublist)) {
+            return 0;
+        }
+    } else {
+        return 0; // One is atomic and the other is a sublist
+    }
+
+    // Recursively compare the next nodes
+    return areEquivalent(head1->next, head2->next);
+}
+
+// Function to print a Generalized Linked List (recursive print)
+void printGLL(struct GLLNode* head) {
+    if (head == NULL) {
+        return;
+    }
+
+    // If it's an atom, print the atom
+    if (head->isAtom) {
+        printf("%c ", head->data.atom);
+    } 
+    // If it's a sublist, print the sublist in parentheses
+    else {
+        printf("(");
+        printGLL(head->data.sublist);
+        printf(")");
+    }
+
+    // Print the next node
+    printGLL(head->next);
+}
+
+// Function to create a sublist from user input
+struct GLLNode* createSublistFromUserInput() {
+    struct GLLNode *head = NULL, *tail = NULL;
+    char choice;
+
+    do {
+        printf("Enter atomic value or 'n' to end the sublist: ");
+        scanf(" %c", &choice);  // Read a character
+        
+        if (choice != 'n') {
+            struct GLLNode* newNode = createAtomNode(choice);
+            if (head == NULL) {
+                head = tail = newNode;  // First node
+            } else {
+                tail->next = newNode;   // Append to the list
+                tail = newNode;
+            }
+        }
+    } while (choice != 'n');
+
+    return head;
+}
+
+int main() {
+    struct GLLNode *head1 = NULL, *tail1 = NULL;
+    struct GLLNode *head2 = NULL, *tail2 = NULL;
+    struct GLLNode *newSublist;
+
+    char choice;
+    
+    // Creating the first Generalized Linked List from user input
+    printf("Create first GLL:\n");
+    do {
+        printf("Enter atomic value or 's' to enter a sublist: ");
+        scanf(" %c", &choice);  // Read a character
+        
+        if (choice == 's') {
+            // Create a sublist from the user
+            printf("Enter the sublist:\n");
+            newSublist = createSublistFromUserInput();
+            struct GLLNode* newNode = createSublistNode(newSublist);
+            if (head1 == NULL) {
+                head1 = tail1 = newNode;  // First node
+            } else {
+                tail1->next = newNode;   // Append to the list
+                tail1 = newNode;
+            }
+        } else if (choice != 'n') {
+            // Insert atomic value
+            struct GLLNode* newNode = createAtomNode(choice);
+            if (head1 == NULL) {
+                head1 = tail1 = newNode;  // First node
+            } else {
+                tail1->next = newNode;   // Append to the list
+                tail1 = newNode;
+            }
+        }
+    } while (choice != 'n');
+    
+    // Creating the second Generalized Linked List from user input
+    printf("\nCreate second GLL:\n");
+    do {
+        printf("Enter atomic value or 's' to enter a sublist: ");
+        scanf(" %c", &choice);  // Read a character
+        
+        if (choice == 's') {
+            // Create a sublist from the user
+            printf("Enter the sublist:\n");
+            newSublist = createSublistFromUserInput();
+            struct GLLNode* newNode = createSublistNode(newSublist);
+            if (head2 == NULL) {
+                head2 = tail2 = newNode;  // First node
+            } else {
+                tail2->next = newNode;   // Append to the list
+                tail2 = newNode;
+            }
+        } else if (choice != 'n') {
+            // Insert atomic value
+            struct GLLNode* newNode = createAtomNode(choice);
+            if (head2 == NULL) {
+                head2 = tail2 = newNode;  // First node
+            } else {
+                tail2->next = newNode;   // Append to the list
+                tail2 = newNode;
+            }
+        }
+    } while (choice != 'n');
+    
+    printf("\nFirst GLL: ");
+    printGLL(head1);
+    printf("\n");
+
+    printf("Second GLL: ");
+    printGLL(head2);
+    printf("\n");
+
+    // Perform the EQUIVALENCE operation
+    if (areEquivalent(head1, head2)) {
+        printf("The two GLLs are equivalent.\n");
+    } else {
+        printf("The two GLLs are not equivalent.\n");
+    }
+
+    return 0;
+}
+
+
+WAP to Create A GLL of type A=(a,b, (c,d),e, (f,g)….). Find DEPTH of
+GLL.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the structure for a Generalized Linked List (GLL) node
+struct GLLNode {
+    int isAtom; // 1 for atomic data (coefficient), 0 for sublist (exponents)
+    union {
+        int coefficient; // For atomic data (coefficient of a term)
+        struct GLLNode* exponents; // Pointer to a GLL (list of exponents for variables)
+    } data;
+    struct GLLNode* next; // Pointer to next node in the list
+};
+
+// Function to create an atomic node (coefficient)
+struct GLLNode* createAtomNode(int coefficient) {
+    struct GLLNode* newNode = (struct GLLNode*)malloc(sizeof(struct GLLNode));
+    newNode->isAtom = 1; // Mark it as an atom (coefficient)
+    newNode->data.coefficient = coefficient;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to create a sublist node (exponents)
+struct GLLNode* createSublistNode(struct GLLNode* exponents) {
+    struct GLLNode* newNode = (struct GLLNode*)malloc(sizeof(struct GLLNode));
+    newNode->isAtom = 0; // Mark it as a sublist (exponents list)
+    newNode->data.exponents = exponents;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to print a Generalized Linked List (recursive print)
+void printGLL(struct GLLNode* head) {
+    if (head == NULL) {
+        return;
+    }
+
+    // If it's an atom (coefficient), print it
+    if (head->isAtom) {
+        printf("%d ", head->data.coefficient);
+    } 
+    // If it's a sublist (exponents), print the exponents in parentheses
+    else {
+        printf("(");
+        printGLL(head->data.exponents);  // Recursively print the exponents
+        printf(")");
+    }
+
+    // Print the next node in the list
+    printGLL(head->next);
+}
+
+// Function to perform COPY operation on the GLL (deep copy)
+struct GLLNode* copyGLL(struct GLLNode* head) {
+    if (head == NULL) {
+        return NULL;
+    }
+
+    // Create a new node for the current head
+    struct GLLNode* newNode = (struct GLLNode*)malloc(sizeof(struct GLLNode));
+    newNode->isAtom = head->isAtom;
+
+    // If it's an atomic node, copy the coefficient
+    if (head->isAtom) {
+        newNode->data.coefficient = head->data.coefficient;
+    }
+    // If it's a sublist node, recursively copy the sublist
+    else {
+        newNode->data.exponents = copyGLL(head->data.exponents);
+    }
+
+    // Recursively copy the next node
+    newNode->next = copyGLL(head->next);
+
+    return newNode;
+}
+
+// Function to create a sublist for exponents from user input
+struct GLLNode* createExponentsFromUserInput() {
+    struct GLLNode *head = NULL, *tail = NULL;
+    int exponent;
+
+    printf("Enter the exponents (enter -1 to stop):\n");
+    while (1) {
+        printf("Enter exponent: ");
+        scanf("%d", &exponent);
+
+        if (exponent == -1) break;
+
+        struct GLLNode* newNode = createAtomNode(exponent);
+        if (head == NULL) {
+            head = tail = newNode;  // First node
+        } else {
+            tail->next = newNode;   // Append to the list
+            tail = newNode;
+        }
+    }
+    return head;
+}
+
+// Function to create a polynomial term from user input (coefficient + exponents)
+struct GLLNode* createPolynomialTerm() {
+    int coefficient;
+    struct GLLNode *exponentList;
+
+    printf("Enter coefficient: ");
+    scanf("%d", &coefficient);
+
+    // Create exponent sublist
+    exponentList = createExponentsFromUserInput();
+
+    struct GLLNode* term = createAtomNode(coefficient);
+    struct GLLNode* sublistNode = createSublistNode(exponentList);
+
+    // Link the coefficient with its exponent list
+    term->next = sublistNode;
+    return term;
+}
+
+// Function to find the depth of the GLL (recursive depth calculation)
+int findDepth(struct GLLNode* head) {
+    if (head == NULL) {
+        return 0;  // No nodes, depth is 0
+    }
+
+    // If it's an atom (coefficient), the depth is 1
+    if (head->isAtom) {
+        return 1;
+    } 
+    // If it's a sublist (exponents), increase the depth by 1 and recursively find the depth of the sublist
+    else {
+        int sublistDepth = findDepth(head->data.exponents);
+        return 1 + sublistDepth;  // Add 1 for the current level
+    }
+}
+
+// Main function to drive the program
+int main() {
+    struct GLLNode *polynomial = NULL, *term;
+    struct GLLNode *copiedPolynomial;
+    char choice;
+
+    // Create the polynomial from user input
+    printf("Create the polynomial:\n");
+    do {
+        term = createPolynomialTerm();
+        if (polynomial == NULL) {
+            polynomial = term;  // First term
+        } else {
+            struct GLLNode* tail = polynomial;
+            while (tail->next != NULL) {
+                tail = tail->next;
+            }
+            tail->next = term; // Append term
+        }
+
+        printf("Do you want to add another term to the polynomial? (y/n): ");
+        scanf(" %c", &choice);
+    } while (choice == 'y');
+
+    // Print the original polynomial
+    printf("\nOriginal Polynomial: ");
+    printGLL(polynomial);
+    printf("\n");
+
+    // Perform the COPY operation
+    copiedPolynomial = copyGLL(polynomial);
+
+    // Print the copied polynomial
+    printf("\nCopied Polynomial: ");
+    printGLL(copiedPolynomial);
+    printf("\n");
+
+    // Perform the DEPTH operation
+    int depth = findDepth(polynomial);
+    printf("\nDepth of the polynomial: %d\n", depth);
+
+    return 0;
+}
+
+
+WAP to create GLL to store two different multi variable polynomials.
+Perform Addition operation on it.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the structure for a Generalized Linked List (GLL) node
+struct GLLNode {
+    int isAtom; // 1 for atomic data (coefficient), 0 for sublist (exponents)
+    union {
+        int coefficient; // For atomic data (coefficient of a term)
+        struct GLLNode* exponents; // Pointer to a GLL (list of exponents for variables)
+    } data;
+    struct GLLNode* next; // Pointer to next node in the list
+};
+
+// Function to create an atomic node (coefficient)
+struct GLLNode* createAtomNode(int coefficient) {
+    struct GLLNode* newNode = (struct GLLNode*)malloc(sizeof(struct GLLNode));
+    newNode->isAtom = 1; // Mark it as an atom (coefficient)
+    newNode->data.coefficient = coefficient;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to create a sublist node (exponents)
+struct GLLNode* createSublistNode(struct GLLNode* exponents) {
+    struct GLLNode* newNode = (struct GLLNode*)malloc(sizeof(struct GLLNode));
+    newNode->isAtom = 0; // Mark it as a sublist (exponents list)
+    newNode->data.exponents = exponents;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to print a Generalized Linked List (recursive print)
+void printGLL(struct GLLNode* head) {
+    if (head == NULL) {
+        return;
+    }
+
+    // If it's an atom (coefficient), print it
+    if (head->isAtom) {
+        printf("%d ", head->data.coefficient);
+    } 
+    // If it's a sublist (exponents), print the exponents in parentheses
+    else {
+        printf("(");
+        printGLL(head->data.exponents);  // Recursively print the exponents
+        printf(")");
+    }
+
+    // Print the next node in the list
+    printGLL(head->next);
+}
+
+// Function to create a sublist for exponents from user input
+struct GLLNode* createExponentsFromUserInput() {
+    struct GLLNode *head = NULL, *tail = NULL;
+    int exponent;
+
+    printf("Enter the exponents (enter -1 to stop):\n");
+    while (1) {
+        printf("Enter exponent: ");
+        scanf("%d", &exponent);
+
+        if (exponent == -1) break;
+
+        struct GLLNode* newNode = createAtomNode(exponent);
+        if (head == NULL) {
+            head = tail = newNode;  // First node
+        } else {
+            tail->next = newNode;   // Append to the list
+            tail = newNode;
+        }
+    }
+    return head;
+}
+
+// Function to create a polynomial term from user input (coefficient + exponents)
+struct GLLNode* createPolynomialTerm() {
+    int coefficient;
+    struct GLLNode *exponentList;
+
+    printf("Enter coefficient: ");
+    scanf("%d", &coefficient);
+
+    // Create exponent sublist
+    exponentList = createExponentsFromUserInput();
+
+    struct GLLNode* term = createAtomNode(coefficient);
+    struct GLLNode* sublistNode = createSublistNode(exponentList);
+
+    // Link the coefficient with its exponent list
+    term->next = sublistNode;
+    return term;
+}
+
+// Function to create a polynomial from user input
+struct GLLNode* createPolynomial() {
+    struct GLLNode *polynomial = NULL, *term;
+    char choice;
+
+    printf("Create the polynomial:\n");
+    do {
+        term = createPolynomialTerm();
+        if (polynomial == NULL) {
+            polynomial = term;  // First term
+        } else {
+            struct GLLNode* tail = polynomial;
+            while (tail->next != NULL) {
+                tail = tail->next;
+            }
+            tail->next = term; // Append term
+        }
+
+        printf("Do you want to add another term to the polynomial? (y/n): ");
+        scanf(" %c", &choice);
+    } while (choice == 'y');
+
+    return polynomial;
+}
+
+// Function to compare two lists of exponents
+int compareExponents(struct GLLNode* exponents1, struct GLLNode* exponents2) {
+    while (exponents1 != NULL && exponents2 != NULL) {
+        if (exponents1->data.coefficient != exponents2->data.coefficient) {
+            return 0;  // Exponents don't match
+        }
+        exponents1 = exponents1->next;
+        exponents2 = exponents2->next;
+    }
+    return (exponents1 == NULL && exponents2 == NULL);
+}
+
+// Function to add two polynomials
+struct GLLNode* addPolynomials(struct GLLNode* poly1, struct GLLNode* poly2) {
+    struct GLLNode *result = NULL, *tail = NULL;
+
+    while (poly1 != NULL || poly2 != NULL) {
+        if (poly1 == NULL) {
+            // Only poly2 remains
+            if (result == NULL) {
+                result = poly2;
+            } else {
+                tail->next = poly2;
+            }
+            break;
+        }
+
+        if (poly2 == NULL) {
+            // Only poly1 remains
+            if (result == NULL) {
+                result = poly1;
+            } else {
+                tail->next = poly1;
+            }
+            break;
+        }
+
+        // Compare the exponents of poly1 and poly2
+        if (compareExponents(poly1->data.exponents, poly2->data.exponents)) {
+            // Exponents are the same, add coefficients
+            int newCoefficient = poly1->data.coefficient + poly2->data.coefficient;
+            struct GLLNode* term = createAtomNode(newCoefficient);
+            struct GLLNode* sublistNode = createSublistNode(poly1->data.exponents);
+
+            // Link the new term to the result
+            if (result == NULL) {
+                result = term;
+            } else {
+                tail->next = term;
+            }
+            tail = term;
+            poly1 = poly1->next;
+            poly2 = poly2->next;
+        } else {
+            // Exponents are different, add the term with higher exponent first
+            if (compareExponents(poly1->data.exponents, poly2->data.exponents) < 0) {
+                struct GLLNode* term = createAtomNode(poly1->data.coefficient);
+                struct GLLNode* sublistNode = createSublistNode(poly1->data.exponents);
+                if (result == NULL) {
+                    result = term;
+                } else {
+                    tail->next = term;
+                }
+                tail = term;
+                poly1 = poly1->next;
+            } else {
+                struct GLLNode* term = createAtomNode(poly2->data.coefficient);
+                struct GLLNode* sublistNode = createSublistNode(poly2->data.exponents);
+                if (result == NULL) {
+                    result = term;
+                } else {
+                    tail->next = term;
+                }
+                tail = term;
+                poly2 = poly2->next;
+            }
+        }
+    }
+    return result;
+}
+
+int main() {
+    struct GLLNode *poly1, *poly2, *sum;
+
+    // Create two polynomials from user input
+    poly1 = createPolynomial();
+    printf("\nFirst Polynomial: ");
+    printGLL(poly1);
+    printf("\n");
+
+    poly2 = createPolynomial();
+    printf("\nSecond Polynomial: ");
+    printGLL(poly2);
+    printf("\n");
+
+    // Perform the addition of the two polynomials
+    sum = addPolynomials(poly1, poly2);
+
+    // Print the result
+    printf("\nSum of the polynomials: ");
+    printGLL(sum);
+    printf("\n");
+
+    return 0;
+}
+
+WAP to Create A GLL of type A=(a,b, (c,d),e, (f,g)….). Perform
+DELETE operation on it..
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the structure for a Generalized Linked List (GLL) node
+struct GLLNode {
+    int isAtom; // 1 for atomic data, 0 for sublist
+    union {
+        char atom; // For atomic data (atomic value)
+        struct GLLNode* sublist; // Pointer to another GLL (sublist)
+    } data;
+    struct GLLNode *next; // Pointer to next node in the list
+};
+
+// Function to create an atomic node
+struct GLLNode* createAtomNode(char atom) {
+    struct GLLNode* newNode = (struct GLLNode*)malloc(sizeof(struct GLLNode));
+    newNode->isAtom = 1; // Mark it as an atom
+    newNode->data.atom = atom;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to create a sublist node
+struct GLLNode* createSublistNode(struct GLLNode* sublist) {
+    struct GLLNode* newNode = (struct GLLNode*)malloc(sizeof(struct GLLNode));
+    newNode->isAtom = 0; // Mark it as a sublist
+    newNode->data.sublist = sublist;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to print a Generalized Linked List (recursive print)
+void printGLL(struct GLLNode* head) {
+    if (head == NULL) {
+        return;
+    }
+
+    // If it's an atom, print the atom
+    if (head->isAtom) {
+        printf("%c ", head->data.atom);
+    } 
+    // If it's a sublist, print the sublist in parentheses
+    else {
+        printf("(");
+        printGLL(head->data.sublist);
+        printf(")");
+    }
+
+    // Print the next node
+    printGLL(head->next);
+}
+
+// Function to delete a specific atomic value from the GLL
+struct GLLNode* deleteAtom(struct GLLNode* head, char atom) {
+    struct GLLNode *temp = head, *prev = NULL;
+
+    // Traverse the list to find the node to delete
+    while (temp != NULL) {
+        if (temp->isAtom && temp->data.atom == atom) {
+            // If it's the first node to delete
+            if (prev == NULL) {
+                head = temp->next;  // Move the head
+            } else {
+                prev->next = temp->next;  // Bypass the node to delete
+            }
+            free(temp);  // Free the memory of the deleted node
+            temp = (prev == NULL) ? head : prev->next;  // Move to the next node
+        } else {
+            prev = temp;
+            temp = temp->next;
+        }
+    }
+    return head;
+}
+
+// Function to create a sublist from user input
+struct GLLNode* createSublistFromUserInput() {
+    struct GLLNode *head = NULL, *tail = NULL;
+    char choice;
+
+    do {
+        printf("Enter atomic value or 'n' to end the sublist: ");
+        scanf(" %c", &choice);  // Read a character
+        
+        if (choice != 'n') {
+            struct GLLNode* newNode = createAtomNode(choice);
+            if (head == NULL) {
+                head = tail = newNode;  // First node
+            } else {
+                tail->next = newNode;   // Append to the list
+                tail = newNode;
+            }
+        }
+    } while (choice != 'n');
+
+    return head;
+}
+
+int main() {
+    struct GLLNode *head = NULL, *tail = NULL;
+    struct GLLNode *newSublist;
+    char choice, atomToDelete;
+
+    // Creating the Generalized Linked List from user input
+    printf("Create GLL:\n");
+    do {
+        printf("Enter atomic value or 's' to enter a sublist: ");
+        scanf(" %c", &choice);  // Read a character
+        
+        if (choice == 's') {
+            // Create a sublist from the user
+            printf("Enter the sublist:\n");
+            newSublist = createSublistFromUserInput();
+            struct GLLNode* newNode = createSublistNode(newSublist);
+            if (head == NULL) {
+                head = tail = newNode;  // First node
+            } else {
+                tail->next = newNode;   // Append to the list
+                tail = newNode;
+            }
+        } else if (choice != 'n') {
+            // Insert atomic value
+            struct GLLNode* newNode = createAtomNode(choice);
+            if (head == NULL) {
+                head = tail = newNode;  // First node
+            } else {
+                tail->next = newNode;   // Append to the list
+                tail = newNode;
+            }
+        }
+    } while (choice != 'n');
+    
+    printf("\nOriginal GLL: ");
+    printGLL(head);
+    printf("\n");
+
+    // Ask for the atomic value to delete
+    printf("Enter the atomic value to delete: ");
+    scanf(" %c", &atomToDelete);
+
+    // Perform the DELETE operation
+    head = deleteAtom(head, atomToDelete);
+
+    printf("\nUpdated GLL after deleting '%c': ", atomToDelete);
+    printGLL(head);
+    printf("\n");
+
+    return 0;
+}
+
+
+WAP to create GLL to store two different multi variable polynomials.
+Perform Addition operation on it.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the structure for a polynomial term (in two variables)
+typedef struct Node {
+    int coeff;      // Coefficient of the term
+    int powerX;     // Power of x
+    int powerY;     // Power of y
+    struct Node* next;
+} Node;
+
+// Function to create a new term
+Node* createNode(int coeff, int powerX, int powerY) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->coeff = coeff;
+    newNode->powerX = powerX;
+    newNode->powerY = powerY;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to insert a term into the polynomial linked list
+void insertTerm(Node** poly, int coeff, int powerX, int powerY) {
+    Node* newNode = createNode(coeff, powerX, powerY);
+    if (*poly == NULL || (newNode->powerX > (*poly)->powerX) || 
+        (newNode->powerX == (*poly)->powerX && newNode->powerY > (*poly)->powerY)) {
+        // Insert at the beginning if list is empty or the new node has higher powers
+        newNode->next = *poly;
+        *poly = newNode;
+    } else {
+        // Otherwise, insert at the correct position to maintain order
+        Node* temp = *poly;
+        while (temp->next != NULL && 
+               (temp->next->powerX > newNode->powerX || 
+                (temp->next->powerX == newNode->powerX && temp->next->powerY > newNode->powerY))) {
+            temp = temp->next;
+        }
+        newNode->next = temp->next;
+        temp->next = newNode;
+    }
+}
+
+// Function to display the polynomial
+void displayPolynomial(Node* poly) {
+    if (poly == NULL) {
+        printf("0\n");
+        return;
+    }
+    while (poly != NULL) {
+        printf("%dx^%dy^%d", poly->coeff, poly->powerX, poly->powerY);
+        if (poly->next != NULL) {
+            printf(" + ");
+        }
+        poly = poly->next;
+    }
+    printf("\n");
+}
+
+// Function to add two polynomials
+Node* addPolynomials(Node* poly1, Node* poly2) {
+    Node* result = NULL;
+    
+    while (poly1 != NULL || poly2 != NULL) {
+        int coeff, powerX, powerY;
+
+        if (poly1 != NULL && poly2 != NULL && poly1->powerX == poly2->powerX && poly1->powerY == poly2->powerY) {
+            coeff = poly1->coeff + poly2->coeff;
+            powerX = poly1->powerX;
+            powerY = poly1->powerY;
+            poly1 = poly1->next;
+            poly2 = poly2->next;
+        }
+        else if (poly2 == NULL || (poly1 != NULL && (poly1->powerX > poly2->powerX || 
+                (poly1->powerX == poly2->powerX && poly1->powerY > poly2->powerY)))) {
+            coeff = poly1->coeff;
+            powerX = poly1->powerX;
+            powerY = poly1->powerY;
+            poly1 = poly1->next;
+        }
+        else {
+            coeff = poly2->coeff;
+            powerX = poly2->powerX;
+            powerY = poly2->powerY;
+            poly2 = poly2->next;
+        }
+
+        insertTerm(&result, coeff, powerX, powerY);
+    }
+    return result;
+}
+
+int main() {
+    Node *poly1 = NULL, *poly2 = NULL;
+    int n, coeff, powerX, powerY;
+
+    printf("Enter the number of terms in the first polynomial: ");
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++) {
+        printf("Enter coefficient, power of x, and power of y for term %d: ", i + 1);
+        scanf("%d %d %d", &coeff, &powerX, &powerY);
+        insertTerm(&poly1, coeff, powerX, powerY);
+    }
+
+    printf("Enter the number of terms in the second polynomial: ");
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++) {
+        printf("Enter coefficient, power of x, and power of y for term %d: ", i + 1);
+        scanf("%d %d %d", &coeff, &powerX, &powerY);
+        insertTerm(&poly2, coeff, powerX, powerY);
+    }
+
+    printf("\nFirst Polynomial: ");
+    displayPolynomial(poly1);
+    printf("Second Polynomial: ");
+    displayPolynomial(poly2);
+
+    Node* sum = addPolynomials(poly1, poly2);
+    printf("\nSum of Polynomials: ");
+    displayPolynomial(sum);
+
+    return 0;
+}
+
+
+WAP to create GLL to store two different multi variable polynomials.
+Perform Subtraction operation on it.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the structure for a polynomial term (in two variables)
+typedef struct Node {
+    int coeff;      // Coefficient of the term
+    int powerX;     // Power of x
+    int powerY;     // Power of y
+    struct Node* next;
+} Node;
+
+// Function to create a new term
+Node* createNode(int coeff, int powerX, int powerY) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->coeff = coeff;
+    newNode->powerX = powerX;
+    newNode->powerY = powerY;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to insert a term into the polynomial linked list
+void insertTerm(Node** poly, int coeff, int powerX, int powerY) {
+    Node* newNode = createNode(coeff, powerX, powerY);
+    if (*poly == NULL || (newNode->powerX > (*poly)->powerX) || 
+        (newNode->powerX == (*poly)->powerX && newNode->powerY > (*poly)->powerY)) {
+        // Insert at the beginning if list is empty or the new node has higher powers
+        newNode->next = *poly;
+        *poly = newNode;
+    } else {
+        // Otherwise, insert at the correct position to maintain order
+        Node* temp = *poly;
+        while (temp->next != NULL && 
+               (temp->next->powerX > newNode->powerX || 
+                (temp->next->powerX == newNode->powerX && temp->next->powerY > newNode->powerY))) {
+            temp = temp->next;
+        }
+        newNode->next = temp->next;
+        temp->next = newNode;
+    }
+}
+
+// Function to display the polynomial
+void displayPolynomial(Node* poly) {
+    if (poly == NULL) {
+        printf("0\n");
+        return;
+    }
+    while (poly != NULL) {
+        printf("%dx^%dy^%d", poly->coeff, poly->powerX, poly->powerY);
+        if (poly->next != NULL) {
+            printf(" + ");
+        }
+        poly = poly->next;
+    }
+    printf("\n");
+}
+
+// Function to subtract two polynomials
+Node* subtractPolynomials(Node* poly1, Node* poly2) {
+    Node* result = NULL;
+    
+    while (poly1 != NULL || poly2 != NULL) {
+        int coeff, powerX, powerY;
+
+        if (poly1 != NULL && poly2 != NULL && poly1->powerX == poly2->powerX && poly1->powerY == poly2->powerY) {
+            // If the powers of x and y are the same, subtract the coefficients
+            coeff = poly1->coeff - poly2->coeff;
+            powerX = poly1->powerX;
+            powerY = poly1->powerY;
+            poly1 = poly1->next;
+            poly2 = poly2->next;
+        }
+        else if (poly2 == NULL || (poly1 != NULL && (poly1->powerX > poly2->powerX || 
+                (poly1->powerX == poly2->powerX && poly1->powerY > poly2->powerY)))) {
+            // If poly2 is exhausted or poly1 has higher powers, copy poly1's term
+            coeff = poly1->coeff;
+            powerX = poly1->powerX;
+            powerY = poly1->powerY;
+            poly1 = poly1->next;
+        }
+        else {
+            // If poly1 is exhausted or poly2 has higher powers, negate and copy poly2's term
+            coeff = -poly2->coeff;
+            powerX = poly2->powerX;
+            powerY = poly2->powerY;
+            poly2 = poly2->next;
+        }
+
+        insertTerm(&result, coeff, powerX, powerY);
+    }
+    return result;
+}
+
+int main() {
+    Node *poly1 = NULL, *poly2 = NULL;
+    int n, coeff, powerX, powerY;
+
+    // Input first polynomial
+    printf("Enter the number of terms in the first polynomial: ");
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++) {
+        printf("Enter coefficient, power of x, and power of y for term %d: ", i + 1);
+        scanf("%d %d %d", &coeff, &powerX, &powerY);
+        insertTerm(&poly1, coeff, powerX, powerY);
+    }
+
+    // Input second polynomial
+    printf("Enter the number of terms in the second polynomial: ");
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++) {
+        printf("Enter coefficient, power of x, and power of y for term %d: ", i + 1);
+        scanf("%d %d %d", &coeff, &powerX, &powerY);
+        insertTerm(&poly2, coeff, powerX, powerY);
+    }
+
+    // Display both polynomials
+    printf("\nFirst Polynomial: ");
+    displayPolynomial(poly1);
+    printf("Second Polynomial: ");
+    displayPolynomial(poly2);
+
+    // Perform the subtraction operation
+    Node* difference = subtractPolynomials(poly1, poly2);
+    printf("\nDifference of Polynomials: ");
+    displayPolynomial(difference);
+
+    return 0;
+}

@@ -1,0 +1,1378 @@
+GRAPH
+___________________________________________________________________________
+
+Write a Program to accept a graph from user and represent it with Adjacency Matrix and perform BFS and DFS traversals on it.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure to represent a node in the adjacency list
+struct Node {
+    int vertex;
+    struct Node* next;
+};
+
+// Structure to represent the graph
+struct Graph {
+    int vertices;
+    struct Node** adjList;  // Array of adjacency lists
+};
+
+// Function to create a graph with a given number of vertices
+struct Graph* createGraph(int vertices) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->vertices = vertices;
+
+    // Create an array of adjacency lists
+    graph->adjList = (struct Node**)malloc(vertices * sizeof(struct Node*));
+
+    // Initialize all adjacency lists as empty
+    for (int i = 0; i < vertices; i++) {
+        graph->adjList[i] = NULL;
+    }
+
+    return graph;
+}
+
+// Function to add an edge to the graph (undirected graph)
+void addEdge(struct Graph* graph, int src, int dest) {
+    // Add an edge from src to dest
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->vertex = dest;
+    newNode->next = graph->adjList[src];
+    graph->adjList[src] = newNode;
+
+    // Add an edge from dest to src (undirected graph)
+    newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->vertex = src;
+    newNode->next = graph->adjList[dest];
+    graph->adjList[dest] = newNode;
+}
+
+// Function to perform BFS traversal
+void bfs(struct Graph* graph, int start) {
+    int* visited = (int*)malloc(graph->vertices * sizeof(int));
+    for (int i = 0; i < graph->vertices; i++) {
+        visited[i] = 0;  // Initialize all vertices as unvisited
+    }
+
+    int queue[graph->vertices], front = 0, rear = 0;
+    visited[start] = 1;
+    queue[rear++] = start;
+
+    printf("BFS traversal: ");
+    while (front != rear) {
+        int current = queue[front++];
+        printf("%d ", current);
+
+        // Traverse all adjacent vertices of the current vertex
+        struct Node* temp = graph->adjList[current];
+        while (temp != NULL) {
+            if (!visited[temp->vertex]) {
+                visited[temp->vertex] = 1;
+                queue[rear++] = temp->vertex;
+            }
+            temp = temp->next;
+        }
+    }
+    printf("\n");
+
+    free(visited);
+}
+
+// Function to perform DFS traversal (using recursion)
+void dfsUtil(struct Graph* graph, int vertex, int* visited) {
+    visited[vertex] = 1;
+    printf("%d ", vertex);
+
+    struct Node* temp = graph->adjList[vertex];
+    while (temp != NULL) {
+        if (!visited[temp->vertex]) {
+            dfsUtil(graph, temp->vertex, visited);
+        }
+        temp = temp->next;
+    }
+}
+
+// Function to start DFS traversal
+void dfs(struct Graph* graph, int start) {
+    int* visited = (int*)malloc(graph->vertices * sizeof(int));
+    for (int i = 0; i < graph->vertices; i++) {
+        visited[i] = 0;  // Initialize all vertices as unvisited
+    }
+
+    printf("DFS traversal: ");
+    dfsUtil(graph, start, visited);
+    printf("\n");
+
+    free(visited);
+}
+
+// Main function to test the BFS and DFS on the graph
+int main() {
+    int vertices, edges, src, dest, startNode;
+
+    // Input the number of vertices and edges
+    printf("Enter the number of vertices: ");
+    scanf("%d", &vertices);
+
+    struct Graph* graph = createGraph(vertices);
+
+    // Input the number of edges
+    printf("Enter the number of edges: ");
+    scanf("%d", &edges);
+
+    // Input edges and add them to the graph
+    printf("Enter the edges (src dest) for an undirected graph:\n");
+    for (int i = 0; i < edges; i++) {
+        scanf("%d %d", &src, &dest);
+        addEdge(graph, src, dest);
+    }
+
+    // Input the starting node for BFS and DFS traversal
+    printf("Enter the starting node for BFS/DFS (0 to %d): ", vertices - 1);
+    scanf("%d", &startNode);
+
+    // Perform BFS and DFS
+    bfs(graph, startNode);
+    dfs(graph, startNode);
+
+    return 0;
+}
+
+Write a Program to implement Prim’s algorithm to find minimum spanning tree of a user defined graph. Use Adjacency List to represent a graph.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+// Structure to represent an edge in the graph
+struct Edge {
+    int dest;
+    int weight;
+    struct Edge* next;
+};
+
+// Structure to represent the graph using an adjacency list
+struct Graph {
+    int vertices;
+    struct Edge** adjList;  // Array of adjacency lists
+};
+
+// Function to create a graph with a given number of vertices
+struct Graph* createGraph(int vertices) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->vertices = vertices;
+
+    // Create an array of adjacency lists
+    graph->adjList = (struct Edge**)malloc(vertices * sizeof(struct Edge*));
+
+    // Initialize all adjacency lists as empty
+    for (int i = 0; i < vertices; i++) {
+        graph->adjList[i] = NULL;
+    }
+
+    return graph;
+}
+
+// Function to add an edge to the graph (undirected graph)
+void addEdge(struct Graph* graph, int src, int dest, int weight) {
+    // Add an edge from src to dest
+    struct Edge* newNode = (struct Edge*)malloc(sizeof(struct Edge));
+    newNode->dest = dest;
+    newNode->weight = weight;
+    newNode->next = graph->adjList[src];
+    graph->adjList[src] = newNode;
+
+    // Add an edge from dest to src (undirected graph)
+    newNode = (struct Edge*)malloc(sizeof(struct Edge));
+    newNode->dest = src;
+    newNode->weight = weight;
+    newNode->next = graph->adjList[dest];
+    graph->adjList[dest] = newNode;
+}
+
+// Function to find the vertex with the minimum key value
+int minKey(int key[], int visited[], int vertices) {
+    int min = INT_MAX;
+    int minIndex;
+
+    for (int i = 0; i < vertices; i++) {
+        if (!visited[i] && key[i] < min) {
+            min = key[i];
+            minIndex = i;
+        }
+    }
+
+    return minIndex;
+}
+
+// Function to implement Prim's Algorithm to find the Minimum Spanning Tree
+void primMST(struct Graph* graph) {
+    int vertices = graph->vertices;
+    int parent[vertices];  // Array to store the MST
+    int key[vertices];  // Key values used to pick minimum weight edge
+    int visited[vertices];  // To keep track of vertices included in MST
+
+    // Initialize all key values to infinity and visited as false
+    for (int i = 0; i < vertices; i++) {
+        key[i] = INT_MAX;
+        visited[i] = 0;
+    }
+
+    // Start with the first vertex
+    key[0] = 0;
+    parent[0] = -1;
+
+    // The MST will have vertices - 1 edges
+    for (int count = 0; count < vertices - 1; count++) {
+        // Pick the minimum key vertex from the set of vertices not yet processed
+        int u = minKey(key, visited, vertices);
+        visited[u] = 1;
+
+        // Update the key value and parent index of the adjacent vertices of the picked vertex
+        struct Edge* temp = graph->adjList[u];
+        while (temp != NULL) {
+            int v = temp->dest;
+            int weight = temp->weight;
+
+            if (!visited[v] && weight < key[v]) {
+                key[v] = weight;
+                parent[v] = u;
+            }
+
+            temp = temp->next;
+        }
+    }
+
+    // Print the edges of the MST
+    printf("Edge \tWeight\n");
+    for (int i = 1; i < vertices; i++) {
+        printf("%d - %d \t%d\n", parent[i], i, key[i]);
+    }
+}
+
+int main() {
+    int vertices, edges, src, dest, weight;
+
+    // Input the number of vertices and edges
+    printf("Enter the number of vertices: ");
+    scanf("%d", &vertices);
+
+    struct Graph* graph = createGraph(vertices);
+
+    // Input the number of edges
+    printf("Enter the number of edges: ");
+    scanf("%d", &edges);
+
+    // Input edges and add them to the graph
+    printf("Enter the edges (src dest weight) for an undirected graph:\n");
+    for (int i = 0; i < edges; i++) {
+        scanf("%d %d %d", &src, &dest, &weight);
+        addEdge(graph, src, dest, weight);
+    }
+
+    // Perform Prim's Algorithm
+    primMST(graph);
+
+    return 0;
+}
+
+Write a Program to implement Kruskal’s algorithm to find minimum spanning tree of a user defined graph. Use Adjacency List to represent a graph.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure to represent an edge
+struct Edge {
+    int src, dest, weight;
+};
+
+// Structure to represent a graph
+struct Graph {
+    int vertices, edges;
+    struct Edge* edge;
+};
+
+// Structure to represent a subset for union-find
+struct Subset {
+    int parent;
+    int rank;
+};
+
+// Function to create a graph with a given number of vertices and edges
+struct Graph* createGraph(int vertices, int edges) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->vertices = vertices;
+    graph->edges = edges;
+    graph->edge = (struct Edge*)malloc(edges * sizeof(struct Edge));
+    return graph;
+}
+
+// A utility function to find the subset of an element i (uses path compression)
+int find(struct Subset subsets[], int i) {
+    if (subsets[i].parent != i) {
+        subsets[i].parent = find(subsets, subsets[i].parent);
+    }
+    return subsets[i].parent;
+}
+
+// A function to do union of two subsets of x and y (uses union by rank)
+void unionSet(struct Subset subsets[], int x, int y) {
+    int rootX = find(subsets, x);
+    int rootY = find(subsets, y);
+
+    if (rootX != rootY) {
+        if (subsets[rootX].rank < subsets[rootY].rank) {
+            subsets[rootX].parent = rootY;
+        } else if (subsets[rootX].rank > subsets[rootY].rank) {
+            subsets[rootY].parent = rootX;
+        } else {
+            subsets[rootY].parent = rootX;
+            subsets[rootX].rank++;
+        }
+    }
+}
+
+// Comparator function to sort the edges in increasing order of weight
+int compareEdges(const void* a, const void* b) {
+    return ((struct Edge*)a)->weight - ((struct Edge*)b)->weight;
+}
+
+// Function to implement Kruskal’s Algorithm to find the MST
+void kruskalMST(struct Graph* graph) {
+    int V = graph->vertices;
+    struct Edge result[V]; // To store the final MST
+    int e = 0;  // Count of edges in MST
+
+    // Sort all the edges in non-decreasing order of weight
+    qsort(graph->edge, graph->edges, sizeof(graph->edge[0]), compareEdges);
+
+    // Allocate memory for creating V subsets
+    struct Subset* subsets = (struct Subset*)malloc(V * sizeof(struct Subset));
+
+    // Initialize the subsets
+    for (int v = 0; v < V; v++) {
+        subsets[v].parent = v;
+        subsets[v].rank = 0;
+    }
+
+    // Pick the smallest edge and check if it forms a cycle with the MST formed so far
+    for (int i = 0; e < V - 1 && i < graph->edges; i++) {
+        struct Edge nextEdge = graph->edge[i];
+        int x = find(subsets, nextEdge.src);
+        int y = find(subsets, nextEdge.dest);
+
+        // If including this edge does not cause a cycle, include it in the result
+        if (x != y) {
+            result[e++] = nextEdge;
+            unionSet(subsets, x, y);
+        }
+    }
+
+    // Print the MST
+    printf("Edge \tWeight\n");
+    for (int i = 0; i < e; i++) {
+        printf("%d - %d \t%d\n", result[i].src, result[i].dest, result[i].weight);
+    }
+}
+
+int main() {
+    int vertices, edges, src, dest, weight;
+
+    // Input the number of vertices and edges
+    printf("Enter the number of vertices: ");
+    scanf("%d", &vertices);
+
+    // Input the number of edges
+    printf("Enter the number of edges: ");
+    scanf("%d", &edges);
+
+    struct Graph* graph = createGraph(vertices, edges);
+
+    // Input edges and their weights
+    printf("Enter the edges (src dest weight):\n");
+    for (int i = 0; i < edges; i++) {
+        scanf("%d %d %d", &src, &dest, &weight);
+        graph->edge[i].src = src;
+        graph->edge[i].dest = dest;
+        graph->edge[i].weight = weight;
+    }
+
+    // Perform Kruskal's algorithm to find the MST
+    kruskalMST(graph);
+
+    return 0;
+}
+
+Write a Program to implement Dijkstra’s algorithm to find shortest distance between two nodes of a user defined graph. Use Adjacency List to represent a graph.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+#define MAX_VERTICES 10
+
+// Structure to represent an adjacency list node
+struct Node {
+    int vertex;
+    int weight;
+    struct Node* next;
+};
+
+// Structure to represent a graph
+struct Graph {
+    int vertices;
+    struct Node* adjList[MAX_VERTICES];
+};
+
+// Function to create a new adjacency list node
+struct Node* createNode(int vertex, int weight) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->vertex = vertex;
+    newNode->weight = weight;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to initialize the graph
+void initGraph(struct Graph* graph, int vertices) {
+    graph->vertices = vertices;
+    for (int i = 0; i < vertices; i++) {
+        graph->adjList[i] = NULL;
+    }
+}
+
+// Function to add an edge to the graph
+void addEdge(struct Graph* graph, int src, int dest, int weight) {
+    struct Node* newNode = createNode(dest, weight);
+    newNode->next = graph->adjList[src];
+    graph->adjList[src] = newNode;
+
+    // For undirected graph, add the reverse edge as well
+    newNode = createNode(src, weight);
+    newNode->next = graph->adjList[dest];
+    graph->adjList[dest] = newNode;
+}
+
+// Function to find the vertex with the minimum distance value
+int minDistance(int dist[], int visited[], int vertices) {
+    int min = INT_MAX, minIndex;
+
+    for (int v = 0; v < vertices; v++) {
+        if (!visited[v] && dist[v] <= min) {
+            min = dist[v];
+            minIndex = v;
+        }
+    }
+    return minIndex;
+}
+
+// Dijkstra's Algorithm to find the shortest path from src to all other vertices
+void dijkstra(struct Graph* graph, int start, int dist[], int parent[]) {
+    int visited[MAX_VERTICES] = {0};
+
+    // Initialize distances to all vertices as infinite
+    for (int i = 0; i < graph->vertices; i++) {
+        dist[i] = INT_MAX;
+        parent[i] = -1;
+    }
+
+    // Distance to the source is 0
+    dist[start] = 0;
+
+    // Find the shortest path for all vertices
+    for (int count = 0; count < graph->vertices - 1; count++) {
+        int u = minDistance(dist, visited, graph->vertices);
+        visited[u] = 1;
+
+        struct Node* temp = graph->adjList[u];
+        while (temp != NULL) {
+            int v = temp->vertex;
+            if (!visited[v] && dist[u] != INT_MAX && dist[u] + temp->weight < dist[v]) {
+                dist[v] = dist[u] + temp->weight;
+                parent[v] = u;
+            }
+            temp = temp->next;
+        }
+    }
+}
+
+// Function to print the shortest path from source to destination
+void printPath(int parent[], int j) {
+    if (parent[j] == -1) {
+        return;
+    }
+    printPath(parent, parent[j]);
+    printf("%d ", j);
+}
+
+// Function to print the distances and paths
+void printSolution(int dist[], int parent[], int vertices, int start) {
+    printf("Vertex \t Distance from Source %d \t Path\n", start);
+    for (int i = 0; i < vertices; i++) {
+        printf("%d \t %d \t\t\t\t", i, dist[i]);
+        printf("%d ", start);
+        printPath(parent, i);
+        printf("\n");
+    }
+}
+
+int main() {
+    struct Graph graph;
+    int vertices, edges, src, dest, weight, start, end;
+
+    // Accept the number of vertices and edges
+    printf("Enter the number of vertices: ");
+    scanf("%d", &vertices);
+
+    initGraph(&graph, vertices);
+
+    printf("Enter the number of edges: ");
+    scanf("%d", &edges);
+
+    // Accept the edges
+    printf("Enter the edges (src dest weight):\n");
+    for (int i = 0; i < edges; i++) {
+        scanf("%d %d %d", &src, &dest, &weight);
+        addEdge(&graph, src, dest, weight);
+    }
+
+    // Accept the start and end vertices for Dijkstra's Algorithm
+    printf("Enter the starting node for Dijkstra's Algorithm: ");
+    scanf("%d", &start);
+    printf("Enter the destination node for the shortest path: ");
+    scanf("%d", &end);
+
+    // Initialize distance and parent arrays
+    int dist[MAX_VERTICES], parent[MAX_VERTICES];
+
+    // Run Dijkstra's Algorithm
+    dijkstra(&graph, start, dist, parent);
+
+    // Print the solution
+    printf("\nShortest Path from %d to %d is: \n", start, end);
+    printf("Distance: %d\n", dist[end]);
+    printf("Path: ");
+    printPath(parent, end);
+    printf("\n");
+
+    return 0;
+}
+
+Write a Program to accept a graph from user and represent it with Adjacency List and perform BFS and DFS traversals on it.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_VERTICES 10
+
+// Structure to represent an adjacency list node
+struct Node {
+    int vertex;
+    struct Node* next;
+};
+
+// Structure to represent a graph
+struct Graph {
+    int vertices;
+    struct Node* adjList[MAX_VERTICES];
+};
+
+// Function to create a new adjacency list node
+struct Node* createNode(int vertex) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->vertex = vertex;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to initialize the graph
+void initGraph(struct Graph* graph, int vertices) {
+    graph->vertices = vertices;
+    for (int i = 0; i < vertices; i++) {
+        graph->adjList[i] = NULL;
+    }
+}
+
+// Function to add an edge to the graph (undirected)
+void addEdge(struct Graph* graph, int src, int dest) {
+    struct Node* newNode = createNode(dest);
+    newNode->next = graph->adjList[src];
+    graph->adjList[src] = newNode;
+
+    newNode = createNode(src);
+    newNode->next = graph->adjList[dest];
+    graph->adjList[dest] = newNode;
+}
+
+// BFS traversal function
+void bfs(struct Graph* graph, int start) {
+    int visited[MAX_VERTICES] = {0};  // To track visited nodes
+    int queue[MAX_VERTICES], front = -1, rear = -1;
+
+    // Enqueue the start node
+    queue[++rear] = start;
+    visited[start] = 1;
+
+    printf("BFS Traversal starting from node %d: ", start);
+
+    while (front != rear) {
+        int current = queue[++front];
+        printf("%d ", current);
+
+        // Visit all the neighbors of the current node
+        struct Node* temp = graph->adjList[current];
+        while (temp != NULL) {
+            if (!visited[temp->vertex]) {
+                visited[temp->vertex] = 1;
+                queue[++rear] = temp->vertex;
+            }
+            temp = temp->next;
+        }
+    }
+    printf("\n");
+}
+
+// DFS traversal function
+void dfs(struct Graph* graph, int start, int visited[MAX_VERTICES]) {
+    visited[start] = 1;
+    printf("%d ", start);
+
+    struct Node* temp = graph->adjList[start];
+    while (temp != NULL) {
+        if (!visited[temp->vertex]) {
+            dfs(graph, temp->vertex, visited);
+        }
+        temp = temp->next;
+    }
+}
+
+// Wrapper function for DFS
+void dfsWrapper(struct Graph* graph, int start) {
+    int visited[MAX_VERTICES] = {0};
+    printf("DFS Traversal starting from node %d: ", start);
+    dfs(graph, start, visited);
+    printf("\n");
+}
+
+int main() {
+    struct Graph graph;
+    int vertices, edges, src, dest;
+
+    // Accept number of vertices and edges
+    printf("Enter the number of vertices: ");
+    scanf("%d", &vertices);
+
+    initGraph(&graph, vertices);
+
+    printf("Enter the number of edges: ");
+    scanf("%d", &edges);
+
+    // Accept edges
+    printf("Enter the edges (src dest):\n");
+    for (int i = 0; i < edges; i++) {
+        scanf("%d %d", &src, &dest);
+        addEdge(&graph, src, dest);
+    }
+
+    // Perform BFS and DFS traversals
+    int start;
+    printf("Enter the starting node for BFS and DFS: ");
+    scanf("%d", &start);
+
+    bfs(&graph, start);  // BFS Traversal
+    dfsWrapper(&graph, start);  // DFS Traversal
+
+    return 0;
+}
+
+Write a Program to implement Kruskal’s algorithm to find minimum spanning tree of a user defined graph. Use Adjacency Matrix to represent a graph.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_VERTICES 10
+#define INF 99999
+
+// Structure to represent an edge
+struct Edge {
+    int src, dest, weight;
+};
+
+// Structure to represent a subset for union-find
+struct Subset {
+    int parent;
+    int rank;
+};
+
+// Function to find the set of an element i using path compression
+int find(struct Subset subsets[], int i) {
+    if (subsets[i].parent != i)
+        subsets[i].parent = find(subsets, subsets[i].parent);
+    return subsets[i].parent;
+}
+
+// Function to do union of two subsets
+void union_sets(struct Subset subsets[], int x, int y) {
+    int xroot = find(subsets, x);
+    int yroot = find(subsets, y);
+
+    if (subsets[xroot].rank < subsets[yroot].rank)
+        subsets[xroot].parent = yroot;
+    else if (subsets[xroot].rank > subsets[yroot].rank)
+        subsets[yroot].parent = xroot;
+    else {
+        subsets[yroot].parent = xroot;
+        subsets[xroot].rank++;
+    }
+}
+
+// Function to compare edges based on weight (used for sorting)
+int compare(const void* a, const void* b) {
+    struct Edge* edgeA = (struct Edge*)a;
+    struct Edge* edgeB = (struct Edge*)b;
+    return edgeA->weight - edgeB->weight;
+}
+
+// Kruskal's Algorithm to find the MST
+void kruskal(int graph[MAX_VERTICES][MAX_VERTICES], int vertices) {
+    struct Edge edges[MAX_VERTICES * (MAX_VERTICES - 1) / 2];
+    int edgeCount = 0;
+
+    // Convert adjacency matrix to list of edges
+    for (int i = 0; i < vertices; i++) {
+        for (int j = i + 1; j < vertices; j++) {
+            if (graph[i][j] != 0 && graph[i][j] != INF) {
+                edges[edgeCount].src = i;
+                edges[edgeCount].dest = j;
+                edges[edgeCount].weight = graph[i][j];
+                edgeCount++;
+            }
+        }
+    }
+
+    // Sort edges in increasing order of their weights
+    qsort(edges, edgeCount, sizeof(struct Edge), compare);
+
+    // Create subsets for union-find
+    struct Subset subsets[vertices];
+    for (int v = 0; v < vertices; v++) {
+        subsets[v].parent = v;
+        subsets[v].rank = 0;
+    }
+
+    // MST to store the result
+    struct Edge mst[vertices - 1];
+    int mstIndex = 0;
+
+    // Iterate through sorted edges and add to MST if they don't form a cycle
+    for (int i = 0; i < edgeCount && mstIndex < vertices - 1; i++) {
+        int u = edges[i].src;
+        int v = edges[i].dest;
+
+        int set_u = find(subsets, u);
+        int set_v = find(subsets, v);
+
+        // If including this edge doesn't form a cycle, include it in the MST
+        if (set_u != set_v) {
+            mst[mstIndex++] = edges[i];
+            union_sets(subsets, set_u, set_v);
+        }
+    }
+
+    // Print the MST
+    printf("Minimum Spanning Tree (MST):\n");
+    printf("Edge \tWeight\n");
+    for (int i = 0; i < mstIndex; i++) {
+        printf("%d - %d \t%d\n", mst[i].src, mst[i].dest, mst[i].weight);
+    }
+}
+
+int main() {
+    int vertices;
+
+    printf("Enter the number of vertices: ");
+    scanf("%d", &vertices);
+
+    int graph[MAX_VERTICES][MAX_VERTICES];
+
+    printf("Enter the adjacency matrix (use 0 for no connection and non-zero for edge weights):\n");
+    for (int i = 0; i < vertices; i++) {
+        for (int j = 0; j < vertices; j++) {
+            scanf("%d", &graph[i][j]);
+            if (i != j && graph[i][j] == 0)
+                graph[i][j] = INF;  // No edge between different vertices
+        }
+    }
+
+    kruskal(graph, vertices);
+
+    return 0;
+}
+
+Write a Program to implement Dijkstra’s algorithm to find shortest distance between two nodes of a user defined graph. Use Adjacency Matrix to represent a graph.
+
+#include <stdio.h>
+#include <limits.h>
+
+#define MAX 100  // Maximum number of vertices
+#define INF INT_MAX  // Infinity for unreachable nodes
+
+// Function to find the vertex with minimum distance value, from the set of vertices not yet processed
+int minDistance(int dist[], int visited[], int vertices) {
+    int min = INF, minIndex;
+
+    for (int v = 0; v < vertices; v++) {
+        if (!visited[v] && dist[v] <= min) {
+            min = dist[v];
+            minIndex = v;
+        }
+    }
+    return minIndex;
+}
+
+// Function to implement Dijkstra's algorithm
+void dijkstra(int graph[MAX][MAX], int vertices, int start, int end) {
+    int dist[MAX];     // Array to store shortest distance from start to each vertex
+    int visited[MAX];  // Array to keep track of processed vertices
+    int parent[MAX];   // To track the shortest path
+
+    // Initialize all distances as infinity and visited[] as false
+    for (int i = 0; i < vertices; i++) {
+        dist[i] = INF;
+        visited[i] = 0;
+        parent[i] = -1;  // No parent initially
+    }
+
+    // Distance to the source is always 0
+    dist[start] = 0;
+
+    // Find shortest path for all vertices
+    for (int count = 0; count < vertices - 1; count++) {
+        int u = minDistance(dist, visited, vertices); // Pick the minimum distance vertex
+        visited[u] = 1;
+
+        // Update distance value of adjacent vertices of the picked vertex
+        for (int v = 0; v < vertices; v++) {
+            if (!visited[v] && graph[u][v] && dist[u] != INF && dist[u] + graph[u][v] < dist[v]) {
+                dist[v] = dist[u] + graph[u][v];
+                parent[v] = u;
+            }
+        }
+    }
+
+    // Print the shortest distance and path
+    printf("Shortest Distance from Node %d to Node %d is: %d\n", start, end, dist[end]);
+
+    // Print the shortest path
+    printf("Path: ");
+    int temp = end;
+    while (temp != -1) {
+        printf("%d ", temp);
+        temp = parent[temp];
+    }
+    printf("\n");
+}
+
+int main() {
+    int vertices, graph[MAX][MAX];
+    int start, end;
+
+    printf("Enter the number of vertices: ");
+    scanf("%d", &vertices);
+
+    printf("Enter the adjacency matrix (use 0 for no connection):\n");
+    for (int i = 0; i < vertices; i++) {
+        for (int j = 0; j < vertices; j++) {
+            scanf("%d", &graph[i][j]);
+        }
+    }
+
+    printf("Enter the start and end nodes: ");
+    scanf("%d %d", &start, &end);
+
+    dijkstra(graph, vertices, start, end);
+
+    return 0;
+}
+
+Write a Program to implement Prim’s algorithm to find minimum spanning tree of a user defined graph. Use Adjacency List to represent a graph.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+// Structure to represent a node in the adjacency list
+struct Node {
+    int dest, weight;
+    struct Node* next;
+};
+
+// Structure to represent an adjacency list
+struct AdjList {
+    struct Node* head;
+};
+
+// Structure to represent a graph
+struct Graph {
+    int vertices;
+    struct AdjList* array;
+};
+
+// Function to create a new adjacency list node
+struct Node* createNode(int dest, int weight) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->dest = dest;
+    newNode->weight = weight;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to create a graph
+struct Graph* createGraph(int vertices) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->vertices = vertices;
+    graph->array = (struct AdjList*)malloc(vertices * sizeof(struct AdjList));
+    for (int i = 0; i < vertices; i++)
+        graph->array[i].head = NULL;
+    return graph;
+}
+
+// Function to add an edge to the graph
+void addEdge(struct Graph* graph, int src, int dest, int weight) {
+    struct Node* newNode = createNode(dest, weight);
+    newNode->next = graph->array[src].head;
+    graph->array[src].head = newNode;
+
+    newNode = createNode(src, weight); // Since the graph is undirected
+    newNode->next = graph->array[dest].head;
+    graph->array[dest].head = newNode;
+}
+
+// Function to find the vertex with minimum key value not yet included in MST
+int minKey(int key[], int mstSet[], int vertices) {
+    int min = INT_MAX, minIndex;
+    for (int v = 0; v < vertices; v++)
+        if (mstSet[v] == 0 && key[v] < min)
+            min = key[v], minIndex = v;
+    return minIndex;
+}
+
+// Function to print the MST
+void printMST(int parent[], struct Graph* graph) {
+    printf("Edge \tWeight\n");
+    for (int i = 1; i < graph->vertices; i++) {
+        struct Node* temp = graph->array[parent[i]].head;
+        while (temp != NULL) {
+            if (temp->dest == i) {
+                printf("%d - %d \t%d \n", parent[i], i, temp->weight);
+                break;
+            }
+            temp = temp->next;
+        }
+    }
+}
+
+// Function to implement Prim's Algorithm
+void primMST(struct Graph* graph) {
+    int vertices = graph->vertices;
+    int parent[vertices];      // Array to store MST
+    int key[vertices];         // Key values used to pick minimum weight edge
+    int mstSet[vertices];      // To represent set of vertices included in MST
+
+    // Initialize all keys as infinite and mstSet[] as false
+    for (int i = 0; i < vertices; i++) {
+        key[i] = INT_MAX;
+        mstSet[i] = 0;
+    }
+
+    // Start from the first vertex
+    key[0] = 0;
+    parent[0] = -1;
+
+    // The MST will have vertices-1 edges
+    for (int count = 0; count < vertices - 1; count++) {
+        int u = minKey(key, mstSet, vertices); // Pick the minimum key vertex
+        mstSet[u] = 1;                         // Add the vertex to MST
+
+        // Update key and parent of adjacent vertices
+        struct Node* temp = graph->array[u].head;
+        while (temp != NULL) {
+            int v = temp->dest;
+            if (mstSet[v] == 0 && temp->weight < key[v]) {
+                key[v] = temp->weight;
+                parent[v] = u;
+            }
+            temp = temp->next;
+        }
+    }
+
+    // Print the MST
+    printMST(parent, graph);
+}
+
+// Main Function
+int main() {
+    int vertices, edges;
+    printf("Enter the number of vertices: ");
+    scanf("%d", &vertices);
+    printf("Enter the number of edges: ");
+    scanf("%d", &edges);
+
+    struct Graph* graph = createGraph(vertices);
+
+    printf("Enter the edges in the format (source destination weight):\n");
+    for (int i = 0; i < edges; i++) {
+        int src, dest, weight;
+        scanf("%d %d %d", &src, &dest, &weight);
+        addEdge(graph, src, dest, weight);
+    }
+
+    printf("Minimum Spanning Tree:\n");
+    primMST(graph);
+
+    return 0;
+}
+
+Write a Program to implement Kruskal’s algorithm to find minimum spanning tree of a user defined graph. Use Adjacency List to represent a graph.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure to represent an edge
+struct Edge {
+    int src, dest, weight;
+};
+
+// Structure to represent a graph
+struct Graph {
+    int vertices, edges;
+    struct Edge* edgeList;
+};
+
+// Function to create a graph
+struct Graph* createGraph(int vertices, int edges) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->vertices = vertices;
+    graph->edges = edges;
+    graph->edgeList = (struct Edge*)malloc(edges * sizeof(struct Edge));
+    return graph;
+}
+
+// Function to find the subset of an element (simple find)
+int find(int parent[], int i) {
+    while (parent[i] != i) {
+        i = parent[i];
+    }
+    return i;
+}
+
+// Function to perform union of two subsets
+void unionSets(int parent[], int x, int y) {
+    int rootX = find(parent, x);
+    int rootY = find(parent, y);
+    parent[rootX] = rootY;
+}
+
+// Comparison function for qsort (sort edges by weight)
+int compareEdges(const void* a, const void* b) {
+    struct Edge* edgeA = (struct Edge*)a;
+    struct Edge* edgeB = (struct Edge*)b;
+    return edgeA->weight - edgeB->weight;
+}
+
+// Function to implement Kruskal's algorithm
+void kruskalMST(struct Graph* graph) {
+    int vertices = graph->vertices;
+    int edges = graph->edges;
+
+    // Step 1: Sort all edges in non-decreasing order of their weight
+    qsort(graph->edgeList, edges, sizeof(graph->edgeList[0]), compareEdges);
+
+    int parent[vertices];
+    for (int i = 0; i < vertices; i++) {
+        parent[i] = i; // Each vertex is its own parent initially
+    }
+
+    printf("Edges in the Minimum Spanning Tree (MST):\n");
+    int totalWeight = 0;
+
+    for (int i = 0, edgeCount = 0; i < edges && edgeCount < vertices - 1; i++) {
+        struct Edge currentEdge = graph->edgeList[i];
+
+        int srcParent = find(parent, currentEdge.src);
+        int destParent = find(parent, currentEdge.dest);
+
+        // If including this edge doesn't form a cycle
+        if (srcParent != destParent) {
+            printf("%d -- %d == %d\n", currentEdge.src, currentEdge.dest, currentEdge.weight);
+            totalWeight += currentEdge.weight;
+            unionSets(parent, srcParent, destParent);
+            edgeCount++;
+        }
+    }
+
+    printf("Total Weight of MST: %d\n", totalWeight);
+}
+
+// Main function
+int main() {
+    int vertices, edges;
+    printf("Enter the number of vertices: ");
+    scanf("%d", &vertices);
+
+    printf("Enter the number of edges: ");
+    scanf("%d", &edges);
+
+    struct Graph* graph = createGraph(vertices, edges);
+
+    printf("Enter the edges in the format (source destination weight):\n");
+    for (int i = 0; i < edges; i++) {
+        scanf("%d %d %d", &graph->edgeList[i].src, &graph->edgeList[i].dest, &graph->edgeList[i].weight);
+    }
+
+    kruskalMST(graph);
+
+    free(graph->edgeList);
+    free(graph);
+
+    return 0;
+}
+
+
+Write a Program to implement Dijkstra’s algorithm to find shortest distance between two nodes of a user defined graph. Use Adjacency List to represent a graph.
+
+ #include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <stdbool.h>
+
+// Structure to represent a node in the adjacency list
+struct Node {
+    int vertex;
+    int weight;
+    struct Node* next;
+};
+
+// Structure to represent a graph
+struct Graph {
+    int vertices;
+    struct Node** adjList;
+};
+
+// Structure for the Min Heap (used in Dijkstra's Algorithm)
+struct MinHeapNode {
+    int vertex;
+    int dist;
+};
+
+// Function to create a new adjacency list node
+struct Node* createNode(int vertex, int weight) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->vertex = vertex;
+    newNode->weight = weight;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to create a graph
+struct Graph* createGraph(int vertices) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->vertices = vertices;
+    graph->adjList = (struct Node**)malloc(vertices * sizeof(struct Node*));
+
+    for (int i = 0; i < vertices; i++) {
+        graph->adjList[i] = NULL;
+    }
+    return graph;
+}
+
+// Function to add an edge to the graph
+void addEdge(struct Graph* graph, int src, int dest, int weight) {
+    // Add edge from src to dest
+    struct Node* newNode = createNode(dest, weight);
+    newNode->next = graph->adjList[src];
+    graph->adjList[src] = newNode;
+
+    // Since it's an undirected graph, add edge from dest to src
+    newNode = createNode(src, weight);
+    newNode->next = graph->adjList[dest];
+    graph->adjList[dest] = newNode;
+}
+
+// Function to find the vertex with the minimum distance value
+int minDistance(int dist[], bool sptSet[], int vertices) {
+    int min = INT_MAX, minIndex;
+
+    for (int v = 0; v < vertices; v++) {
+        if (!sptSet[v] && dist[v] <= min) {
+            min = dist[v];
+            minIndex = v;
+        }
+    }
+    return minIndex;
+}
+
+// Dijkstra's Algorithm to find shortest path
+void dijkstra(struct Graph* graph, int src, int dest) {
+    int vertices = graph->vertices;
+    int dist[vertices];       // Shortest distances from source
+    bool sptSet[vertices];    // True if vertex is included in the shortest path tree
+    int parent[vertices];     // Stores the path information
+
+    // Initialize distances as INFINITE and sptSet as false
+    for (int i = 0; i < vertices; i++) {
+        dist[i] = INT_MAX;
+        sptSet[i] = false;
+        parent[i] = -1;
+    }
+
+    // Distance from source to itself is always 0
+    dist[src] = 0;
+
+    // Find shortest path for all vertices
+    for (int count = 0; count < vertices - 1; count++) {
+        // Pick the minimum distance vertex from the set of vertices not yet processed
+        int u = minDistance(dist, sptSet, vertices);
+        sptSet[u] = true;
+
+        // Traverse the adjacency list of the current vertex
+        struct Node* temp = graph->adjList[u];
+        while (temp != NULL) {
+            int v = temp->vertex;
+            if (!sptSet[v] && dist[u] != INT_MAX && dist[u] + temp->weight < dist[v]) {
+                dist[v] = dist[u] + temp->weight;
+                parent[v] = u;
+            }
+            temp = temp->next;
+        }
+    }
+
+    // Print the shortest distance and path
+    if (dist[dest] == INT_MAX) {
+        printf("No path exists between %d and %d.\n", src, dest);
+    } else {
+        printf("Shortest Distance from %d to %d is: %d\n", src, dest, dist[dest]);
+        printf("Path: ");
+        int crawl = dest;
+        while (crawl != -1) {
+            printf("%d ", crawl);
+            crawl = parent[crawl];
+        }
+        printf("\n");
+    }
+}
+
+// Main function
+int main() {
+    int vertices, edges;
+    printf("Enter the number of vertices in the graph: ");
+    scanf("%d", &vertices);
+
+    struct Graph* graph = createGraph(vertices);
+
+    printf("Enter the number of edges: ");
+    scanf("%d", &edges);
+
+    printf("Enter the edges in the format (source destination weight):\n");
+    for (int i = 0; i < edges; i++) {
+        int src, dest, weight;
+        scanf("%d %d %d", &src, &dest, &weight);
+        addEdge(graph, src, dest, weight);
+    }
+
+    int source, destination;
+    printf("Enter the source vertex: ");
+    scanf("%d", &source);
+    printf("Enter the destination vertex: ");
+    scanf("%d", &destination);
+
+    dijkstra(graph, source, destination);
+
+    return 0;
+}
+
+Write a Program to implement Prim’s algorithm to find minimum spanning tree of a user defined graph. Use Adjacency Matrix to represent a graph.
+
+#include <stdio.h>
+#include <limits.h>
+#include <stdbool.h>
+
+#define MAX 100
+
+// Function to find the vertex with the minimum key value
+int findMinKey(int key[], bool mstSet[], int vertices) {
+    int min = INT_MAX, minIndex;
+
+    for (int v = 0; v < vertices; v++) {
+        if (!mstSet[v] && key[v] < min) {
+            min = key[v];
+            minIndex = v;
+        }
+    }
+    return minIndex;
+}
+
+// Function to print the constructed MST
+void printMST(int parent[], int graph[MAX][MAX], int vertices) {
+    printf("Edge \tWeight\n");
+    for (int i = 1; i < vertices; i++) {
+        printf("%d - %d \t%d\n", parent[i], i, graph[i][parent[i]]);
+    }
+}
+
+// Function to implement Prim's algorithm
+void primMST(int graph[MAX][MAX], int vertices) {
+    int parent[MAX];     // Array to store constructed MST
+    int key[MAX];        // Key values to pick the minimum weight edge
+    bool mstSet[MAX];    // To represent the set of vertices included in MST
+
+    // Initialize all keys as infinite and mstSet[] as false
+    for (int i = 0; i < vertices; i++) {
+        key[i] = INT_MAX;
+        mstSet[i] = false;
+    }
+
+    // Include the first vertex in the MST
+    key[0] = 0;          // Make key value 0 so that this vertex is picked first
+    parent[0] = -1;      // First node is always the root of MST
+
+    for (int count = 0; count < vertices - 1; count++) {
+        // Pick the minimum key vertex not yet included in MST
+        int u = findMinKey(key, mstSet, vertices);
+        mstSet[u] = true;
+
+        // Update the key and parent index of adjacent vertices
+        for (int v = 0; v < vertices; v++) {
+            // Update key only if graph[u][v] is smaller and v is not in MST
+            if (graph[u][v] && !mstSet[v] && graph[u][v] < key[v]) {
+                parent[v] = u;
+                key[v] = graph[u][v];
+            }
+        }
+    }
+
+    // Print the constructed MST
+    printMST(parent, graph, vertices);
+}
+
+int main() {
+    int vertices;
+    int graph[MAX][MAX];
+
+    printf("Enter the number of vertices in the graph: ");
+    scanf("%d", &vertices);
+
+    printf("Enter the adjacency matrix of the graph:\n");
+    for (int i = 0; i < vertices; i++) {
+        for (int j = 0; j < vertices; j++) {
+            scanf("%d", &graph[i][j]);
+        }
+    }
+
+    printf("Minimum Spanning Tree using Prim's Algorithm:\n");
+    primMST(graph, vertices);
+
+    return 0;
+}

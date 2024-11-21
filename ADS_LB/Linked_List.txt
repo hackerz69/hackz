@@ -1,0 +1,2261 @@
+Given a list, split it into two sublists — one for the front half, and one
+for the back half. If the number of elements is odd, the extra element
+should go in the front list. So FrontBackSplit() on the list {2, 3, 5, 7, 11}
+should yield the two lists {2, 3, 5} and {7, 11}. Getting this right for all
+the cases is harder than it looks. You should check your solution against
+a few cases (length = 2, length = 3, length=4) to make sure that the list
+gets split correctly near the short­list boundary conditions. If it works
+right for length=4, it probably works right for length=1000. You will
+probably need special case code to deal with the (length <2) cases.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition of a linked list node
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+// Function to insert a new node at the end of the list
+void insertNode(struct Node** head, int value) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = value;
+    newNode->next = NULL;
+
+    // If the list is empty, make the new node the head
+    if (*head == NULL) {
+        *head = newNode;
+        return;
+    }
+
+    // Otherwise, traverse to the end and add the new node
+    struct Node* temp = *head;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+    temp->next = newNode;
+}
+
+// Function to split the linked list into two sublists
+void FrontBackSplit(struct Node* head) {
+    if (head == NULL) {
+        printf("List is empty\n");
+        return;
+    }
+
+    // Calculate the length of the list
+    int length = 0;
+    struct Node* temp = head;
+    while (temp != NULL) {
+        length++;
+        temp = temp->next;
+    }
+
+    // Edge case: if the list has fewer than 2 elements
+    if (length < 2) {
+        printf("Front: ");
+        temp = head;
+        while (temp != NULL) {
+            printf("%d ", temp->data);
+            temp = temp->next;
+        }
+        printf("\nBack: None\n");
+        return;
+    }
+
+    // Calculate the middle index
+    int mid = (length + 1) / 2;
+
+    // Split the list into front and back
+    struct Node* front = head;
+    struct Node* back = NULL;
+    temp = head;
+    for (int i = 1; i < mid; i++) {
+        temp = temp->next;
+    }
+    back = temp->next;
+    temp->next = NULL;
+
+    // Print front list
+    printf("Front: ");
+    temp = front;
+    while (temp != NULL) {
+        printf("%d ", temp->data);
+        temp = temp->next;
+    }
+
+    // Print back list
+    printf("\nBack: ");
+    temp = back;
+    while (temp != NULL) {
+        printf("%d ", temp->data);
+        temp = temp->next;
+    }
+    printf("\n");
+}
+
+// Function to free the linked list
+void freeList(struct Node* head) {
+    struct Node* temp;
+    while (head != NULL) {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
+}
+
+int main() {
+    int length, value;
+    struct Node* head = NULL;
+
+    // Prompt the user for the length of the list
+    printf("Enter the length of the list: ");
+    scanf("%d", &length);
+
+    // Edge case: if the length is non-positive
+    if (length <= 0) {
+        printf("Invalid list length. Exiting...\n");
+        return 1;
+    }
+
+    // Prompt the user to enter the elements of the list
+    printf("Enter the elements of the list:\n");
+    for (int i = 0; i < length; i++) {
+        scanf("%d", &value);
+        insertNode(&head, value);
+    }
+
+    // Call the function to split the list
+    FrontBackSplit(head);
+
+    // Free the dynamically allocated memory
+    freeList(head);
+
+    return 0;
+}
+
+WAP to perform addition o f two polynomials using singly linked list. 
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int coefficient;
+    int exponent;
+    struct Node* next;
+};
+struct Node* createNode(int coefficient, int exponent) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->coefficient = coefficient;
+    newNode->exponent = exponent;
+    newNode->next = NULL;
+    return newNode;
+}
+
+void insertTerm(struct Node** poly, int coefficient, int exponent) {
+    struct Node* newNode = createNode(coefficient, exponent);
+    if (*poly == NULL || (*poly)->exponent < exponent) {
+        newNode->next = *poly;
+        *poly = newNode;
+    } else {
+        struct Node* temp = *poly;
+        while (temp->next != NULL && temp->next->exponent >= exponent) {
+            temp = temp->next;
+        }
+        newNode->next = temp->next;
+        temp->next = newNode;
+    }
+}
+
+// Function to add two polynomials
+struct Node* addPolynomials(struct Node* poly1, struct Node* poly2) {
+    struct Node* result = NULL;
+
+    while (poly1 != NULL && poly2 != NULL) {
+        if (poly1->exponent > poly2->exponent) {
+            insertTerm(&result, poly1->coefficient, poly1->exponent);
+            poly1 = poly1->next;
+        } else if (poly1->exponent < poly2->exponent) {
+            insertTerm(&result, poly2->coefficient, poly2->exponent);
+            poly2 = poly2->next;
+        } else {
+            int sumCoeff = poly1->coefficient + poly2->coefficient;
+            if (sumCoeff != 0) {
+                insertTerm(&result, sumCoeff, poly1->exponent);
+            }
+            poly1 = poly1->next;
+            poly2 = poly2->next;
+        }
+    }
+
+    while (poly1 != NULL) {
+        insertTerm(&result, poly1->coefficient, poly1->exponent);
+        poly1 = poly1->next;
+    }
+
+    while (poly2 != NULL) {
+        insertTerm(&result, poly2->coefficient, poly2->exponent);
+        poly2 = poly2->next;
+    }
+    return result;
+}
+
+// Function to print a polynomial
+void printPolynomial(struct Node* poly) {
+    while (poly != NULL) {
+        printf("%dx^%d", poly->coefficient, poly->exponent);
+        poly = poly->next;
+        if (poly != NULL)
+            printf(" + ");
+    }
+    printf("\n");
+}
+
+int main() {
+    struct Node *poly1 = NULL, *poly2 = NULL;
+
+    int n, coefficient, exponent;
+
+    printf("Enter number of terms in the first polynomial: ");
+    scanf("%d", &n);
+    printf("Enter terms for the first polynomial (coefficient and exponent):\n");
+    for (int i = 0; i < n; i++) {
+        printf("Term %d: ", i + 1);
+        scanf("%d %d", &coefficient, &exponent);
+        insertTerm(&poly1, coefficient, exponent);
+    }
+    printf("Enter number of terms in the second polynomial: ");
+    scanf("%d", &n);
+    printf("Enter terms for the second polynomial (coefficient and exponent):\n");
+    for (int i = 0; i < n; i++) {
+        printf("Term %d: ", i + 1);
+        scanf("%d %d", &coefficient, &exponent);
+        insertTerm(&poly2, coefficient, exponent);
+    }
+
+    printf("First polynomial: ");
+    printPolynomial(poly1);
+
+    printf("Second polynomial: ");
+    printPolynomial(poly2);
+
+    struct Node* result = addPolynomials(poly1, poly2);
+
+    printf("Resultant polynomial after addition: ");
+    printPolynomial(result);
+
+    return 0;
+}
+
+
+Write an iterative Reverse() function that reverses a list by rearranging
+all the .next pointers and the head pointer. Ideally, Reverse() should only
+need to make one pass of the list.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the node structure
+typedef struct Node {
+    int data;
+    struct Node *next;
+} Node;
+
+// Function to create a new node
+Node* createNode(int data) {
+    Node *newNode = (Node *)malloc(sizeof(Node));
+    newNode->data = data;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to display a linked list
+void displayList(Node *head) {
+    if (head == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+
+    while (head != NULL) {
+        printf("%d -> ", head->data);
+        head = head->next;
+    }
+    printf("NULL\n");
+}
+
+// Function to reverse the linked list iteratively
+void Reverse(Node **head) {
+    Node *prev = NULL;
+    Node *current = *head;
+    Node *next = NULL;
+
+    while (current != NULL) {
+        next = current->next;  // Save the next node
+        current->next = prev;  // Reverse the current node's next pointer
+        prev = current;        // Move prev and current one step forward
+        current = next;
+    }
+
+    *head = prev;  // Update head to the new first node
+}
+
+// Function to create a linked list from user input
+Node* createListFromInput() {
+    Node *head = NULL, *tail = NULL;
+    int n;
+
+    printf("Enter the number of elements in the list: ");
+    scanf("%d", &n);
+
+    if (n <= 0) {
+        printf("Invalid size. Returning an empty list.\n");
+        return NULL;
+    }
+
+    printf("Enter the elements:\n");
+    for (int i = 0; i < n; i++) {
+        int data;
+        scanf("%d", &data);
+
+        Node *newNode = createNode(data);
+
+        if (head == NULL) {
+            head = newNode; // First node becomes the head
+            tail = newNode; // Tail also points to the first node
+        } else {
+            tail->next = newNode; // Append to the end of the list
+            tail = newNode;       // Update the tail
+        }
+    }
+
+    return head;
+}
+
+// Main function to test Reverse
+int main() {
+    printf("Create the original list:\n");
+    Node *list = createListFromInput();
+
+    printf("Original list: ");
+    displayList(list);
+
+    // Reverse the list
+    Reverse(&list);
+
+    printf("Reversed list: ");
+    displayList(list);
+
+    return 0;
+}
+
+
+Write an Append() function that takes two lists, 'a' and 'b', appends 'b'
+onto the end of 'a', and then sets 'b' to NULL (since it is now trailing off
+the end of 'a').
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the node structure
+typedef struct Node {
+    int data;
+    struct Node *next;
+} Node;
+
+// Function to create a new node
+Node* createNode(int data) {
+    Node *newNode = (Node *)malloc(sizeof(Node));
+    newNode->data = data;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to display a linked list
+void displayList(Node *head) {
+    if (head == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+
+    while (head != NULL) {
+        printf("%d -> ", head->data);
+        head = head->next;
+    }
+    printf("NULL\n");
+}
+
+// Function to append list 'b' to the end of list 'a'
+void Append(Node **a, Node **b) {
+    if (*a == NULL) {
+        *a = *b;  // If 'a' is empty, simply point 'a' to 'b'
+    } else {
+        Node *temp = *a;
+
+        // Traverse to the end of list 'a'
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+
+        // Append 'b' to the end of 'a'
+        temp->next = *b;
+    }
+
+    // Set list 'b' to NULL as it has been appended to 'a'
+    *b = NULL;
+}
+
+// Function to create a linked list from user input
+Node* createListFromInput() {
+    Node *head = NULL, *tail = NULL;
+    int n;
+
+    printf("Enter the number of elements in the list: ");
+    scanf("%d", &n);
+
+    if (n <= 0) {
+        printf("Invalid size. Returning an empty list.\n");
+        return NULL;
+    }
+
+    printf("Enter the elements:\n");
+    for (int i = 0; i < n; i++) {
+        int data;
+        scanf("%d", &data);
+
+        Node *newNode = createNode(data);
+
+        if (head == NULL) {
+            head = newNode; // First node becomes the head
+            tail = newNode; // Tail also points to the first node
+        } else {
+            tail->next = newNode; // Append to the end of the list
+            tail = newNode;       // Update the tail
+        }
+    }
+
+    return head;
+}
+
+// Main function to test Append
+int main() {
+    printf("Create the first list (a):\n");
+    Node *listA = createListFromInput();
+
+    printf("Create the second list (b):\n");
+    Node *listB = createListFromInput();
+
+    printf("\nList A before append: ");
+    displayList(listA);
+
+    printf("List B before append: ");
+    displayList(listB);
+
+    // Append list B onto list A
+    Append(&listA, &listB);
+
+    printf("\nList A after append: ");
+    displayList(listA);
+
+    printf("List B after append (should be NULL): ");
+    displayList(listB);
+
+    return 0;
+}
+
+WAP to perform Multiplication o f two polynomials using singly linked
+list.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int coefficient;
+    int exponent;
+    struct Node* next;
+};
+
+struct Node* createNode(int coefficient, int exponent) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->coefficient = coefficient;
+    newNode->exponent = exponent;
+    newNode->next = NULL;
+    return newNode;
+}
+
+void insertTerm(struct Node** poly, int coefficient, int exponent) {
+    struct Node* newNode = createNode(coefficient, exponent);
+    if (*poly == NULL || (*poly)->exponent < exponent) {
+        newNode->next = *poly;
+        *poly = newNode;
+    } else {
+        struct Node* temp = *poly;
+        struct Node* prev = NULL;
+        while (temp != NULL && temp->exponent > exponent) {
+            prev = temp;
+            temp = temp->next;
+        }
+
+        if (temp != NULL && temp->exponent == exponent) {
+            temp->coefficient += coefficient;
+            free(newNode);
+        } else {
+            newNode->next = temp;
+            if (prev == NULL) {
+                *poly = newNode;
+            } else {
+                prev->next = newNode;
+            }
+        }
+    }
+}
+
+
+struct Node* multiplyPolynomials(struct Node* poly1, struct Node* poly2) {
+    struct Node* result = NULL;
+    struct Node* temp1 = poly1;
+    struct Node* temp2 = poly2;
+
+    while (temp1 != NULL) {
+        temp2 = poly2;
+        while (temp2 != NULL) {
+            int coefficient = temp1->coefficient * temp2->coefficient;
+            int exponent = temp1->exponent + temp2->exponent;
+            insertTerm(&result, coefficient, exponent);
+            temp2 = temp2->next;
+        }
+        temp1 = temp1->next;
+    }
+
+    return result;
+}
+
+void printPolynomial(struct Node* poly) {
+    while (poly != NULL) {
+        printf("%dx^%d", poly->coefficient, poly->exponent);
+        poly = poly->next;
+        if (poly != NULL)
+            printf(" + ");
+    }
+    printf("\n");
+}
+
+int main() {
+    struct Node *poly1 = NULL, *poly2 = NULL;
+
+    int n, coefficient, exponent;
+
+    printf("Enter number of terms in the first polynomial: ");
+    scanf("%d", &n);
+    printf("Enter terms for the first polynomial (coefficient and exponent):\n");
+    for (int i = 0; i < n; i++) {
+        printf("Term %d: ", i + 1);
+        scanf("%d %d", &coefficient, &exponent);
+        insertTerm(&poly1, coefficient, exponent);
+    }
+
+
+    printf("Enter number of terms in the second polynomial: ");
+    scanf("%d", &n);
+    printf("Enter terms for the second polynomial (coefficient and exponent):\n");
+    for (int i = 0; i < n; i++) {
+        printf("Term %d: ", i + 1);
+        scanf("%d %d", &coefficient, &exponent);
+        insertTerm(&poly2, coefficient, exponent);
+    }
+
+    printf("First polynomial: ");
+    printPolynomial(poly1);
+
+    printf("Second polynomial: ");
+    printPolynomial(poly2);
+
+   
+    struct Node* result = multiplyPolynomials(poly1, poly2);
+
+    printf("Resultant polynomial after multiplication: ");
+    printPolynomial(result);
+
+    return 0;
+}
+
+Consider a CopyList() function that takes a list and returns a complete
+copy of that list. One pointer can iterate over the original list in the usual
+way. Two other pointers can keep track of the new list: one head pointer,
+and one tail pointer which always points to the last node in the new list.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition of the linked list node
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+// Function to create a new node with given data
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to append a new node at the end of the list
+void append(struct Node** head, int data) {
+    struct Node* newNode = createNode(data);
+    if (*head == NULL) {
+        *head = newNode; // If the list is empty, new node is the head
+    } else {
+        struct Node* temp = *head;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newNode;
+    }
+}
+
+// Function to print the linked list
+void printList(struct Node* head) {
+    struct Node* temp = head;
+    while (temp != NULL) {
+        printf("%d -> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+
+// Function to copy a linked list
+struct Node* CopyList(struct Node* original) {
+    if (original == NULL) {
+        return NULL; // If the original list is empty, return NULL
+    }
+
+    struct Node* newHead = NULL; // Head pointer for the new list
+    struct Node* tail = NULL;    // Tail pointer for the new list
+
+    // Traverse the original list
+    struct Node* temp = original;
+    while (temp != NULL) {
+        // Create a new node with the same data as the current node
+        struct Node* newNode = createNode(temp->data);
+
+        // If new list is empty, set both head and tail to the new node
+        if (newHead == NULL) {
+            newHead = newNode;
+            tail = newNode;
+        } else {
+            // Otherwise, append the new node at the end and update tail
+            tail->next = newNode;
+            tail = newNode;
+        }
+
+        temp = temp->next;
+    }
+
+    return newHead; // Return the head pointer of the new list
+}
+
+int main() {
+    struct Node* originalList = NULL;
+    int n, data;
+
+    // Prompt user for the number of elements in the list
+    printf("Enter the number of elements in the linked list: ");
+    scanf("%d", &n);
+
+    // Ensure the number of elements is positive
+    if (n <= 0) {
+        printf("Invalid number of elements.\n");
+        return 1;
+    }
+
+    // Prompt user for the elements of the linked list
+    printf("Enter the elements of the linked list:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &data);
+        append(&originalList, data);
+    }
+
+    // Print the original linked list
+    printf("\nOriginal List: ");
+    printList(originalList);
+
+    // Copy the linked list
+    struct Node* copiedList = CopyList(originalList);
+
+    // Print the copied linked list
+    printf("Copied List: ");
+    printList(copiedList);
+
+    // Free the allocated memory (for both lists)
+    free(originalList);
+    free(copiedList);
+
+    return 0;
+}
+
+WAP to store at most 10 digit integer in a Singly linked list and perform
+arithmetic operations on it.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the node structure
+typedef struct Node {
+    int digit;
+    struct Node *next;
+} Node;
+
+// Function to create a new node
+Node* createNode(int digit) {
+    Node *newNode = (Node *)malloc(sizeof(Node));
+    newNode->digit = digit;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to insert a digit at the start of the linked list
+void insertStart(Node **head, int digit) {
+    Node *newNode = createNode(digit);
+    newNode->next = *head;
+    *head = newNode;
+}
+
+// Function to reverse a linked list
+Node* reverseList(Node *head) {
+    Node *prev = NULL, *current = head, *next = NULL;
+    while (current != NULL) {
+        next = current->next;
+        current->next = prev;
+        prev = current;
+        current = next;
+    }
+    return prev;
+}
+
+// Function to display the number represented by the linked list
+void displayNumber(Node *head) {
+    if (head == NULL) {
+        printf("0");
+        return;
+    }
+    while (head != NULL) {
+        printf("%d", head->digit);
+        head = head->next;
+    }
+    printf("\n");
+}
+
+// Function to add two numbers represented by linked lists
+Node* addNumbers(Node *num1, Node *num2) {
+    Node *result = NULL;
+    int carry = 0, sum = 0;
+    num1 = reverseList(num1);
+    num2 = reverseList(num2);
+
+    while (num1 != NULL || num2 != NULL || carry != 0) {
+        int digit1 = (num1 != NULL) ? num1->digit : 0;
+        int digit2 = (num2 != NULL) ? num2->digit : 0;
+
+        sum = digit1 + digit2 + carry;
+        carry = sum / 10;
+        insertStart(&result, sum % 10);
+
+        if (num1 != NULL) num1 = num1->next;
+        if (num2 != NULL) num2 = num2->next;
+    }
+
+    return result; // Reverse to display in correct order
+}
+
+// Function to subtract two numbers represented by linked lists
+Node* subtractNumbers(Node *num1, Node *num2) {
+    // Reverse the input lists to process digits in the correct order
+    num1 = reverseList(num1);
+    num2 = reverseList(num2);
+
+    Node *result = NULL;
+    int borrow = 0;
+
+    // Perform digit-by-digit subtraction
+    while (num1 != NULL || num2 != NULL) {
+        int digit1 = (num1 != NULL) ? num1->digit : 0;
+        int digit2 = (num2 != NULL) ? num2->digit : 0;
+
+        digit1 -= borrow;
+        if (digit1 < digit2) {
+            digit1 += 10;
+            borrow = 1;
+        } else {
+            borrow = 0;
+        }
+
+        insertStart(&result, digit1 - digit2); // Insert at the start
+        if (num1 != NULL) num1 = num1->next;
+        if (num2 != NULL) num2 = num2->next;
+    }
+
+    // Remove leading zeros
+    while (result != NULL && result->digit == 0) {
+        Node *temp = result;
+        result = result->next;
+        free(temp);
+    }
+
+    // If result becomes NULL after removing leading zeros, return 0
+    if (result == NULL) {
+        return createNode(0);
+    }
+
+    return result; // Reverse again for correct display order
+}
+
+// Main function
+int main() {
+    Node *num1 = NULL, *num2 = NULL, *result = NULL;
+    char input1[11], input2[11];
+    int choice;
+
+    printf("Enter the first number (up to 10 digits): ");
+    scanf("%s", input1);
+
+    printf("Enter the second number (up to 10 digits): ");
+    scanf("%s", input2);
+
+    // Convert input strings to linked lists (in reverse order for arithmetic simplicity)
+    for (int i = strlen(input1) - 1; i >= 0; i--) {
+        insertStart(&num1, input1[i] - '0');
+    }
+    for (int i = strlen(input2) - 1; i >= 0; i--) {
+        insertStart(&num2, input2[i] - '0');
+    }
+
+    printf("Choose an operation:\n");
+    printf("1. Addition\n");
+    printf("2. Subtraction\n");
+    scanf("%d", &choice);
+
+    switch (choice) {
+        case 1:
+            result = addNumbers(num1, num2);
+            printf("Sum: ");
+            displayNumber(result);
+            break;
+        case 2:
+            result = subtractNumbers(num1, num2);
+            printf("Difference: ");
+            displayNumber(result);
+            break;
+        default:
+            printf("Invalid choice or operation not implemented yet.\n");
+    }
+
+    return 0;
+}
+
+WAP to create doubly linked list and perform following operations on it.
+A) Insert (all cases) 2. Delete (all cases).
+
+#include<stdio.h>
+#include<stdlib.h>
+
+struct node {
+   int data;
+   struct node* next;
+   struct node* prev;
+};
+struct node* head = NULL;
+struct node* create_node(int value);
+void insert_at_beginning();
+void insert_at_end();
+void insert_at_middle();
+void delete_from_beginning();
+void delete_from_end();
+void delete_from_middle();
+void print();
+
+int main() {
+    int ch;
+    do {
+        printf("\nDoubly Linked List Operations:\n");
+        printf("1. Insert the element at the beginning\n");
+        printf("2. Insert the element in the middle\n");
+        printf("3. Insert the element at the end\n");
+        printf("4. Delete the element from the beginning\n");
+        printf("5. Delete the element from the end\n");
+        printf("6. Delete the element from the middle\n");
+        printf("7. Print all the elements in the list\n");
+        printf("8. Exit\n");
+        printf("Select your choice: ");
+        scanf("%d", &ch);
+        switch(ch) {
+            case 1: insert_at_beginning();
+                break;
+            case 2: insert_at_middle();
+                break;
+            case 3: insert_at_end();
+                break;
+            case 4: delete_from_beginning();
+                break;
+            case 5: delete_from_end();
+                break;
+            case 6: delete_from_middle();
+                break;
+            case 7: print();
+                break;
+            case 8: exit(0);
+                break;
+            default: printf("Please enter a valid choice.\n");
+        }
+    } while(ch != 8);
+    return 0;
+}
+
+struct node* create_node(int value) {
+    struct node* newnode = (struct node*)malloc(sizeof(struct node));
+
+    if(newnode == NULL) {
+        printf("Memory allocation failed! Node creation unsuccessful.\n");
+        return NULL;
+    }
+
+    newnode->data = value;
+    newnode->next = NULL;
+    newnode->prev = NULL;
+
+    return newnode;
+}
+
+void insert_at_beginning() {
+    int x;
+    printf("Enter element to insert: ");
+    scanf("%d", &x);
+
+    struct node* newnode = create_node(x);  	
+
+    if(newnode == NULL) {
+        return;
+    }
+
+    if(head == NULL) {
+        head = newnode;
+    } else {
+        newnode->next = head;
+        head->prev = newnode; 	
+        head = newnode;
+    }
+
+    printf("Element inserted successfully at the beginning!\n");
+}
+
+void insert_at_end() {
+    int x;
+    printf("Enter element to insert: ");
+    scanf("%d", &x);
+
+    struct node* newnode = create_node(x);  	
+
+    if(newnode == NULL) {
+        return;
+    }
+
+    if(head == NULL) {
+        head = newnode;
+    } else {
+        struct node* temp = head;
+        while(temp->next != NULL) {	
+            temp = temp->next;
+        }
+        temp->next = newnode;
+        newnode->prev = temp;	
+    }
+    printf("Element inserted successfully at the end!\n");
+}
+
+void insert_at_middle() {
+    int pos, i = 1;
+    struct node *newnode, *temp;
+
+    printf("Enter element to insert: ");
+    int x;
+    scanf("%d", &x);
+    printf("Enter position to insert: ");
+    scanf("%d", &pos);
+    
+    newnode = create_node(x);  
+    if(newnode == NULL) {
+        return;
+    }
+    
+    if(pos == 1) {	
+        newnode->next = head;
+        if (head != NULL) {
+            head->prev = newnode;
+        }
+        head = newnode;
+        printf("Element inserted successfully at position 1!\n");
+        return;
+    }
+
+    temp = head;
+    while(i < pos - 1 && temp != NULL) {	
+        temp = temp->next;
+        i++;
+    }
+    if(temp == NULL) {	
+        printf("Invalid position.\n");
+    } else {
+        newnode->next = temp->next;
+        if(temp->next != NULL) {
+            temp->next->prev = newnode;
+        }
+        temp->next = newnode;
+        newnode->prev = temp;
+        printf("Element inserted successfully at position %d!\n", pos);
+    }
+}
+
+void delete_from_beginning() {
+    if(head == NULL) {
+        printf("List is empty!\n");
+        return;
+    } else {
+        struct node* temp = head;
+        head = head->next; 
+        if(head != NULL) {
+            head->prev = NULL;
+        }
+        printf("Deleted element: %d\n", temp->data);
+        free(temp);  
+    }
+}
+
+void delete_from_end() {
+    if(head == NULL) {
+        printf("List is empty!\n");
+        return;
+    } else if(head->next == NULL) { 
+        printf("Deleted element: %d\n", head->data);
+        free(head);
+        head = NULL;
+    } else {
+        struct node* temp = head;
+        while(temp->next != NULL) {  
+            temp = temp->next;
+        }
+        temp->prev->next = NULL;
+        printf("Deleted element: %d\n", temp->data);
+        free(temp);   
+    }
+}
+
+void delete_from_middle() {
+    int pos, i = 1;
+    struct node *temp;
+
+    if(head == NULL) {
+        printf("List is empty!\n");
+        return;
+    }
+
+    printf("Enter position to delete: ");
+    scanf("%d", &pos);
+
+    if(pos == 1) {
+        delete_from_beginning();  
+        return;
+    }
+
+    temp = head;
+    while(i < pos && temp != NULL) {  
+        temp = temp->next;
+        i++;
+    }
+
+    if(temp == NULL) {  
+        printf("Invalid position.\n");
+    } else {
+        if(temp->prev != NULL) {
+            temp->prev->next = temp->next;
+        }
+        if(temp->next != NULL) {
+            temp->next->prev = temp->prev;
+        }
+        printf("Deleted element: %d\n", temp->data);
+        free(temp); 
+    }
+}
+
+void print() {
+    if(head == NULL) {
+        printf("List is empty!\n");
+        return;
+    } else {
+        struct node* temp = head;
+
+        printf("List elements:\n");
+        while(temp != NULL) {
+            printf("%d ", temp->data);  
+            temp = temp->next;  
+        }
+        printf("\n");
+    }
+}
+
+WAP to merge two sorted Doubly linked lists and display thier result.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node structure for the doubly linked list
+typedef struct Node {
+    int data;
+    struct Node *prev, *next;
+} Node;
+
+// Function to create a new node
+Node* createNode(int data) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = data;
+    newNode->prev = newNode->next = NULL;
+    return newNode;
+}
+
+// Function to append a node to the doubly linked list
+void append(Node** head, int data) {
+    Node* newNode = createNode(data);
+    if (*head == NULL) {
+        *head = newNode;
+    } else {
+        Node* temp = *head;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newNode;
+        newNode->prev = temp;
+    }
+}
+
+// Function to display a doubly linked list
+void displayList(Node* head) {
+    if (head == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+    Node* temp = head;
+    while (temp != NULL) {
+        printf("%d ", temp->data);
+        temp = temp->next;
+    }
+    printf("\n");
+}
+
+// Function to swap the data of two nodes
+void swap(Node* a, Node* b) {
+    int temp = a->data;
+    a->data = b->data;
+    b->data = temp;
+}
+
+// Function to sort the doubly linked list using bubble sort
+void sortList(Node* head) {
+    if (head == NULL) return; // Empty list
+
+    Node *i, *j;
+    int swapped;
+
+    do {
+        swapped = 0;
+        i = head;
+        
+        // Traverse the list and swap adjacent nodes if they are in wrong order
+        while (i != NULL && i->next != NULL) {
+            j = i->next;
+            if (i->data > j->data) {
+                swap(i, j);
+                swapped = 1;
+            }
+            i = i->next;
+        }
+    } while (swapped); // Repeat until no more swaps are made
+}
+
+// Function to merge two sorted doubly linked lists
+Node* mergeLists(Node* head1, Node* head2) {
+    // If one of the lists is empty, return the other list
+    if (head1 == NULL) return head2;
+    if (head2 == NULL) return head1;
+
+    // Merge the two lists by comparing nodes
+    Node* mergedHead = NULL;
+
+    // Use a pointer to traverse the merged list
+    Node* tail = NULL;
+
+    while (head1 != NULL && head2 != NULL) {
+        if (head1->data <= head2->data) {
+            if (mergedHead == NULL) {
+                mergedHead = head1;
+                tail = head1;
+            } else {
+                tail->next = head1;
+                head1->prev = tail;
+                tail = head1;
+            }
+            head1 = head1->next;
+        } else {
+            if (mergedHead == NULL) {
+                mergedHead = head2;
+                tail = head2;
+            } else {
+                tail->next = head2;
+                head2->prev = tail;
+                tail = head2;
+            }
+            head2 = head2->next;
+        }
+    }
+
+    // If any nodes are left in either list, append them to the merged list
+    if (head1 != NULL) {
+        tail->next = head1;
+        head1->prev = tail;
+    }
+    if (head2 != NULL) {
+        tail->next = head2;
+        head2->prev = tail;
+    }
+
+    return mergedHead;
+}
+
+// Main function
+int main() {
+    Node* head1 = NULL;  // Head for the first doubly linked list
+    Node* head2 = NULL;  // Head for the second doubly linked list
+    Node* mergedHead = NULL;  // Head for the merged doubly linked list
+    int n1, n2, data;
+
+    // Input for the first doubly linked list
+    printf("Enter the number of elements in the first list: ");
+    scanf("%d", &n1);
+    printf("Enter the elements of the first list:\n");
+    for (int i = 0; i < n1; i++) {
+        scanf("%d", &data);
+        append(&head1, data);
+    }
+
+    // Input for the second doubly linked list
+    printf("Enter the number of elements in the second list: ");
+    scanf("%d", &n2);
+    printf("Enter the elements of the second list:\n");
+    for (int i = 0; i < n2; i++) {
+        scanf("%d", &data);
+        append(&head2, data);
+    }
+
+    // Display both lists before sorting
+    printf("\nOriginal first list: ");
+    displayList(head1);
+    printf("Original second list: ");
+    displayList(head2);
+
+    // Sort the first list
+    sortList(head1);
+    // Sort the second list
+    sortList(head2);
+
+    // Display both lists after sorting
+    printf("\nSorted first list: ");
+    displayList(head1);
+    printf("Sorted second list: ");
+    displayList(head2);
+
+    // Merge the two sorted lists
+    mergedHead = mergeLists(head1, head2);
+
+    // Display the merged sorted list
+    printf("\nMerged sorted list: ");
+    displayList(mergedHead);
+
+    return 0;
+}
+
+
+WAP to append one doubly linked list to a) the start of the Second list b)
+the end of the second list
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node structure for the doubly linked list
+typedef struct Node {
+    int data;
+    struct Node *prev, *next;
+} Node;
+
+// Function to create a new node
+Node* createNode(int data) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = data;
+    newNode->prev = newNode->next = NULL;
+    return newNode;
+}
+
+// Function to append a node to the doubly linked list
+void append(Node** head, int data) {
+    Node* newNode = createNode(data);
+    if (*head == NULL) {
+        *head = newNode;
+    } else {
+        Node* temp = *head;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newNode;
+        newNode->prev = temp;
+    }
+}
+
+// Function to display a doubly linked list
+void displayList(Node* head) {
+    if (head == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+    Node* temp = head;
+    while (temp != NULL) {
+        printf("%d ", temp->data);
+        temp = temp->next;
+    }
+    printf("\n");
+}
+
+// Function to append the first DLL at the start of the second DLL
+void appendAtStart(Node** head1, Node** head2) {
+    if (*head1 == NULL) return; // Nothing to append if the first list is empty
+
+    Node* temp = *head1;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+    temp->next = *head2;
+    if (*head2 != NULL) {
+        (*head2)->prev = temp;
+    }
+    *head2 = *head1;
+    *head1 = NULL; // Clear the first list
+}
+
+// Function to append the first DLL at the end of the second DLL
+void appendAtEnd(Node** head1, Node** head2) {
+    if (*head1 == NULL) return; // Nothing to append if the first list is empty
+
+    if (*head2 == NULL) {
+        *head2 = *head1;
+    } else {
+        Node* temp = *head2;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = *head1;
+        (*head1)->prev = temp;
+    }
+    *head1 = NULL; // Clear the first list
+}
+
+// Main function
+int main() {
+    Node* head1 = NULL;  // Head for the first doubly linked list
+    Node* head2 = NULL;  // Head for the second doubly linked list
+    int n1, n2, data, choice;
+
+    // Input for the first doubly linked list
+    printf("Enter the number of elements in the first list: ");
+    scanf("%d", &n1);
+    printf("Enter the elements of the first list:\n");
+    for (int i = 0; i < n1; i++) {
+        scanf("%d", &data);
+        append(&head1, data);
+    }
+
+    // Input for the second doubly linked list
+    printf("Enter the number of elements in the second list: ");
+    scanf("%d", &n2);
+    printf("Enter the elements of the second list:\n");
+    for (int i = 0; i < n2; i++) {
+        scanf("%d", &data);
+        append(&head2, data);
+    }
+
+    // Menu-driven options
+    do {
+        printf("\n--- MENU ---\n");
+        printf("1. Append first list at the start of second list\n");
+        printf("2. Append first list at the end of second list\n");
+        printf("3. Display second list\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                appendAtStart(&head1, &head2);
+                printf("First list appended at the start of the second list.\n");
+                printf("Updated second list: ");
+                displayList(head2);
+                break;
+            case 2:
+                appendAtEnd(&head1, &head2);
+                printf("First list appended at the end of the second list.\n");
+                printf("Updated second list: ");
+                displayList(head2);
+                break;
+            case 3:
+                printf("Second list: ");
+                displayList(head2);
+                break;
+            case 4:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}
+
+WAP to append one doubly linked list to a) the start of the Second list b)
+the end of the second list
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node structure for the doubly linked list
+typedef struct Node {
+    int data;
+    struct Node *prev, *next;
+} Node;
+
+// Function to create a new node
+Node* createNode(int data) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = data;
+    newNode->prev = newNode->next = NULL;
+    return newNode;
+}
+
+// Function to append a node to the doubly linked list
+void append(Node** head, int data) {
+    Node* newNode = createNode(data);
+    if (*head == NULL) {
+        *head = newNode;
+    } else {
+        Node* temp = *head;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newNode;
+        newNode->prev = temp;
+    }
+}
+
+// Function to display a doubly linked list
+void displayList(Node* head) {
+    if (head == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+    Node* temp = head;
+    while (temp != NULL) {
+        printf("%d ", temp->data);
+        temp = temp->next;
+    }
+    printf("\n");
+}
+
+// Function to append the first DLL at the start of the second DLL
+void appendAtStart(Node** head1, Node** head2) {
+    if (*head1 == NULL) return; // Nothing to append if the first list is empty
+
+    Node* temp = *head1;
+    while (temp->next != NULL) {
+        temp = temp->next;
+    }
+    temp->next = *head2;
+    if (*head2 != NULL) {
+        (*head2)->prev = temp;
+    }
+    *head2 = *head1;
+    *head1 = NULL; // Clear the first list
+}
+
+// Function to append the first DLL at the end of the second DLL
+void appendAtEnd(Node** head1, Node** head2) {
+    if (*head1 == NULL) return; // Nothing to append if the first list is empty
+
+    if (*head2 == NULL) {
+        *head2 = *head1;
+    } else {
+        Node* temp = *head2;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = *head1;
+        (*head1)->prev = temp;
+    }
+    *head1 = NULL; // Clear the first list
+}
+
+// Main function
+int main() {
+    Node* head1 = NULL;  // Head for the first doubly linked list
+    Node* head2 = NULL;  // Head for the second doubly linked list
+    int n1, n2, data, choice;
+
+    // Input for the first doubly linked list
+    printf("Enter the number of elements in the first list: ");
+    scanf("%d", &n1);
+    printf("Enter the elements of the first list:\n");
+    for (int i = 0; i < n1; i++) {
+        scanf("%d", &data);
+        append(&head1, data);
+    }
+
+    // Input for the second doubly linked list
+    printf("Enter the number of elements in the second list: ");
+    scanf("%d", &n2);
+    printf("Enter the elements of the second list:\n");
+    for (int i = 0; i < n2; i++) {
+        scanf("%d", &data);
+        append(&head2, data);
+    }
+
+    // Menu-driven options
+    do {
+        printf("\n--- MENU ---\n");
+        printf("1. Append first list at the start of second list\n");
+        printf("2. Append first list at the end of second list\n");
+        printf("3. Display second list\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                appendAtStart(&head1, &head2);
+                printf("First list appended at the start of the second list.\n");
+                printf("Updated second list: ");
+                displayList(head2);
+                break;
+            case 2:
+                appendAtEnd(&head1, &head2);
+                printf("First list appended at the end of the second list.\n");
+                printf("Updated second list: ");
+                displayList(head2);
+                break;
+            case 3:
+                printf("Second list: ");
+                displayList(head2);
+                break;
+            case 4:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}
+
+Implement Push and POP operations of STACK on Doubly linked lists
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node structure for the doubly linked list (Stack)
+typedef struct Node {
+    int data;
+    struct Node* prev;
+    struct Node* next;
+} Node;
+
+// Function to create a new node
+Node* createNode(int data) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = data;
+    newNode->prev = NULL;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Push operation: Insert an element at the top of the stack (head of DLL)
+void push(Node** top, int data) {
+    Node* newNode = createNode(data);
+    if (*top == NULL) {
+        *top = newNode;  // If stack is empty, newNode is the top
+    } else {
+        newNode->next = *top;   // Set newNode's next to current top
+        (*top)->prev = newNode; // Set current top's prev to newNode
+        *top = newNode;         // Move the top pointer to the new node
+    }
+    printf("Pushed %d to the stack.\n", data);
+    displayStack(*top);  // Display the DLL after pushing
+}
+
+// Pop operation: Remove an element from the top of the stack (head of DLL)
+int pop(Node** top) {
+    if (*top == NULL) {
+        printf("Stack is empty. Cannot pop.\n");
+        return -1;  // Stack underflow
+    }
+    
+    Node* temp = *top;
+    int poppedData = temp->data;
+    *top = temp->next;  // Move the top pointer to the next node
+
+    if (*top != NULL) {
+        (*top)->prev = NULL;  // Set the new top's prev to NULL
+    }
+
+    free(temp);  // Free the old top node
+    printf("Popped %d from the stack.\n", poppedData);
+    displayStack(*top);  // Display the DLL after popping
+    return poppedData;
+}
+
+// Function to display the stack (DLL)
+void displayStack(Node* top) {
+    if (top == NULL) {
+        printf("Stack is empty.\n");
+        return;
+    }
+    Node* temp = top;
+    printf("Stack (DLL): ");
+    while (temp != NULL) {
+        printf("%d ", temp->data);
+        temp = temp->next;
+    }
+    printf("\n");
+}
+
+// Main function
+int main() {
+    Node* stack = NULL;  // Initialize the stack (empty)
+
+    int choice, data;
+
+    do {
+        printf("\n--- STACK MENU ---\n");
+        printf("1. Push element to stack\n");
+        printf("2. Pop element from stack\n");
+        printf("3. Display stack\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter the element to push: ");
+                scanf("%d", &data);
+                push(&stack, data);
+                break;
+            case 2:
+                pop(&stack);
+                break;
+            case 3:
+                displayStack(stack);
+                break;
+            case 4:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice. Try again.\n");
+        }
+    } while (choice != 4);
+
+    return 0;
+}
+
+Implement ADD and DELETE operations of QUEUE on Doubly linked
+lists
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node structure for doubly linked list
+struct Node {
+    int data;
+    struct Node* next;
+    struct Node* prev;
+};
+
+// Queue structure
+struct Queue {
+    struct Node* front;
+    struct Node* rear;
+};
+
+// Function declarations
+void initialize(struct Queue* q);
+int empty(struct Queue* q);
+void enqueue(struct Queue* q, int value);
+void dequeue(struct Queue* q);
+void print(struct Queue* q);
+
+int main() {
+    struct Queue q;
+    initialize(&q);
+
+    int ch, value;
+    
+    do {
+        printf("\n**Queue Menu**");
+        printf("\n1. Enqueue");
+        printf("\n2. Dequeue");
+        printf("\n3. Print");
+        printf("\n4. Exit");
+        printf("\nEnter your choice: ");
+        scanf("%d", &ch);
+
+        switch(ch) {
+            case 1:
+                printf("\nEnter value to enqueue: ");
+                scanf("%d", &value);
+                enqueue(&q, value);
+                break;
+            case 2:
+                dequeue(&q);
+                break;
+            case 3:
+                print(&q);
+                break;
+            case 4:
+                printf("\nThanks for using our queue software\n");
+                break;
+            default:
+                printf("\nInvalid choice!!!\n");
+        }
+    } while(ch != 4);
+
+    return 0;
+}
+
+// Initialize the queue (set front and rear to NULL)
+void initialize(struct Queue* q) {
+    q->front = q->rear = NULL;
+}
+
+// Check if the queue is empty
+int empty(struct Queue* q) {
+    return (q->front == NULL);  // Return 1 if empty, 0 if not
+}
+
+// Enqueue (add) an element to the rear of the queue
+void enqueue(struct Queue* q, int value) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = value;
+    newNode->next = NULL;
+    
+    if(empty(q)) {
+        // If the queue is empty, both front and rear will point to the new node
+        newNode->prev = NULL;
+        q->front = q->rear = newNode;
+    } else {
+        // Otherwise, add to the rear and update pointers
+        newNode->prev = q->rear;
+        q->rear->next = newNode;
+        q->rear = newNode;
+    }
+    printf("\nData inserted successfully!\n");
+}
+
+// Dequeue (remove) an element from the front of the queue
+void dequeue(struct Queue* q) {
+    if(empty(q)) {
+        printf("\nQueue is empty!!!\n");
+    } else {
+        struct Node* temp = q->front;
+        int removedData = temp->data;
+        
+        printf("\nData deleted: %d\n", removedData);
+        
+        // Move front pointer to the next node
+        q->front = q->front->next;
+        
+        if(q->front == NULL) {
+            // If queue becomes empty after removal, set rear to NULL as well
+            q->rear = NULL;
+        } else {
+            // Set previous pointer of the new front to NULL
+            q->front->prev = NULL;
+        }
+
+        free(temp);  // Free memory of the removed node
+    }
+}
+
+// Print all elements in the queue
+void print(struct Queue* q) {
+    if(empty(q)) {
+        printf("\nQueue is empty!!!\n");
+    } else {
+        struct Node* temp = q->front;
+        printf("\nQueue Data: ");
+        while(temp != NULL) {
+            printf("%d  ", temp->data);
+            temp = temp->next;
+        }
+        printf("NULL\n");
+    }
+}
+
+
+Implement Insertion sort using Singly Linked List
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node structure for singly linked list
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+// Function declarations
+void insertAtEnd(struct Node** head, int value);
+void printList(struct Node* head);
+void insertionSort(struct Node** head);
+void sortedInsert(struct Node** sorted, struct Node* newNode);
+
+int main() {
+    struct Node* head = NULL;
+    int ch, value;
+
+    do {
+        printf("\n**Insertion Sort on Singly Linked List Menu**");
+        printf("\n1. Insert a node");
+        printf("\n2. Perform Insertion Sort");
+        printf("\n3. Print List");
+        printf("\n4. Exit");
+        printf("\nEnter your choice: ");
+        scanf("%d", &ch);
+
+        switch(ch) {
+            case 1:
+                printf("\nEnter value to insert: ");
+                scanf("%d", &value);
+                insertAtEnd(&head, value);
+                break;
+            case 2:
+                insertionSort(&head);
+                printf("\nList sorted successfully using Insertion Sort!\n");
+                break;
+            case 3:
+                printf("\nCurrent List: ");
+                printList(head);
+                break;
+            case 4:
+                printf("\nExiting the program...\n");
+                break;
+            default:
+                printf("\nInvalid choice! Please try again.\n");
+        }
+    } while(ch != 4);
+
+    return 0;
+}
+
+// Function to insert a node at the end of the list
+void insertAtEnd(struct Node** head, int value) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    struct Node* temp = *head;
+    newNode->data = value;
+    newNode->next = NULL;
+
+    if (*head == NULL) {
+        *head = newNode;
+    } else {
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newNode;
+    }
+}
+
+// Function to print the list
+void printList(struct Node* head) {
+    if (head == NULL) {
+        printf("The list is empty.\n");
+        return;
+    }
+    while (head != NULL) {
+        printf("%d -> ", head->data);
+        head = head->next;
+    }
+    printf("NULL\n");
+}
+
+// Function to perform insertion sort on the singly linked list
+void insertionSort(struct Node** head) {
+    struct Node* sorted = NULL;  // Sorted list
+    struct Node* current = *head; // Pointer to traverse the original list
+
+    // Traverse the original list
+    while (current != NULL) {
+        // Store the next node (to avoid losing the rest of the list)
+        struct Node* next = current->next;
+
+        // Insert current node in the sorted list
+        sortedInsert(&sorted, current);
+
+        // Move to the next node in the original list
+        current = next;
+    }
+
+    // Update the head to point to the sorted list
+    *head = sorted;
+}
+
+// Function to insert a node in a sorted manner in the sorted list
+void sortedInsert(struct Node** sorted, struct Node* newNode) {
+    // Case 1: The sorted list is empty or new node should be inserted at the front
+    if (*sorted == NULL || (*sorted)->data >= newNode->data) {
+        newNode->next = *sorted;
+        *sorted = newNode;
+    } else {
+        // Case 2: Find the correct position to insert the new node
+        struct Node* current = *sorted;
+        while (current->next != NULL && current->next->data < newNode->data) {
+            current = current->next;
+        }
+        newNode->next = current->next;
+        current->next = newNode;
+    }
+}
+
+Implement Bubble sort using Doubly Linked List
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node structure for doubly linked list
+struct Node {
+    int data;
+    struct Node* next;
+    struct Node* prev;
+};
+
+// Function declarations
+void insertAtEnd(struct Node** head, int value);
+void printList(struct Node* head);
+void bubbleSort(struct Node* head);
+void swapNodes(struct Node* a, struct Node* b);
+
+int main() {
+    struct Node* head = NULL;
+    int ch, value;
+
+    do {
+        printf("\n**Bubble Sort on Doubly Linked List Menu**");
+        printf("\n1. Insert a node");
+        printf("\n2. Perform Bubble Sort");
+        printf("\n3. Print List");
+        printf("\n4. Exit");
+        printf("\nEnter your choice: ");
+        scanf("%d", &ch);
+
+        switch(ch) {
+            case 1:
+                printf("\nEnter value to insert: ");
+                scanf("%d", &value);
+                insertAtEnd(&head, value);
+                break;
+            case 2:
+                bubbleSort(head);
+                printf("\nList sorted successfully using Bubble Sort!\n");
+                break;
+            case 3:
+                printf("\nCurrent List: ");
+                printList(head);
+                break;
+            case 4:
+                printf("\nExiting the program...\n");
+                break;
+            default:
+                printf("\nInvalid choice! Please try again.\n");
+        }
+    } while(ch != 4);
+
+    return 0;
+}
+
+// Function to insert a node at the end of the doubly linked list
+void insertAtEnd(struct Node** head, int value) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    struct Node* temp = *head;
+    newNode->data = value;
+    newNode->next = NULL;
+    newNode->prev = NULL;
+
+    if (*head == NULL) {
+        *head = newNode;
+    } else {
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newNode;
+        newNode->prev = temp;
+    }
+}
+
+// Function to print the list
+void printList(struct Node* head) {
+    if (head == NULL) {
+        printf("The list is empty.\n");
+        return;
+    }
+    while (head != NULL) {
+        printf("%d <-> ", head->data);
+        head = head->next;
+    }
+    printf("NULL\n");
+}
+
+// Function to perform Bubble Sort on the doubly linked list
+void bubbleSort(struct Node* head) {
+    if (head == NULL) return;
+
+    int swapped;
+    struct Node *i, *j;
+    
+    // Bubble sort, iterate until no more swaps are needed
+    do {
+        swapped = 0;
+        i = head;
+        
+        // Traverse the list and swap adjacent nodes if needed
+        while (i != NULL && i->next != NULL) {
+            j = i->next;
+            
+            // If data in i > data in j, swap the nodes
+            if (i->data > j->data) {
+                swapNodes(i, j);
+                swapped = 1;
+            }
+            i = i->next;
+        }
+    } while (swapped);  // Repeat until no more swaps are needed
+}
+
+// Function to swap two adjacent nodes in a doubly linked list
+void swapNodes(struct Node* a, struct Node* b) {
+    // If nodes are adjacent
+    if (a->next == b) {
+        a->next = b->next;
+        if (b->next != NULL) {
+            b->next->prev = a;
+        }
+        b->prev = a->prev;
+        if (a->prev != NULL) {
+            a->prev->next = b;
+        }
+        a->prev = b;
+        b->next = a;
+    }
+    // If nodes are not adjacent
+    else {
+        struct Node* tempNext = b->next;
+        struct Node* tempPrev = b->prev;
+        
+        // Swap the previous and next pointers
+        a->prev = tempPrev;
+        a->next = tempNext;
+        b->prev = a->prev;
+        b->next = a->next;
+        
+        // Adjust the next and prev pointers of the adjacent nodes
+        if (tempPrev != NULL) {
+            tempPrev->next = a;
+        }
+        if (tempNext != NULL) {
+            tempNext->prev = b;
+        }
+    }
+}
+
+
+Write a RemoveDuplicates() function which takes a list sorted in
+increasing order and deletes any duplicate nodes from the list. Ideally,
+the list should only be traversed once.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the structure for a linked list node
+struct ListNode {
+    int val;
+    struct ListNode *next;
+};
+
+// Function to remove duplicates from the sorted linked list
+void RemoveDuplicates(struct ListNode *head) {
+    struct ListNode *current = head;
+
+    // Traverse the list until the end
+    while (current != NULL && current->next != NULL) {
+        // If the current node's value is equal to the next node's value
+        if (current->val == current->next->val) {
+            struct ListNode *duplicate = current->next;
+            current->next = current->next->next; // Skip the duplicate node
+            free(duplicate); // Free the memory of the duplicate node
+        } else {
+            current = current->next; // Move to the next node
+        }
+    }
+}
+
+// Helper function to print the list
+void printList(struct ListNode *head) {
+    struct ListNode *current = head;
+    while (current != NULL) {
+        printf("%d -> ", current->val);
+        current = current->next;
+    }
+    printf("NULL\n");
+}
+
+// Helper function to create a new node
+struct ListNode* createNode(int val) {
+    struct ListNode *newNode = (struct ListNode*)malloc(sizeof(struct ListNode));
+    newNode->val = val;
+    newNode->next = NULL;
+    return newNode;
+}
+
+int main() {
+    struct ListNode *head = NULL, *tail = NULL;
+    int n, val, prevVal = -1;
+
+    // Input the number of elements in the list
+    printf("Enter the number of elements in the linked list: ");
+    scanf("%d", &n);
+
+    // Input elements of the linked list (must be sorted in non-decreasing order)
+    printf("Enter the elements (sorted in non-decreasing order):\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &val);
+        
+        // Ensure the list is sorted in non-decreasing order
+        if (i > 0 && val < prevVal) {
+            printf("Error: The input should be in non-decreasing order. Please enter a number greater than or equal to %d: ", prevVal);
+            i--;  // Decrease the counter to retry input for this node
+            continue;
+        }
+        
+        struct ListNode *newNode = createNode(val);
+        
+        // If the list is empty, set the new node as the head
+        if (head == NULL) {
+            head = newNode;
+            tail = newNode;
+        } else {
+            tail->next = newNode;
+            tail = newNode;
+        }
+        
+        prevVal = val;  // Update the previous value to the current one
+    }
+
+    // Print the original list
+    printf("Original list:\n");
+    printList(head);
+
+    // Remove duplicates
+    RemoveDuplicates(head);
+
+    // Print the list after removing duplicates
+    printf("List after removing duplicates:\n");
+    printList(head);
+
+    return 0;
+}
+
+Write a SortedInsert() function which given a list that is sorted in
+increasing order, and a single node, inserts the node into the correct
+sorted position in the list. While Push() allocates a new node to add to
+the list, SortedInsert() takes an existing node, and just rearranges
+pointers to insert it into the list.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define the structure for a linked list node
+struct ListNode {
+    int val;
+    struct ListNode *next;
+};
+
+// Function to insert a node into a sorted linked list
+void SortedInsert(struct ListNode **head, struct ListNode *newNode) {
+    // If the list is empty or the new node should be inserted at the beginning
+    if (*head == NULL || (*head)->val >= newNode->val) {
+        newNode->next = *head;
+        *head = newNode;
+    } else {
+        // Traverse the list to find the correct position
+        struct ListNode *current = *head;
+        while (current->next != NULL && current->next->val < newNode->val) {
+            current = current->next;
+        }
+        // Insert the new node
+        newNode->next = current->next;
+        current->next = newNode;
+    }
+}
+
+// Helper function to create a new node
+struct ListNode* createNode(int val) {
+    struct ListNode *newNode = (struct ListNode*)malloc(sizeof(struct ListNode));
+    newNode->val = val;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Helper function to print the list
+void printList(struct ListNode *head) {
+    struct ListNode *current = head;
+    while (current != NULL) {
+        printf("%d -> ", current->val);
+        current = current->next;
+    }
+    printf("NULL\n");
+}
+
+int main() {
+    struct ListNode *head = NULL;
+    int n, val;
+
+    // Input the number of nodes to insert
+    printf("Enter the number of elements to insert: ");
+    scanf("%d", &n);
+
+    // Input elements and insert them into the sorted linked list
+    for (int i = 0; i < n; i++) {
+        printf("Enter the value of node %d: ", i + 1);
+        scanf("%d", &val);
+        
+        struct ListNode *newNode = createNode(val);
+        SortedInsert(&head, newNode);
+    }
+
+    // Print the final sorted list
+    printf("List after inserting nodes:\n");
+    printList(head);
+
+    return 0;
+}
+

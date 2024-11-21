@@ -1,0 +1,2241 @@
+Trees
+
+Write a Program to create a Binary Tree and perform following nonrecursive operations on it. a. Preorder Traversal b. Postorder Traversal c. Count total no. of nodes d. Display height of a tree.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition for a binary tree node
+struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+};
+
+// Forward declarations of functions
+void preorderTraversal(struct Node* root);
+void postorderTraversal(struct Node* root);
+int countNodes(struct Node* root);
+int heightOfTree(struct Node* root);
+
+// Create a new node
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// Preorder Traversal (Non-recursive)
+void preorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack[100];
+    int top = -1;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+        printf("%d ", node->data);
+        
+        // Push right and left child to stack (right first to visit left first)
+        if (node->right) stack[++top] = node->right;
+        if (node->left) stack[++top] = node->left;
+    }
+}
+
+// Postorder Traversal (Non-recursive)
+void postorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack1[100], *stack2[100];
+    int top1 = -1, top2 = -1;
+    
+    // Push the root to stack1
+    stack1[++top1] = root;
+
+    // Traverse the tree using stack1
+    while (top1 >= 0) {
+        struct Node* node = stack1[top1--];
+        stack2[++top2] = node;  // Push the node to stack2
+        
+        // Push left and right children to stack1 (right first, then left)
+        if (node->left) stack1[++top1] = node->left;
+        if (node->right) stack1[++top1] = node->right;
+    }
+
+    // Pop from stack2 and print nodes in postorder
+    while (top2 >= 0) {
+        struct Node* node = stack2[top2--];
+        printf("%d ", node->data);  // Correctly print the node's data
+    }
+}
+
+// Count Total Nodes
+int countNodes(struct Node* root) {
+    if (root == NULL) return 0;
+    
+    struct Node* stack[100];
+    int top = -1, count = 0;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+        count++;
+        
+        if (node->right) stack[++top] = node->right;
+        if (node->left) stack[++top] = node->left;
+    }
+
+    return count;
+}
+
+// Height of the Tree
+int heightOfTree(struct Node* root) {
+    if (root == NULL) return 0;
+
+    struct Node* queue[100];
+    int front = 0, rear = 0;
+    queue[rear++] = root;
+    int height = 0;
+
+    while (front < rear) {
+        int nodeCount = rear - front;
+        height++;
+        
+        while (nodeCount > 0) {
+            struct Node* node = queue[front++];
+            if (node->left) queue[rear++] = node->left;
+            if (node->right) queue[rear++] = node->right;
+            nodeCount--;
+        }
+    }
+
+    return height;
+}
+
+// Main function
+int main() {
+    // Construct a simple binary tree
+    struct Node* root = createNode(1);
+    root->left = createNode(2);
+    root->right = createNode(3);
+    root->left->left = createNode(4);
+    root->left->right = createNode(5);
+    root->right->left = createNode(6);
+    root->right->right = createNode(7);
+
+    // Preorder Traversal
+    printf("Preorder Traversal: ");
+    preorderTraversal(root);
+    printf("\n");
+
+    // Postorder Traversal
+    printf("Postorder Traversal: ");
+    postorderTraversal(root);
+    printf("\n");
+
+    // Total number of nodes
+    printf("Total nodes: %d\n", countNodes(root));
+
+    // Height of the tree
+    printf("Height of the tree: %d\n", heightOfTree(root));
+
+    return 0;
+}
+
+Write a Program to create a Binary Tree and perform following nonrecursive operations on it. a. Levelwise display b. Mirror image c. Display height of a tree.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition for a binary tree node
+struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+};
+
+// Forward declarations of functions
+void levelwiseDisplay(struct Node* root);
+void mirrorImage(struct Node* root);
+int heightOfTree(struct Node* root);
+
+// Create a new node
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// Levelwise display (Non-recursive, Level order traversal)
+void levelwiseDisplay(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* queue[100];
+    int front = 0, rear = 0;
+    queue[rear++] = root;
+
+    while (front < rear) {
+        struct Node* node = queue[front++];
+        printf("%d ", node->data);
+
+        if (node->left) queue[rear++] = node->left;
+        if (node->right) queue[rear++] = node->right;
+    }
+    printf("\n");
+}
+
+// Mirror image (Non-recursive)
+void mirrorImage(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* queue[100];
+    int front = 0, rear = 0;
+    queue[rear++] = root;
+
+    while (front < rear) {
+        struct Node* node = queue[front++];
+        
+        // Swap left and right children
+        struct Node* temp = node->left;
+        node->left = node->right;
+        node->right = temp;
+
+        if (node->left) queue[rear++] = node->left;
+        if (node->right) queue[rear++] = node->right;
+    }
+}
+
+// Height of the Tree (Non-recursive)
+int heightOfTree(struct Node* root) {
+    if (root == NULL) return 0;
+
+    struct Node* queue[100];
+    int front = 0, rear = 0;
+    queue[rear++] = root;
+    int height = 0;
+
+    while (front < rear) {
+        int nodeCount = rear - front;
+        height++;
+        
+        while (nodeCount > 0) {
+            struct Node* node = queue[front++];
+            if (node->left) queue[rear++] = node->left;
+            if (node->right) queue[rear++] = node->right;
+            nodeCount--;
+        }
+    }
+
+    return height;
+}
+
+// Main function
+int main() {
+    // Construct a simple binary tree
+    struct Node* root = createNode(1);
+    root->left = createNode(2);
+    root->right = createNode(3);
+    root->left->left = createNode(4);
+    root->left->right = createNode(5);
+    root->right->left = createNode(6);
+    root->right->right = createNode(7);
+
+    // Levelwise Display (Level Order Traversal)
+    printf("Levelwise Display: ");
+    levelwiseDisplay(root);
+
+    // Mirror Image of the Tree
+    mirrorImage(root);
+    printf("Mirror Image (Levelwise Display after mirror): ");
+    levelwiseDisplay(root);
+
+    // Height of the tree
+    printf("Height of the tree: %d\n", heightOfTree(root));
+
+    return 0;
+}
+
+Write a program to illustrate operations on a BST holding numeric keys. The menu must include: • Insert • Delete • Find • Show
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure for a node in the Binary Search Tree
+struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+};
+
+// Function to create a new node
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->left = newNode->right = NULL;
+    return newNode;
+}
+
+// Function to insert a node into the BST
+struct Node* insert(struct Node* root, int data) {
+    if (root == NULL) {
+        return createNode(data);
+    }
+    if (data < root->data) {
+        root->left = insert(root->left, data);
+    } else if (data > root->data) {
+        root->right = insert(root->right, data);
+    }
+    return root;
+}
+
+// Function to find a node in the BST
+struct Node* find(struct Node* root, int data) {
+    if (root == NULL || root->data == data) {
+        return root;
+    }
+    if (data < root->data) {
+        return find(root->left, data);
+    } else {
+        return find(root->right, data);
+    }
+}
+
+// Function to find the inorder successor (smallest in the right subtree)
+struct Node* minValueNode(struct Node* node) {
+    struct Node* current = node;
+    while (current && current->left != NULL) {
+        current = current->left;
+    }
+    return current;
+}
+
+// Function to delete a node from the BST
+struct Node* deleteNode(struct Node* root, int data) {
+    if (root == NULL) {
+        return root;
+    }
+
+    if (data < root->data) {
+        root->left = deleteNode(root->left, data);
+    } else if (data > root->data) {
+        root->right = deleteNode(root->right, data);
+    } else {
+        // Node with only one child or no child
+        if (root->left == NULL) {
+            struct Node* temp = root->right;
+            free(root);
+            return temp;
+        } else if (root->right == NULL) {
+            struct Node* temp = root->left;
+            free(root);
+            return temp;
+        }
+
+        // Node with two children: Get the inorder successor (smallest in the right subtree)
+        struct Node* temp = minValueNode(root->right);
+
+        // Copy the inorder successor's content to this node
+        root->data = temp->data;
+
+        // Delete the inorder successor
+        root->right = deleteNode(root->right, temp->data);
+    }
+    return root;
+}
+
+// Function to perform inorder traversal of the BST and display it
+void inorderTraversal(struct Node* root) {
+    if (root != NULL) {
+        inorderTraversal(root->left);
+        printf("%d ", root->data);
+        inorderTraversal(root->right);
+    }
+}
+
+// Function to display the menu
+void displayMenu() {
+    printf("\nMenu:\n");
+    printf("1. Insert\n");
+    printf("2. Delete\n");
+    printf("3. Find\n");
+    printf("4. Show (Inorder Traversal)\n");
+    printf("5. Exit\n");
+}
+
+int main() {
+    struct Node* root = NULL;
+    int choice, data;
+
+    while (1) {
+        displayMenu();
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter a number to insert: ");
+                scanf("%d", &data);
+                root = insert(root, data);
+                printf("Node inserted successfully.\n");
+                break;
+
+            case 2:
+                printf("Enter a number to delete: ");
+                scanf("%d", &data);
+                root = deleteNode(root, data);
+                printf("Node deleted successfully (if it existed).\n");
+                break;
+
+            case 3:
+                printf("Enter a number to find: ");
+                scanf("%d", &data);
+                struct Node* result = find(root, data);
+                if (result != NULL) {
+                    printf("Node %d found in the tree.\n", data);
+                } else {
+                    printf("Node %d not found in the tree.\n", data);
+                }
+                break;
+
+            case 4:
+                printf("Inorder Traversal of the BST: ");
+                inorderTraversal(root);
+                printf("\n");
+                break;
+
+            case 5:
+                printf("Exiting the program.\n");
+                return 0;
+
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+
+    return 0;
+}
+
+Write a program to illustrate operations on a BST holding numeric keys. The menu must include: • Insert • Mirror Image • Find • Post order (nonrecursive)
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure for a node in the Binary Search Tree
+struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+};
+
+// Function to create a new node
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->left = newNode->right = NULL;
+    return newNode;
+}
+
+// Function to insert a node into the BST
+struct Node* insert(struct Node* root, int data) {
+    if (root == NULL) {
+        return createNode(data);
+    }
+    if (data < root->data) {
+        root->left = insert(root->left, data);
+    } else if (data > root->data) {
+        root->right = insert(root->right, data);
+    }
+    return root;
+}
+
+// Function to find a node in the BST
+struct Node* find(struct Node* root, int data) {
+    if (root == NULL || root->data == data) {
+        return root;
+    }
+    if (data < root->data) {
+        return find(root->left, data);
+    } else {
+        return find(root->right, data);
+    }
+}
+
+// Function to swap the left and right children (Mirror image)
+void mirror(struct Node* root) {
+    if (root == NULL) {
+        return;
+    }
+
+    // Swap the left and right children
+    struct Node* temp = root->left;
+    root->left = root->right;
+    root->right = temp;
+
+    // Recursively mirror the left and right subtrees
+    mirror(root->left);
+    mirror(root->right);
+}
+
+// Function to perform inorder traversal of the BST and display it
+void inorderTraversal(struct Node* root) {
+    if (root != NULL) {
+        inorderTraversal(root->left);
+        printf("%d ", root->data);
+        inorderTraversal(root->right);
+    }
+}
+
+// Non-recursive post-order traversal using two stacks
+void postOrderNonRecursive(struct Node* root) {
+    if (root == NULL) {
+        return;
+    }
+
+    struct Node* stack1[100], *stack2[100];
+    int top1 = -1, top2 = -1;
+
+    // Push root to the first stack
+    stack1[++top1] = root;
+
+    // Process the first stack
+    while (top1 >= 0) {
+        struct Node* node = stack1[top1--];
+        stack2[++top2] = node;
+
+        // Push left and right children to stack1
+        if (node->left) stack1[++top1] = node->left;
+        if (node->right) stack1[++top1] = node->right;
+    }
+
+    // Pop from stack2 and print the node data (post-order)
+    while (top2 >= 0) {
+        struct Node* node = stack2[top2--];
+        printf("%d ", node->data);
+    }
+}
+
+// Function to display the menu
+void displayMenu() {
+    printf("\nMenu:\n");
+    printf("1. Insert\n");
+    printf("2. Mirror Image\n");
+    printf("3. Find\n");
+    printf("4. Post-order Traversal (Non-recursive)\n");
+    printf("5. Exit\n");
+}
+
+int main() {
+    struct Node* root = NULL;
+    int choice, data;
+
+    while (1) {
+        displayMenu();
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter a number to insert: ");
+                scanf("%d", &data);
+                root = insert(root, data);
+                printf("Node inserted successfully.\n");
+                break;
+
+            case 2:
+                mirror(root);
+                printf("Mirror image of the tree created successfully.\n");
+                printf("mirrored tree: ");
+                inorderTraversal(root);  // Show the mirrored tree via in-order traversal
+                printf("\n");
+                break;
+
+            case 3:
+                printf("Enter a number to find: ");
+                scanf("%d", &data);
+                struct Node* result = find(root, data);
+                if (result != NULL) {
+                    printf("Node %d found in the tree.\n", data);
+                } else {
+                    printf("Node %d not found in the tree.\n", data);
+                }
+                break;
+
+            case 4:
+                printf("Post-order Traversal of the BST: ");
+                postOrderNonRecursive(root);
+                printf("\n");
+                break;
+
+            case 5:
+                printf("Exiting the program.\n");
+                return 0;
+
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+
+    return 0;
+}
+
+Write a Program to create a Binary Tree and perform following Nonrecursive operations on it. a. Inorder Traversal b. Preorder Traversal c. Display Number of Leaf Nodes d. Mirror Image
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition for a binary tree node
+struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+};
+
+// Forward declarations of functions
+void preorderTraversal(struct Node* root);
+void inorderTraversal(struct Node* root);
+void postorderTraversal(struct Node* root);
+int countNodes(struct Node* root);
+int countLeafNodes(struct Node* root);
+void mirrorImage(struct Node* root);
+struct Node* insertNode(struct Node* root, int data); // Function to insert node in BST
+
+// Create a new node
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// Insert a node into the BST
+struct Node* insertNode(struct Node* root, int data) {
+    // If the tree is empty, create a new node
+    if (root == NULL) return createNode(data);
+
+    // Otherwise, recur down the tree
+    if (data < root->data) {
+        root->left = insertNode(root->left, data);
+    } else {
+        root->right = insertNode(root->right, data);
+    }
+
+    return root;
+}
+
+// Preorder Traversal (Non-recursive)
+void preorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack[100];
+    int top = -1;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+        printf("%d ", node->data);
+
+        // Push right and left child to stack (right first to visit left first)
+        if (node->right) stack[++top] = node->right;
+        if (node->left) stack[++top] = node->left;
+    }
+}
+
+// Inorder Traversal (Non-recursive)
+void inorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack[100];
+    int top = -1;
+    struct Node* current = root;
+
+    while (current != NULL || top >= 0) {
+        // Reach the leftmost node of the current node
+        while (current != NULL) {
+            stack[++top] = current;
+            current = current->left;
+        }
+
+        // Current must be NULL at this point, pop the node
+        current = stack[top--];
+        printf("%d ", current->data);
+
+        // Visit the right subtree
+        current = current->right;
+    }
+}
+
+// Postorder Traversal (Non-recursive)
+void postorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack[100];
+    int top = -1;
+    struct Node* lastVisited = NULL;
+    struct Node* current = root;
+
+    while (top >= 0 || current != NULL) {
+        // Reach the leftmost node
+        while (current != NULL) {
+            stack[++top] = current;
+            current = current->left;
+        }
+
+        // Peek the node from the stack without removing it
+        current = stack[top];
+
+        // If the right child exists and we haven't visited it, traverse right
+        if (current->right != NULL && lastVisited != current->right) {
+            current = current->right;
+        } else {
+            // If no right child or already visited, print the node
+            printf("%d ", current->data);
+            lastVisited = current;
+            top--;  // Pop the node from the stack
+            current = NULL;  // Reset current for the next iteration
+        }
+    }
+}
+
+// Count total number of nodes (Non-recursive)
+int countNodes(struct Node* root) {
+    if (root == NULL) return 0;
+
+    struct Node* stack[100];
+    int top = -1, nodeCount = 0;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+        nodeCount++;
+
+        if (node->right) stack[++top] = node->right;
+        if (node->left) stack[++top] = node->left;
+    }
+
+    return nodeCount;
+}
+
+// Count Leaf Nodes (Non-recursive)
+int countLeafNodes(struct Node* root) {
+    if (root == NULL) return 0;
+
+    struct Node* stack[100];
+    int top = -1, leafCount = 0;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+
+        // Check if it is a leaf node
+        if (node->left == NULL && node->right == NULL) {
+            leafCount++;
+        }
+
+        if (node->right) stack[++top] = node->right;
+        if (node->left) stack[++top] = node->left;
+    }
+
+    return leafCount;
+}
+
+// Mirror Image of the Tree (Non-recursive)
+void mirrorImage(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack[100];
+    int top = -1;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+
+        // Swap the left and right children
+        struct Node* temp = node->left;
+        node->left = node->right;
+        node->right = temp;
+
+        // Push children to stack (if they exist)
+        if (node->left) stack[++top] = node->left;
+        if (node->right) stack[++top] = node->right;
+    }
+}
+
+// Main function
+int main() {
+    struct Node* root = NULL;
+
+    // Insert nodes into the Binary Search Tree (BST)
+    root = insertNode(root, 50);
+    root = insertNode(root, 30);
+    root = insertNode(root, 20);
+    root = insertNode(root, 40);
+    root = insertNode(root, 70);
+    root = insertNode(root, 60);
+    root = insertNode(root, 80);
+
+    // Preorder Traversal
+    printf("Preorder Traversal: ");
+    preorderTraversal(root);
+    printf("\n");
+
+    // Inorder Traversal
+    printf("Inorder Traversal: ");
+    inorderTraversal(root);
+    printf("\n");
+
+    // Postorder Traversal
+    printf("Postorder Traversal: ");
+    postorderTraversal(root);
+    printf("\n");
+
+    // Total Number of Nodes
+    printf("Total Number of Nodes: %d\n", countNodes(root));
+
+    // Number of Leaf Nodes
+    printf("Number of Leaf Nodes: %d\n", countLeafNodes(root));
+
+    // Mirror Image of the tree
+    mirrorImage(root);
+    printf("Inorder Traversal after Mirror Image: ");
+    inorderTraversal(root);
+    printf("\n");
+
+    return 0;
+}
+
+Write a Program to create a Binary Tree and perform following Nonrecursive operations on it. a. Inorder Traversal b. Preorder Traversal c. Display Height of a tree d. Find Maximum
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition for a binary tree node
+struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+};
+
+// Forward declarations of functions
+void inorderTraversal(struct Node* root);
+void preorderTraversal(struct Node* root);
+int heightOfTree(struct Node* root);
+int findMax(struct Node* root);
+
+// Create a new node
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// Preorder Traversal (Non-recursive)
+void preorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack[100];
+    int top = -1;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+        printf("%d ", node->data);
+
+        // Push right and left child to stack (right first to visit left first)
+        if (node->right) stack[++top] = node->right;
+        if (node->left) stack[++top] = node->left;
+    }
+}
+
+// Inorder Traversal (Non-recursive)
+void inorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack[100];
+    int top = -1;
+    struct Node* current = root;
+
+    while (current != NULL || top >= 0) {
+        // Reach the leftmost node of the current node
+        while (current != NULL) {
+            stack[++top] = current;
+            current = current->left;
+        }
+
+        // Current must be NULL at this point, pop the node
+        current = stack[top--];
+        printf("%d ", current->data);
+
+        // Visit the right subtree
+        current = current->right;
+    }
+}
+
+// Height of the Tree (Non-recursive using level-order traversal)
+int heightOfTree(struct Node* root) {
+    if (root == NULL) return 0;
+
+    struct Node* queue[100];
+    int front = 0, rear = 0;
+    queue[rear++] = root;
+    int height = 0;
+
+    while (front < rear) {
+        int nodeCount = rear - front;
+        height++;
+
+        while (nodeCount > 0) {
+            struct Node* node = queue[front++];
+            if (node->left) queue[rear++] = node->left;
+            if (node->right) queue[rear++] = node->right;
+            nodeCount--;
+        }
+    }
+
+    return height;
+}
+
+// Find Maximum Value in the Tree (Non-recursive)
+int findMax(struct Node* root) {
+    if (root == NULL) return -1; // Assuming all nodes have positive values.
+
+    struct Node* stack[100];
+    int top = -1;
+    int max = root->data;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+
+        // Update max if current node's data is greater
+        if (node->data > max) {
+            max = node->data;
+        }
+
+        if (node->right) stack[++top] = node->right;
+        if (node->left) stack[++top] = node->left;
+    }
+
+    return max;
+}
+
+// Main function
+int main() {
+    // Construct a simple binary tree
+    struct Node* root = createNode(1);
+    root->left = createNode(2);
+    root->right = createNode(3);
+    root->left->left = createNode(4);
+    root->left->right = createNode(5);
+    root->right->left = createNode(6);
+    root->right->right = createNode(7);
+
+    // Preorder Traversal
+    printf("Preorder Traversal: ");
+    preorderTraversal(root);
+    printf("\n");
+
+    // Inorder Traversal
+    printf("Inorder Traversal: ");
+    inorderTraversal(root);
+    printf("\n");
+
+    // Height of the tree
+    printf("Height of the tree: %d\n", heightOfTree(root));
+
+    // Find Maximum value in the tree
+    printf("Maximum value in the tree: %d\n", findMax(root));
+
+    return 0;
+}
+
+
+You have to maintain information for a shop owner. For each of the products sold in his/hers shop the following information is kept: a unique code, a name, a price, amount in stock, date received, expiration date. For keeping track of its stock, the clerk would use a computer program based on a search tree data structure. Write a program to help this person, by implementing the following operations: • Insert an item with all its associated data. • Find an item by its code, and support updating of the item found. • List valid items in lexicographic order of their names.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define a structure to store the product details
+typedef struct Product {
+    char name[100];
+    float price;
+    int amountInStock;
+    char dateReceived[11];   // format: YYYY-MM-DD
+    char expirationDate[11]; // format: YYYY-MM-DD
+} Product;
+
+// Define a structure for a tree node
+typedef struct Node {
+    int code;           // Unique code for each product
+    Product product;    // Product information
+    struct Node* left;  // Left subtree
+    struct Node* right; // Right subtree
+} Node;
+
+// Function to create a new node
+Node* createNode(int code, Product product) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->code = code;
+    newNode->product = product;
+    newNode->left = newNode->right = NULL;
+    return newNode;
+}
+
+// Function to insert a new product into the BST
+Node* insertNode(Node* root, int code, Product product) {
+    if (root == NULL) {
+        return createNode(code, product);
+    }
+
+    if (code < root->code) {
+        root->left = insertNode(root->left, code, product);
+    } else if (code > root->code) {
+        root->right = insertNode(root->right, code, product);
+    }
+    return root;
+}
+
+// Function to search for a product by code
+Node* searchByCode(Node* root, int code) {
+    if (root == NULL || root->code == code) {
+        return root;
+    }
+
+    if (code < root->code) {
+        return searchByCode(root->left, code);
+    } else {
+        return searchByCode(root->right, code);
+    }
+}
+
+// Function to update a product's details
+void updateProduct(Node* node) {
+    if (node != NULL) {
+        printf("Updating product with code %d\n", node->code);
+        printf("Enter new name: ");
+        scanf(" %[^\n]", node->product.name);
+        printf("Enter new price: ");
+        scanf("%f", &node->product.price);
+        printf("Enter new amount in stock: ");
+        scanf("%d", &node->product.amountInStock);
+        printf("Enter new date received (YYYY-MM-DD): ");
+        scanf(" %[^\n]", node->product.dateReceived);
+        printf("Enter new expiration date (YYYY-MM-DD): ");
+        scanf(" %[^\n]", node->product.expirationDate);
+    }
+}
+
+// Function for in-order traversal (lexicographic order of names)
+void listProductsInLexOrder(Node* root) {
+    if (root != NULL) {
+        listProductsInLexOrder(root->left);
+        printf("Code: %d, Name: %s, Price: %.2f, Stock: %d, Received: %s, Expiration: %s\n",
+               root->code, root->product.name, root->product.price, root->product.amountInStock,
+               root->product.dateReceived, root->product.expirationDate);
+        listProductsInLexOrder(root->right);
+    }
+}
+
+// Main program to manage the shop's inventory
+int main() {
+    Node* root = NULL;
+    int choice;
+    Product product;
+    int code;
+
+    while (1) {
+        printf("\nInventory Management System\n");
+        printf("1. Insert a new product\n");
+        printf("2. Search and update a product by code\n");
+        printf("3. List all products in lexicographic order of name\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1: // Insert a new product
+                printf("Enter product code: ");
+                scanf("%d", &code);
+                printf("Enter product name: ");
+                scanf(" %[^\n]", product.name);
+                printf("Enter price: ");
+                scanf("%f", &product.price);
+                printf("Enter amount in stock: ");
+                scanf("%d", &product.amountInStock);
+                printf("Enter date received (YYYY-MM-DD): ");
+                scanf(" %[^\n]", product.dateReceived);
+                printf("Enter expiration date (YYYY-MM-DD): ");
+                scanf(" %[^\n]", product.expirationDate);
+
+                root = insertNode(root, code, product);
+                break;
+
+            case 2: // Search and update a product by code
+                printf("Enter product code to search: ");
+                scanf("%d", &code);
+                Node* foundNode = searchByCode(root, code);
+                if (foundNode != NULL) {
+                    updateProduct(foundNode);
+                } else {
+                    printf("Product with code %d not found.\n", code);
+                }
+                break;
+
+            case 3: // List all products in lexicographic order of name
+                printf("Listing all products in lexicographic order of name:\n");
+                listProductsInLexOrder(root);
+                break;
+
+            case 4: // Exit the program
+                printf("Exiting program.\n");
+                return 0;
+
+            default:
+                printf("Invalid choice. Please try again.\n");
+        }
+    }
+    return 0;
+}
+
+You have to maintain information for a shop owner. For each of the products sold in his/hers shop the following information is kept: a unique code, a name, a price, amount in stock, date received, expiration date. For keeping track of its stock, the clerk would use a computer program based on a search tree data structure. Write a program to help this person, by implementing the following operations: • Insert an item with all its associated data. • Find an item by its code, and support updating of the item found. • List valid items in lexicographic order of their names.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+// Define the structure for storing item details
+typedef struct Item {
+    char code[20];
+    char name[100];
+    float price;
+    int amountInStock;
+    struct tm dateReceived;
+    struct tm expirationDate;
+} Item;
+
+// Define the structure for a binary search tree node
+typedef struct BSTNode {
+    Item item;
+    struct BSTNode* left;
+    struct BSTNode* right;
+} BSTNode;
+
+// Function to create a new node
+BSTNode* createNode(Item item) {
+    BSTNode* newNode = (BSTNode*)malloc(sizeof(BSTNode));
+    newNode->item = item;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// Function to insert an item into the BST (sorted by code)
+BSTNode* insertItem(BSTNode* root, Item item) {
+    if (root == NULL) {
+        return createNode(item);
+    }
+    int cmp = strcmp(item.code, root->item.code);
+    if (cmp < 0) {
+        root->left = insertItem(root->left, item);
+    } else if (cmp > 0) {
+        root->right = insertItem(root->right, item);
+    }
+    return root;
+}
+
+// Function to check if an item is expired
+int isExpired(struct tm expirationDate) {
+    time_t now = time(NULL);
+    struct tm* currentDate = localtime(&now);
+    return difftime(mktime(currentDate), mktime(&expirationDate)) > 0;
+}
+
+// Helper function to print item details
+void printItem(Item item) {
+    char receivedDate[11], expDate[11];
+    strftime(receivedDate, sizeof(receivedDate), "%Y-%m-%d", &item.dateReceived);
+    strftime(expDate, sizeof(expDate), "%Y-%m-%d", &item.expirationDate);
+    
+    printf("Code: %s, Name: %s, Price: %.2f, Stock: %d, Received: %s, Expiration: %s\n", 
+           item.code, item.name, item.price, item.amountInStock, receivedDate, expDate);
+}
+
+// Function to list expired items in Prefix order (preorder traversal)
+void listExpiredItems(BSTNode* root) {
+    if (root == NULL) {
+        return;
+    }
+    
+    if (isExpired(root->item.expirationDate)) {
+        printItem(root->item);
+    }
+    listExpiredItems(root->left);
+    listExpiredItems(root->right);
+}
+
+// Function to list all items in in-order
+void listAllItems(BSTNode* root) {
+    if (root == NULL) {
+        return;
+    }
+    listAllItems(root->left);
+    printItem(root->item);
+    listAllItems(root->right);
+}
+
+// Function to search for an item by code
+BSTNode* searchByCode(BSTNode* root, char* code) {
+    if (root == NULL || strcmp(root->item.code, code) == 0) {
+        return root;
+    }
+    if (strcmp(code, root->item.code) < 0) {
+        return searchByCode(root->left, code);
+    }
+    return searchByCode(root->right, code);
+}
+
+// Function to delete a node by code
+BSTNode* deleteNode(BSTNode* root, char* code) {
+    if (root == NULL) {
+        return root;
+    }
+
+    int cmp = strcmp(code, root->item.code);
+    if (cmp < 0) {
+        root->left = deleteNode(root->left, code);
+    } else if (cmp > 0) {
+        root->right = deleteNode(root->right, code);
+    } else {  // Code matches root item
+        if (root->left == NULL) {
+            BSTNode* temp = root->right;
+            free(root);
+            return temp;
+        } else if (root->right == NULL) {
+            BSTNode* temp = root->left;
+            free(root);
+            return temp;
+        }
+
+        BSTNode* temp = root->right;
+        while (temp && temp->left != NULL) {
+            temp = temp->left;
+        }
+
+        root->item = temp->item;
+        root->right = deleteNode(root->right, temp->item.code);
+    }
+    return root;
+}
+
+// Function to delete all expired items
+BSTNode* deleteExpiredItems(BSTNode* root) {
+    if (root == NULL) {
+        return NULL;
+    }
+
+    root->left = deleteExpiredItems(root->left);
+    root->right = deleteExpiredItems(root->right);
+
+    if (isExpired(root->item.expirationDate)) {
+        BSTNode* temp = root;
+        root = (root->left) ? root->left : root->right;
+        free(temp);
+    }
+
+    return root;
+}
+
+// Function to read an item from user input
+Item readItem() {
+    Item item;
+    printf("Enter product code: ");
+    scanf("%s", item.code);
+    printf("Enter product name: ");
+    getchar(); // to consume newline
+    fgets(item.name, sizeof(item.name), stdin);
+    item.name[strcspn(item.name, "\n")] = 0;  // remove newline from the end
+    printf("Enter price: ");
+    scanf("%f", &item.price);
+    printf("Enter amount in stock: ");
+    scanf("%d", &item.amountInStock);
+    printf("Enter date received (YYYY-MM-DD): ");
+    scanf("%d-%d-%d", &item.dateReceived.tm_year, &item.dateReceived.tm_mon, &item.dateReceived.tm_mday);
+    printf("Enter expiration date (YYYY-MM-DD): ");
+    scanf("%d-%d-%d", &item.expirationDate.tm_year, &item.expirationDate.tm_mon, &item.expirationDate.tm_mday);
+    item.dateReceived.tm_year -= 1900;  // Convert year to 1900-based
+    item.dateReceived.tm_mon -= 1;     // Convert month to 0-based
+    item.expirationDate.tm_year -= 1900;
+    item.expirationDate.tm_mon -= 1;
+    return item;
+}
+
+int main() {
+    BSTNode* root = NULL;
+    int choice;
+
+    while (1) {
+        printf("\n1. Insert item\n2. List expired items\n3. List all items\n4. Delete item by code\n5. Delete all expired items\n6. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1: {
+                Item item = readItem();
+                root = insertItem(root, item);
+                break;
+            }
+            case 2: {
+                printf("\nExpired items in Prefix order:\n");
+                listExpiredItems(root);
+                break;
+            }
+            case 3: {
+                printf("\nAll items:\n");
+                listAllItems(root);
+                break;
+            }
+            case 4: {
+                char code[20];
+                printf("Enter product code to delete: ");
+                scanf("%s", code);
+                root = deleteNode(root, code);
+                break;
+            }
+            case 5: {
+                root = deleteExpiredItems(root);
+                break;
+            }
+            case 6:
+                printf("Exiting...\n");
+                exit(0);
+        }
+    }
+
+    return 0;
+}
+
+Write a Program to create a Binary Search Tree and perform following nonrecursive operations on it. a. Preorder Traversal b. Inorder Traversal c. Display Number of Leaf Nodes d. Mirror Image
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition for a binary tree node
+struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+};
+
+// Forward declarations of functions
+void preorderTraversal(struct Node* root);
+void inorderTraversal(struct Node* root);
+void postorderTraversal(struct Node* root);
+int countNodes(struct Node* root);
+int countLeafNodes(struct Node* root);
+void mirrorImage(struct Node* root);
+struct Node* insertNode(struct Node* root, int data); // Function to insert node in BST
+
+// Create a new node
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// Insert a node into the BST
+struct Node* insertNode(struct Node* root, int data) {
+    // If the tree is empty, create a new node
+    if (root == NULL) return createNode(data);
+
+    // Otherwise, recur down the tree
+    if (data < root->data) {
+        root->left = insertNode(root->left, data);
+    } else {
+        root->right = insertNode(root->right, data);
+    }
+
+    return root;
+}
+
+// Preorder Traversal (Non-recursive)
+void preorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack[100];
+    int top = -1;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+        printf("%d ", node->data);
+
+        // Push right and left child to stack (right first to visit left first)
+        if (node->right) stack[++top] = node->right;
+        if (node->left) stack[++top] = node->left;
+    }
+}
+
+// Inorder Traversal (Non-recursive)
+void inorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack[100];
+    int top = -1;
+    struct Node* current = root;
+
+    while (current != NULL || top >= 0) {
+        // Reach the leftmost node of the current node
+        while (current != NULL) {
+            stack[++top] = current;
+            current = current->left;
+        }
+
+        // Current must be NULL at this point, pop the node
+        current = stack[top--];
+        printf("%d ", current->data);
+
+        // Visit the right subtree
+        current = current->right;
+    }
+}
+
+// Postorder Traversal (Non-recursive)
+void postorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack[100];
+    int top = -1;
+    struct Node* lastVisited = NULL;
+    struct Node* current = root;
+
+    while (top >= 0 || current != NULL) {
+        // Reach the leftmost node
+        while (current != NULL) {
+            stack[++top] = current;
+            current = current->left;
+        }
+
+        // Peek the node from the stack without removing it
+        current = stack[top];
+
+        // If the right child exists and we haven't visited it, traverse right
+        if (current->right != NULL && lastVisited != current->right) {
+            current = current->right;
+        } else {
+            // If no right child or already visited, print the node
+            printf("%d ", current->data);
+            lastVisited = current;
+            top--;  // Pop the node from the stack
+            current = NULL;  // Reset current for the next iteration
+        }
+    }
+}
+
+// Count total number of nodes (Non-recursive)
+int countNodes(struct Node* root) {
+    if (root == NULL) return 0;
+
+    struct Node* stack[100];
+    int top = -1, nodeCount = 0;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+        nodeCount++;
+
+        if (node->right) stack[++top] = node->right;
+        if (node->left) stack[++top] = node->left;
+    }
+
+    return nodeCount;
+}
+
+// Count Leaf Nodes (Non-recursive)
+int countLeafNodes(struct Node* root) {
+    if (root == NULL) return 0;
+
+    struct Node* stack[100];
+    int top = -1, leafCount = 0;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+
+        // Check if it is a leaf node
+        if (node->left == NULL && node->right == NULL) {
+            leafCount++;
+        }
+
+        if (node->right) stack[++top] = node->right;
+        if (node->left) stack[++top] = node->left;
+    }
+
+    return leafCount;
+}
+
+// Mirror Image of the Tree (Non-recursive)
+void mirrorImage(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack[100];
+    int top = -1;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+
+        // Swap the left and right children
+        struct Node* temp = node->left;
+        node->left = node->right;
+        node->right = temp;
+
+        // Push children to stack (if they exist)
+        if (node->left) stack[++top] = node->left;
+        if (node->right) stack[++top] = node->right;
+    }
+}
+
+// Main function
+int main() {
+    struct Node* root = NULL;
+
+    // Insert nodes into the Binary Search Tree (BST)
+    root = insertNode(root, 50);
+    root = insertNode(root, 30);
+    root = insertNode(root, 20);
+    root = insertNode(root, 40);
+    root = insertNode(root, 70);
+    root = insertNode(root, 60);
+    root = insertNode(root, 80);
+
+    // Preorder Traversal
+    printf("Preorder Traversal: ");
+    preorderTraversal(root);
+    printf("\n");
+
+    // Inorder Traversal
+    printf("Inorder Traversal: ");
+    inorderTraversal(root);
+    printf("\n");
+
+    // Postorder Traversal
+    printf("Postorder Traversal: ");
+    postorderTraversal(root);
+    printf("\n");
+
+    // Total Number of Nodes
+    printf("Total Number of Nodes: %d\n", countNodes(root));
+
+    // Number of Leaf Nodes
+    printf("Number of Leaf Nodes: %d\n", countLeafNodes(root));
+
+    // Mirror Image of the tree
+    mirrorImage(root);
+    printf("Inorder Traversal after Mirror Image: ");
+    inorderTraversal(root);
+    printf("\n");
+
+    return 0;
+}
+
+Write a Program to create a Binary Search Tree and perform following nonrecursive operations on it. a. Preorder Traversal b. Postorder Traversal c. Display total Number of Nodes d. Display Leaf nodes
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition for a binary tree node
+struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+};
+
+// Forward declarations of functions
+void preorderTraversal(struct Node* root);
+void postorderTraversal(struct Node* root);
+int countNodes(struct Node* root);
+int heightOfTree(struct Node* root);
+
+// Create a new node
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// Preorder Traversal (Non-recursive)
+void preorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack[100];
+    int top = -1;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+        printf("%d ", node->data);
+        
+        // Push right and left child to stack (right first to visit left first)
+        if (node->right) stack[++top] = node->right;
+        if (node->left) stack[++top] = node->left;
+    }
+}
+
+// Postorder Traversal (Non-recursive)
+void postorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack1[100], *stack2[100];
+    int top1 = -1, top2 = -1;
+    
+    // Push the root to stack1
+    stack1[++top1] = root;
+
+    // Traverse the tree using stack1
+    while (top1 >= 0) {
+        struct Node* node = stack1[top1--];
+        stack2[++top2] = node;  // Push the node to stack2
+        
+        // Push left and right children to stack1 (right first, then left)
+        if (node->left) stack1[++top1] = node->left;
+        if (node->right) stack1[++top1] = node->right;
+    }
+
+    // Pop from stack2 and print nodes in postorder
+    while (top2 >= 0) {
+        struct Node* node = stack2[top2--];
+        printf("%d ", node->data);  // Correctly print the node's data
+    }
+}
+
+// Count Total Nodes
+int countNodes(struct Node* root) {
+    if (root == NULL) return 0;
+    
+    struct Node* stack[100];
+    int top = -1, count = 0;
+    stack[++top] = root;
+
+    while (top >= 0) {
+        struct Node* node = stack[top--];
+        count++;
+        
+        if (node->right) stack[++top] = node->right;
+        if (node->left) stack[++top] = node->left;
+    }
+
+    return count;
+}
+
+// Height of the Tree
+int heightOfTree(struct Node* root) {
+    if (root == NULL) return 0;
+
+    struct Node* queue[100];
+    int front = 0, rear = 0;
+    queue[rear++] = root;
+    int height = 0;
+
+    while (front < rear) {
+        int nodeCount = rear - front;
+        height++;
+        
+        while (nodeCount > 0) {
+            struct Node* node = queue[front++];
+            if (node->left) queue[rear++] = node->left;
+            if (node->right) queue[rear++] = node->right;
+            nodeCount--;
+        }
+    }
+
+    return height;
+}
+
+// Main function
+int main() {
+    // Construct a simple binary tree
+    struct Node* root = createNode(1);
+    root->left = createNode(2);
+    root->right = createNode(3);
+    root->left->left = createNode(4);
+    root->left->right = createNode(5);
+    root->right->left = createNode(6);
+    root->right->right = createNode(7);
+
+    // Preorder Traversal
+    printf("Preorder Traversal: ");
+    preorderTraversal(root);
+    printf("\n");
+
+    // Postorder Traversal
+    printf("Postorder Traversal: ");
+    postorderTraversal(root);
+    printf("\n");
+
+    // Total number of nodes
+    printf("Total nodes: %d\n", countNodes(root));
+
+    // Height of the tree
+    printf("Height of the tree: %d\n", heightOfTree(root));
+
+    return 0;
+}
+
+
+Write a Program to create a Binary Search Tree and perform deletion of a node from it. Also display the tree in nonrecursive postorder way.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node structure
+struct Node {
+    int key;
+    struct Node *left, *right;
+};
+
+// Create a new node
+struct Node* newNode(int item) {
+    struct Node* temp = (struct Node*)malloc(sizeof(struct Node));
+    temp->key = item;
+    temp->left = temp->right = NULL;
+    return temp;
+}
+
+// Insert a node
+struct Node* insert(struct Node* node, int key) {
+    if (node == NULL) return newNode(key);
+    if (key < node->key)
+        node->left = insert(node->left, key);
+    else if (key > node->key)
+        node->right = insert(node->right, key);
+    return node;
+}
+
+// Find the inorder successor
+struct Node* minValueNode(struct Node* node) {
+    struct Node* current = node;
+    while (current && current->left != NULL)
+        current = current->left;
+    return current;
+}
+
+// Delete a node
+struct Node* deleteNode(struct Node* root, int key) {
+    if (root == NULL) return root;
+    if (key < root->key)
+        root->left = deleteNode(root->left, key);
+    else if (key > root->key)
+        root->right = deleteNode(root->right, key);
+    else {
+        if (root->left == NULL) {
+            struct Node* temp = root->right;
+            free(root);
+            return temp;
+        } else if (root->right == NULL) {
+            struct Node* temp = root->left;
+            free(root);
+            return temp;
+        }
+        struct Node* temp = minValueNode(root->right);
+        root->key = temp->key;
+        root->right = deleteNode(root->right, temp->key);
+    }
+    return root;
+}
+
+// Non-recursive postorder traversal
+void postOrderTraversal(struct Node* root) {
+    if (root == NULL) return;
+    struct Node* stack1[100];
+    struct Node* stack2[100];
+    int top1 = -1, top2 = -1;
+    stack1[++top1] = root;
+    while (top1 >= 0) {
+        struct Node* node = stack1[top1--];
+        stack2[++top2] = node;
+        if (node->left)
+            stack1[++top1] = node->left;
+        if (node->right)
+            stack1[++top1] = node->right;
+    }
+    while (top2 >= 0) {
+        struct Node* node = stack2[top2--];
+        printf("%d ", node->key);
+    }
+}
+
+// Driver code
+int main() {
+    struct Node* root = NULL;
+    int keys[] = {50, 30, 20, 40, 70, 60, 80};
+    int n = sizeof(keys) / sizeof(keys[0]);
+    for (int i = 0; i < n; i++)
+        root = insert(root, keys[i]);
+
+    printf("Postorder traversal of the given tree:\n");
+    postOrderTraversal(root);
+
+    printf("\n\nDelete 20\n");
+    root = deleteNode(root, 20);
+    printf("Postorder traversal of the modified tree:\n");
+    postOrderTraversal(root);
+
+    printf("\n\nDelete 30\n");
+    root = deleteNode(root, 30);
+    printf("Postorder traversal of the modified tree:\n");
+    postOrderTraversal(root);
+
+    printf("\n\nDelete 50\n");
+    root = deleteNode(root, 50);
+    printf("Postorder traversal of the modified tree:\n");
+    postOrderTraversal(root);
+
+    return 0;
+}
+
+Write a Program to create a Binary Search Tree and display it levelwise. Also perform deletion of a node from it.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition for a binary tree node
+struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+};
+
+// Forward declarations of functions
+void levelOrderTraversal(struct Node* root);
+void postorderTraversal(struct Node* root);
+struct Node* deleteNode(struct Node* root, int key);
+struct Node* insertNode(struct Node* root, int data); // Function to insert node in BST
+struct Node* createNode(int data);
+
+// Create a new node
+struct Node* createNode(int data) {
+    struct Node* newNode = (struct Node*)malloc(sizeof(struct Node));
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+}
+
+// Insert a node into the BST
+struct Node* insertNode(struct Node* root, int data) {
+    // If the tree is empty, create a new node
+    if (root == NULL) return createNode(data);
+
+    // Otherwise, recur down the tree
+    if (data < root->data) {
+        root->left = insertNode(root->left, data);
+    } else {
+        root->right = insertNode(root->right, data);
+    }
+
+    return root;
+}
+
+// Level Order Traversal (Breadth-First Search)
+void levelOrderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* queue[100];
+    int front = -1, rear = -1;
+    queue[++rear] = root;
+
+    while (front != rear) {
+        struct Node* node = queue[++front];
+        printf("%d ", node->data);
+
+        if (node->left) queue[++rear] = node->left;
+        if (node->right) queue[++rear] = node->right;
+    }
+    printf("\n");
+}
+
+// Postorder Traversal (Non-recursive)
+void postorderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    struct Node* stack1[100];
+    struct Node* stack2[100];
+    int top1 = -1, top2 = -1;
+
+    stack1[++top1] = root;
+
+    while (top1 >= 0) {
+        struct Node* node = stack1[top1--];
+        stack2[++top2] = node;
+
+        // Push left and right children to stack1
+        if (node->left) stack1[++top1] = node->left;
+        if (node->right) stack1[++top1] = node->right;
+    }
+
+    // Print the nodes in reverse order of stack2
+    while (top2 >= 0) {
+        printf("%d ", stack2[top2--]->data);
+    }
+    printf("\n");
+}
+
+// Delete a node from the BST
+struct Node* deleteNode(struct Node* root, int key) {
+    if (root == NULL) return root;
+
+    // Find the node to be deleted
+    if (key < root->data) {
+        root->left = deleteNode(root->left, key);
+    } else if (key > root->data) {
+        root->right = deleteNode(root->right, key);
+    } else {
+        // Node with one or no child
+        if (root->left == NULL) {
+            struct Node* temp = root->right;
+            free(root);
+            return temp;
+        } else if (root->right == NULL) {
+            struct Node* temp = root->left;
+            free(root);
+            return temp;
+        }
+
+        // Node with two children: get the inorder successor (smallest in the right subtree)
+        struct Node* temp = root->right;
+        while (temp && temp->left != NULL) {
+            temp = temp->left;
+        }
+
+        // Copy the inorder successor's content to this node
+        root->data = temp->data;
+
+        // Delete the inorder successor
+        root->right = deleteNode(root->right, temp->data);
+    }
+    return root;
+}
+
+// Main function
+int main() {
+    struct Node* root = NULL;
+
+    // Insert nodes into the Binary Search Tree (BST)
+    root = insertNode(root, 50);
+    root = insertNode(root, 30);
+    root = insertNode(root, 20);
+    root = insertNode(root, 40);
+    root = insertNode(root, 70);
+    root = insertNode(root, 60);
+    root = insertNode(root, 80);
+
+    // Level Order Traversal (Breadth-First Search)
+    printf("Level Order Traversal: ");
+    levelOrderTraversal(root);
+
+    // Postorder Traversal (Non-recursive)
+    printf("Postorder Traversal: ");
+    postorderTraversal(root);
+
+    // Delete a node (for example, delete 20)
+    root = deleteNode(root, 20);
+    printf("Level Order Traversal after deletion (20): ");
+    levelOrderTraversal(root);
+
+    // Postorder Traversal after deletion
+    printf("Postorder Traversal after deletion (20): ");
+    postorderTraversal(root);
+
+    return 0;
+}
+
+Write a Program to create a Binary Search Tree and display its mirror image with and without disturbing the original tree. Also display height of a tree using nonrecursion.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Node structure
+struct Node {
+    int key;
+    struct Node *left, *right;
+};
+
+// Create a new node
+struct Node* newNode(int item) {
+    struct Node* temp = (struct Node*)malloc(sizeof(struct Node));
+    temp->key = item;
+    temp->left = temp->right = NULL;
+    return temp;
+}
+
+// Insert a node
+struct Node* insert(struct Node* node, int key) {
+    if (node == NULL) return newNode(key);
+    if (key < node->key)
+        node->left = insert(node->left, key);
+    else if (key > node->key)
+        node->right = insert(node->right, key);
+    return node;
+}
+
+// Find the height of the tree using non-recursive method
+int findHeight(struct Node* root) {
+    if (root == NULL) return 0;
+    struct Node* queue[100];
+    int front = 0, rear = 0;
+    int height = 0;
+    queue[rear++] = root;
+    while (front < rear) {
+        int nodeCount = rear - front;
+        height++;
+        while (nodeCount--) {
+            struct Node* node = queue[front++];
+            if (node->left != NULL)
+                queue[rear++] = node->left;
+            if (node->right != NULL)
+                queue[rear++] = node->right;
+        }
+    }
+    return height;
+}
+
+// Mirror the tree without disturbing the original tree
+struct Node* mirror(struct Node* root) {
+    if (root == NULL) return NULL;
+    struct Node* newRoot = newNode(root->key);
+    newRoot->left = mirror(root->right);
+    newRoot->right = mirror(root->left);
+    return newRoot;
+}
+
+// Mirror the tree and modify the original tree
+void mirrorInPlace(struct Node* root) {
+    if (root == NULL) return;
+    struct Node* temp = root->left;
+    root->left = root->right;
+    root->right = temp;
+    mirrorInPlace(root->left);
+    mirrorInPlace(root->right);
+}
+
+// Inorder traversal to display the tree
+void inorder(struct Node* root) {
+    if (root != NULL) {
+        inorder(root->left);
+        printf("%d ", root->key);
+        inorder(root->right);
+    }
+}
+
+// Driver code
+int main() {
+    struct Node* root = NULL;
+    struct Node* mirroredRoot = NULL;
+    int keys[] = {50, 30, 20, 40, 70, 60, 80};
+    int n = sizeof(keys) / sizeof(keys[0]);
+    for (int i = 0; i < n; i++)
+        root = insert(root, keys[i]);
+
+    printf("Inorder traversal of the original tree:\n");
+    inorder(root);
+
+    printf("\n\nHeight of the original tree: %d\n", findHeight(root));
+
+    mirroredRoot = mirror(root);
+    printf("\nInorder traversal of the mirrored tree (without disturbing the original tree):\n");
+    inorder(mirroredRoot);
+
+    mirrorInPlace(root);
+    printf("\n\nInorder traversal of the mirrored tree (modifying the original tree):\n");
+    inorder(root);
+
+    return 0;
+}
+
+
+Write a program, using trees, to assign the roll nos. to the students of your class as per their previous years result. i.e topper will be roll no. 1.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define a structure for the BST node
+typedef struct Student {
+    int score;
+    char name[50];
+    struct Student* left;
+    struct Student* right;
+} Student;
+
+// Function to create a new BST node
+Student* createNode(char* name, int score) {
+    Student* newNode = (Student*)malloc(sizeof(Student));
+    strcpy(newNode->name, name);
+    newNode->score = score;
+    newNode->left = newNode->right = NULL;
+    return newNode;
+}
+
+// Function to insert a node into the BST
+Student* insert(Student* root, char* name, int score) {
+    if (root == NULL)
+        return createNode(name, score);
+    if (score > root->score) // Higher scores go to the left (topper comes first)
+        root->left = insert(root->left, name, score);
+    else
+        root->right = insert(root->right, name, score);
+    return root;
+}
+
+// Function to perform inorder traversal and assign roll numbers
+void assignRollNumbers(Student* root, int* rollNumber) {
+    if (root == NULL)
+        return;
+
+    assignRollNumbers(root->left, rollNumber);
+    printf("Roll No: %d, Name: %s, Score: %d\n", (*rollNumber)++, root->name, root->score);
+    assignRollNumbers(root->right, rollNumber);
+}
+
+int main() {
+    Student* root = NULL;
+    int n, score, rollNumber = 1;
+    char name[50];
+
+    printf("Enter the number of students: ");
+    scanf("%d", &n);
+
+    // Insert student data into the BST
+    for (int i = 0; i < n; i++) {
+        printf("Enter name and score of student %d: ", i + 1);
+        scanf("%s %d", name, &score);
+        root = insert(root, name, score);
+    }
+
+    // Assign roll numbers by traversing the BST in ascending order
+    printf("\nAssigned Roll Numbers (Topper First):\n");
+    assignRollNumbers(root, &rollNumber);
+
+    return 0;
+}
+
+Write a program to efficiently search a perticular employee record by using Tree data structure. Also sort the data on empid in ascending order.
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structure for Employee node
+typedef struct Employee {
+    int empid;
+    char name[50];
+    struct Employee* left;
+    struct Employee* right;
+} Employee;
+
+// Function to create a new node
+Employee* createNode(int empid, char* name) {
+    Employee* newNode = (Employee*)malloc(sizeof(Employee));
+    newNode->empid = empid;
+    strcpy(newNode->name, name);
+    newNode->left = newNode->right = NULL;
+    return newNode;
+}
+
+// Function to insert an employee into the BST
+Employee* insert(Employee* root, int empid, char* name) {
+    if (root == NULL)
+        return createNode(empid, name);
+
+    if (empid < root->empid)
+        root->left = insert(root->left, empid, name);
+    else if (empid > root->empid)
+        root->right = insert(root->right, empid, name);
+
+    return root;
+}
+
+// Function to search for an employee by empid
+Employee* search(Employee* root, int empid) {
+    if (root == NULL || root->empid == empid)
+        return root;
+
+    if (empid < root->empid)
+        return search(root->left, empid);
+    else
+        return search(root->right, empid);
+}
+
+// Function for inorder traversal to display employees sorted by empid
+void inorderTraversal(Employee* root) {
+    if (root == NULL)
+        return;
+
+    inorderTraversal(root->left);
+    printf("EmpID: %d, Name: %s\n", root->empid, root->name);
+    inorderTraversal(root->right);
+}
+
+int main() {
+    Employee* root = NULL;
+    int choice, empid, n;
+    char name[50];
+
+    printf("Employee Management System Using Tree Data Structure\n");
+    while (1) {
+        printf("\n1. Add Employee\n");
+        printf("2. Search Employee\n");
+        printf("3. Display Employees Sorted by EmpID\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter Employee ID: ");
+                scanf("%d", &empid);
+                printf("Enter Employee Name: ");
+                scanf("%s", name);
+                root = insert(root, empid, name);
+                break;
+
+            case 2:
+                printf("Enter Employee ID to search: ");
+                scanf("%d", &empid);
+                Employee* found = search(root, empid);
+                if (found)
+                    printf("Employee Found - EmpID: %d, Name: %s\n", found->empid, found->name);
+                else
+                    printf("Employee with EmpID %d not found.\n", empid);
+                break;
+
+            case 3:
+                printf("\nEmployees Sorted by EmpID:\n");
+                inorderTraversal(root);
+                break;
+
+            case 4:
+                printf("Exiting...\n");
+                exit(0);
+
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    }
+    return 0;
+}
+

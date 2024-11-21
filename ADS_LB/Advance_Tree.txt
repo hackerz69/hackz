@@ -1,0 +1,498 @@
+Advance Tree
+
+Write a Program to create Inorder Threaded Binary Tree and Traverse it in Inorder and Preorder way.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure for a Threaded Binary Tree Node
+typedef struct Node {
+    int data;
+    struct Node *left, *right;
+    int isThreaded; // 1 if right pointer is a thread, 0 otherwise
+} Node;
+
+// Function to create a new node
+Node* createNode(int data) {
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    newNode->isThreaded = 0;
+    return newNode;
+}
+
+// Function to insert a node into the Threaded Binary Tree
+Node* insert(Node* root, int data) {
+    if (root == NULL)
+        return createNode(data);
+
+    if (data < root->data)
+        root->left = insert(root->left, data);
+    else if (data > root->data) {
+        if (root->isThreaded) {
+            root->isThreaded = 0;
+            root->right = createNode(data);
+        } else {
+            root->right = insert(root->right, data);
+        }
+    }
+    return root;
+}
+
+// Function to create threads in the tree
+Node* createThreads(Node* root, Node* prev) {
+    if (root == NULL)
+        return prev;
+
+    prev = createThreads(root->left, prev);
+
+    if (prev && prev->right == NULL) {
+        prev->right = root;
+        prev->isThreaded = 1;
+    }
+    prev = root;
+
+    return createThreads(root->right, prev);
+}
+
+// Function to find the leftmost node
+Node* leftmost(Node* root) {
+    while (root && root->left)
+        root = root->left;
+    return root;
+}
+
+// Function for Inorder Traversal of Threaded Binary Tree
+void inorderTraversal(Node* root) {
+    Node* current = leftmost(root);
+    printf("Inorder Traversal: ");
+    while (current) {
+        printf("%d ", current->data);
+
+        if (current->isThreaded)
+            current = current->right;
+        else
+            current = leftmost(current->right);
+    }
+    printf("\n");
+}
+
+// Function for Preorder Traversal of Threaded Binary Tree
+void preorderTraversal(Node* root) {
+    printf("Preorder Traversal: ");
+    while (root) {
+        printf("%d ", root->data);
+
+        if (root->left)
+            root = root->left;
+        else {
+            while (root && root->isThreaded)
+                root = root->right;
+
+            if (root)
+                root = root->right;
+        }
+    }
+    printf("\n");
+}
+
+int main() {
+    Node* root = NULL;
+    int n, data;
+
+    printf("Enter the number of nodes: ");
+    scanf("%d", &n);
+
+    // Insert nodes into the tree
+    printf("Enter %d node values:\n", n);
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &data);
+        root = insert(root, data);
+    }
+
+    // Create threads for the tree
+    createThreads(root, NULL);
+
+    // Perform traversals
+    inorderTraversal(root);
+    preorderTraversal(root);
+
+    return 0;
+}
+
+Write a Program to create Inorder Threaded Binary Tree and Traverse it in Inorder and Postorder way.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+};
+
+void postOrderTraversal(struct Node* root) {
+    if (root == NULL) return;
+
+    // Traverse the left subtree
+    postOrderTraversal(root->left);
+
+    // Traverse the right subtree
+    postOrderTraversal(root->right);
+
+    // Visit the root node
+    printf("%d ", root->data);
+}
+
+struct Node* newNode(int data) {
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+    node->data = data;
+    node->left = NULL;
+    node->right = NULL;
+    return node;
+}
+
+int main() {
+    // Create the following binary tree
+    //       1
+    //      / \
+    //     2   3
+    //    / \
+    //   4   5
+
+    struct Node* root = newNode(1);
+    root->left = newNode(2);
+    root->right = newNode(3);
+    root->left->left = newNode(4);
+    root->left->right = newNode(5);
+
+    printf("Post-Order Traversal: ");
+    postOrderTraversal(root);
+    printf("\n");
+
+    return 0;
+}
+
+Write a Program to implement AVL tree and perform different rotations on it.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Define structure for AVL Tree node
+struct AVLNode {
+    int data;
+    struct AVLNode *left;
+    struct AVLNode *right;
+    int height;
+};
+
+// Function to get the height of the tree
+int height(struct AVLNode *node) {
+    if (node == NULL)
+        return 0;
+    return node->height;
+}
+
+// Function to get the balance factor of a node
+int getBalanceFactor(struct AVLNode *node) {
+    if (node == NULL)
+        return 0;
+    return height(node->left) - height(node->right);
+}
+
+// Function for right rotation (RR)
+struct AVLNode* rightRotate(struct AVLNode *y) {
+    struct AVLNode *x = y->left;
+    struct AVLNode *T2 = x->right;
+
+    // Perform rotation
+    x->right = y;
+    y->left = T2;
+
+    // Update heights
+    y->height = 1 + (height(y->left) > height(y->right) ? height(y->left) : height(y->right));
+    x->height = 1 + (height(x->left) > height(x->right) ? height(x->left) : height(x->right));
+
+    // Return new root
+    return x;
+}
+
+// Function for left rotation (LL)
+struct AVLNode* leftRotate(struct AVLNode *x) {
+    struct AVLNode *y = x->right;
+    struct AVLNode *T2 = y->left;
+
+    // Perform rotation
+    y->left = x;
+    x->right = T2;
+
+    // Update heights
+    x->height = 1 + (height(x->left) > height(x->right) ? height(x->left) : height(x->right));
+    y->height = 1 + (height(y->left) > height(y->right) ? height(y->left) : height(y->right));
+
+    // Return new root
+    return y;
+}
+
+// Function for Left-Right rotation (LR)
+struct AVLNode* leftRightRotate(struct AVLNode *node) {
+    node->left = leftRotate(node->left);
+    return rightRotate(node);
+}
+
+// Function for Right-Left rotation (RL)
+struct AVLNode* rightLeftRotate(struct AVLNode *node) {
+    node->right = rightRotate(node->right);
+    return leftRotate(node);
+}
+
+// Function to insert a node into the AVL tree
+struct AVLNode* insert(struct AVLNode* node, int data) {
+    // 1. Perform the normal BST insert
+    if (node == NULL) {
+        struct AVLNode* newNode = (struct AVLNode*)malloc(sizeof(struct AVLNode));
+        newNode->data = data;
+        newNode->left = newNode->right = NULL;
+        newNode->height = 1; // New node is initially at height 1
+        return newNode;
+    }
+
+    if (data < node->data) {
+        node->left = insert(node->left, data);
+    } else if (data > node->data) {
+        node->right = insert(node->right, data);
+    } else {
+        return node; // Duplicate data is not allowed
+    }
+
+    // 2. Update the height of this ancestor node
+    node->height = 1 + (height(node->left) > height(node->right) ? height(node->left) : height(node->right));
+
+    // 3. Get the balance factor to check if this node became unbalanced
+    int balance = getBalanceFactor(node);
+
+    // If this node becomes unbalanced, then there are 4 cases
+
+    // Left Left Case (LL)
+    if (balance > 1 && data < node->left->data) {
+        return rightRotate(node);
+    }
+
+    // Right Right Case (RR)
+    if (balance < -1 && data > node->right->data) {
+        return leftRotate(node);
+    }
+
+    // Left Right Case (LR)
+    if (balance > 1 && data > node->left->data) {
+        return leftRightRotate(node);
+    }
+
+    // Right Left Case (RL)
+    if (balance < -1 && data < node->right->data) {
+        return rightLeftRotate(node);
+    }
+
+    return node;
+}
+
+// Function to print the tree in inorder (for visualization)
+void inorder(struct AVLNode *root) {
+    if (root != NULL) {
+        inorder(root->left);
+        printf("%d ", root->data);
+        inorder(root->right);
+    }
+}
+
+// Function to print the tree in preorder (for visualization)
+void preorder(struct AVLNode *root) {
+    if (root != NULL) {
+        printf("%d ", root->data);
+        preorder(root->left);
+        preorder(root->right);
+    }
+}
+
+// Function to print the tree in postorder (for visualization)
+void postorder(struct AVLNode *root) {
+    if (root != NULL) {
+        postorder(root->left);
+        postorder(root->right);
+        printf("%d ", root->data);
+    }
+}
+
+// Driver program
+int main() {
+    struct AVLNode* root = NULL;
+
+    int n, data;
+    printf("Enter the number of nodes: ");
+    scanf("%d", &n);
+
+    printf("Enter the elements to insert into AVL tree:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &data);
+        root = insert(root, data);
+    }
+
+    printf("\nInorder Traversal of the AVL Tree:\n");
+    inorder(root);
+    printf("\n");
+
+    printf("\nPreorder Traversal of the AVL Tree:\n");
+    preorder(root);
+    printf("\n");
+
+    printf("\nPostorder Traversal of the AVL Tree:\n");
+    postorder(root);
+    printf("\n");
+
+    return 0;
+}
+
+Write a Program to create Inorder Threaded Binary Tree and Traverse it in Postorder and Preorder way.
+
+#include <stdio.h>
+#include <stdlib.h>
+
+// Structure for a Threaded Binary Tree Node
+struct Node {
+    int data;
+    struct Node* left;
+    struct Node* right;
+    int isThreaded;  // 1 if right pointer is a thread, 0 otherwise
+};
+
+// Function to create a new node
+struct Node* newNode(int data) {
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+    node->data = data;
+    node->left = NULL;
+    node->right = NULL;
+    node->isThreaded = 0;  // Initially not threaded
+    return node;
+}
+
+// Function to create the threaded tree (inorder threading)
+struct Node* createThreads(struct Node* root, struct Node* prev) {
+    if (root == NULL)
+        return prev;
+
+    prev = createThreads(root->left, prev);
+
+    // If the previous node is not null and doesn't have a right child
+    if (prev != NULL && prev->right == NULL) {
+        prev->right = root;  // Make current node as the right thread
+        prev->isThreaded = 1;  // Mark it as threaded
+    }
+
+    prev = root;
+
+    // Recur for the right subtree
+    return createThreads(root->right, prev);
+}
+
+// Function for Preorder Traversal of Threaded Binary Tree
+void preorderTraversal(struct Node* root) {
+    if (root == NULL)
+        return;
+
+    printf("%d ", root->data);  // Visit the root node
+
+    // Traverse the left subtree
+    preorderTraversal(root->left);
+
+    // Traverse the right subtree (Only if it's not a thread)
+    if (!root->isThreaded)
+        preorderTraversal(root->right);
+}
+
+// Function for Postorder Traversal of Threaded Binary Tree
+void postOrderTraversal(struct Node* root) {
+    if (root == NULL)
+        return;
+
+    // Traverse left subtree first
+    postOrderTraversal(root->left);
+
+    // Traverse right subtree (Only if it's not a thread)
+    if (!root->isThreaded)
+        postOrderTraversal(root->right);
+
+    // Visit the root node
+    printf("%d ", root->data);
+}
+
+// Function to find the leftmost node
+struct Node* leftmost(struct Node* root) {
+    while (root != NULL && root->left != NULL)
+        root = root->left;
+    return root;
+}
+
+// Function for Inorder Traversal of Threaded Binary Tree
+void inorderTraversal(struct Node* root) {
+    struct Node* current = leftmost(root);
+    printf("Inorder Traversal: ");
+    while (current != NULL) {
+        printf("%d ", current->data);
+        if (current->isThreaded)
+            current = current->right;  // Move to the inorder successor
+        else
+            current = leftmost(current->right);  // Move to the leftmost of the right subtree
+    }
+    printf("\n");
+}
+
+int main() {
+    struct Node* root = NULL;
+    int n, data;
+
+    printf("Enter the number of nodes: ");
+    scanf("%d", &n);
+
+    // Accept node values from user
+    printf("Enter the values of the nodes:\n");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &data);
+        if (root == NULL) {
+            root = newNode(data);
+        } else {
+            struct Node* temp = root;
+            while (1) {
+                if (data < temp->data) {
+                    if (temp->left == NULL) {
+                        temp->left = newNode(data);
+                        break;
+                    } else {
+                        temp = temp->left;
+                    }
+                } else {
+                    if (temp->right == NULL) {
+                        temp->right = newNode(data);
+                        break;
+                    } else {
+                        temp = temp->right;
+                    }
+                }
+            }
+        }
+    }
+
+    // Create threads for the tree
+    createThreads(root, NULL);
+
+    // Perform traversals
+    printf("Preorder Traversal: ");
+    preorderTraversal(root);
+    printf("\n");
+
+    printf("Postorder Traversal: ");
+    postOrderTraversal(root);
+    printf("\n");
+
+    return 0;
+}
